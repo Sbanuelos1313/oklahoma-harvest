@@ -1,4 +1,4 @@
-﻿from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, HTTPException, Depends
 from pydantic import BaseModel
 from typing import Optional
 from database import get_conn
@@ -63,7 +63,7 @@ def setup_shop(req: CreateShopRequest, user=Depends(get_current_producer)):
           req.delivery_fee, req.tax_rate))
     producer_id = cur.fetchone()[0]
     conn.commit(); cur.close(); conn.close()
-    return {"producer_id": producer_id, "message": "Shop created — pending admin approval"}
+    return {"producer_id": producer_id, "message": "Shop created � pending admin approval"}
 
 @router.get("/me")
 def get_my_shop(user=Depends(get_current_producer)):
@@ -176,7 +176,7 @@ def suspend_producer(producer_id: int, admin=Depends(get_current_admin)):
     if not row: raise HTTPException(404, "Producer not found")
     return {"message": f"{row[0]} suspended"}
 
-@router.get("/{producer_id}")
+@router.get("/profile/{producer_id}")
 def get_producer_profile(producer_id: int):
     conn = get_conn(); cur = conn.cursor()
     cur.execute("""
