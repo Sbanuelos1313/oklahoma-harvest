@@ -3,6 +3,7 @@ from pydantic import BaseModel
 from typing import Optional
 from database import get_conn
 from auth import get_current_user, get_current_producer, get_current_admin
+import threading
 
 router = APIRouter(prefix="/api/producers", tags=["producers"])
 
@@ -136,10 +137,36 @@ def get_pending_producers(admin=Depends(get_current_admin)):
 @router.post("/admin/{producer_id}/approve")
 def approve_producer(producer_id: int, admin=Depends(get_current_admin)):
     conn = get_conn(); cur = conn.cursor()
-    cur.execute("UPDATE producers SET admin_approved = TRUE, admin_approved_at = NOW() WHERE id = %s RETURNING shop_name", (producer_id,))
-    row = cur.fetchone(); conn.commit(); cur.close(); conn.close()
-    if not row: raise HTTPException(404, "Producer not found")
-    return {"message": f"{row[0]} approved"}
+    cur.execute("""
+        UPDATE producers SET admin_approved = TRUE, admin_approved_at = NOW()
+        WHERE id = %s
+        RETURNING shop_name, user_id
+    """, (producer_id,))
+    row = cur.fetchone()
+    conn.commit()
+
+    if row:
+        shop_name, user_id = row
+        # Get producer email and name for notification
+        cur.execute("SELECT email, full_name FROM users WHERE id = %s", (user_id,))
+        user_row = cur.fetchone()
+        cur.close(); conn.close()
+
+        if user_row:
+            email, full_name = user_row
+            # Send approval email in background thread
+            def send_approval():
+                try:
+                    from emails import email_producer_approved
+                    email_producer_approved(email, shop_name, full_name)
+                except Exception as e:
+                    print(f"Approval email failed: {e}")
+            threading.Thread(target=send_approval, daemon=True).start()
+
+        return {"message": f"{shop_name} approved"}
+    else:
+        cur.close(); conn.close()
+        raise HTTPException(404, "Producer not found")
 
 @router.post("/admin/{producer_id}/suspend")
 def suspend_producer(producer_id: int, admin=Depends(get_current_admin)):
