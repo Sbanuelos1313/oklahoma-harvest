@@ -67,6 +67,12 @@ def serve_landing():
 def health():
     return {"status": "ok", "app": "from-our-place"}
 
+@app.get("/debug-auth")
+def debug_auth():
+    import bcrypt
+    test = bcrypt.checkpw(b"ChronosAI2026!", bcrypt.hashpw(b"ChronosAI2026!", bcrypt.gensalt()))
+    return {"backend": "bcrypt", "test": test}
+
 @app.get("/api")
 def api_summary():
     return {
