@@ -1,7 +1,7 @@
 import resend
 import os
 
-resend.api_key = os.getenv("RESEND_API_KEY")
+FROM_EMAIL = "From Our Place <onboarding@resend.dev>"
 FROM_EMAIL = "From Our Place <noreply@from-our-place.com>"
 
 def send_email(to: str, subject: str, html: str):
