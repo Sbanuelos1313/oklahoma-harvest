@@ -1,22 +1,25 @@
 ﻿from fastapi import APIRouter, HTTPException, Depends
 from pydantic import BaseModel
 from typing import Optional
+from pydantic import field_validator
 from database import get_conn
 from auth import get_current_user, get_current_producer, get_current_admin
 import threading
 
 router = APIRouter(prefix="/api/producers", tags=["producers"])
 
+from typing import Optional
+
 class CreateShopRequest(BaseModel):
     shop_name: str
-    description: str = None
-    bio: str = None
-    address: str = None
-    city: str = None
+    description: Optional[str] = None
+    bio: Optional[str] = None
+    address: Optional[str] = None
+    city: Optional[str] = None
     state: str = "OK"
-    zip_code: str = None
-    latitude: float = None
-    longitude: float = None
+    zip_code: Optional[str] = None
+    latitude: Optional[float] = None
+    longitude: Optional[float] = None
     service_radius_miles: int = 25
     fulfillment_pickup: bool = True
     fulfillment_delivery: bool = False
@@ -25,7 +28,7 @@ class CreateShopRequest(BaseModel):
     tax_rate: float = 0.08375
 
 class UpdateShopRequest(BaseModel):
-    shop_name: str = None
+    shop_name: str
     description: str = None
     bio: str = None
     address: str = None
@@ -190,3 +193,4 @@ def get_producer_profile(producer_id: int):
     cur.close(); conn.close()
     if not row: raise HTTPException(404, "Producer not found")
     return dict(zip(cols, row))
+
