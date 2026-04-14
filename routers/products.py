@@ -15,24 +15,24 @@ def check_prohibited(name, description=""):
 
 class CreateProductRequest(BaseModel):
     name: str
-    description: str = None
+    description: Optional[str] = None
     category: str
     price: float
     unit: str
     quantity_available: int = 0
-    image_url: str = None
+    image_url: Optional[str] = None
     tags: List[str] = []
 
 class UpdateProductRequest(BaseModel):
-    name: str = None
-    description: str = None
-    category: str = None
-    price: float = None
-    unit: str = None
-    quantity_available: int = None
-    image_url: str = None
-    tags: List[str] = None
-    is_active: bool = None
+    name: Optional[str] = None
+    description: Optional[str] = None
+    category: Optional[str] = None
+    price: Optional[float] = None
+    unit: Optional[str] = None
+    quantity_available: Optional[int] = None
+    image_url: Optional[str] = None
+    tags: Optional[List[str]] = None
+    is_active: Optional[bool] = None
 
 @router.post("/")
 def create_product(req: CreateProductRequest, user=Depends(get_current_producer)):
