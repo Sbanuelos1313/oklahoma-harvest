@@ -490,11 +490,22 @@ function doLogout() {
 }
 
 // ── LOAD PRODUCERS ──
+async function getLocation() {
+  return new Promise((resolve) => {
+    if (!navigator.geolocation) { resolve({lat:35.4676,lng:-97.5164}); return; }
+    navigator.geolocation.getCurrentPosition(
+      pos => resolve({lat:pos.coords.latitude, lng:pos.coords.longitude}),
+      () => resolve({lat:35.4676,lng:-97.5164}),
+      {timeout:5000}
+    );
+  });
+}
+
 async function loadProducers(category) {
   const el = document.getElementById('producersList');
   el.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
   try {
-    const lat = 35.4676, lng = -97.5164;
+    const {lat, lng} = await getLocation();
     let url = API + '/api/producers/nearby?lat=' + lat + '&lng=' + lng + '&radius_miles=150';
     if (category) url += '&category=' + category;
     const res = await fetch(url);
@@ -680,7 +691,8 @@ async function runSearch(q, cat) {
   const el = document.getElementById('searchResults');
   el.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
   try {
-    let url = API + '/api/products/search?lat=35.4676&lng=-97.5164&radius_miles=150';
+    const {lat:slat, lng:slng} = await getLocation();
+  let url = API + '/api/products/search?lat='+slat+'&lng='+slng+'&radius_miles=150';
     if (q) url += '&q=' + encodeURIComponent(q);
     if (cat) url += '&category=' + cat;
     const res = await fetch(url);

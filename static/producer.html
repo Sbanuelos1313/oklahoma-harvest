@@ -530,7 +530,15 @@ async function doSetupShop() {
   btn.disabled = true; btn.textContent = 'Submitting...';
   try {
     // Geocode city to lat/lng using basic OK coords as fallback
-    const lat = 35.4676, lng = -97.5164;
+    // Try to get real location
+    let lat = 35.4676, lng = -97.5164;
+    try {
+      const pos = await new Promise((res, rej) => 
+        navigator.geolocation.getCurrentPosition(res, rej, {timeout:5000})
+      );
+      lat = pos.coords.latitude;
+      lng = pos.coords.longitude;
+    } catch {}
     const res = await fetch(API + '/api/producers/setup', {
       method: 'POST',
       headers: {'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json'},
@@ -771,6 +779,17 @@ function showToast(msg) {
   const t = document.getElementById('toast');
   t.textContent = msg; t.classList.add('show');
   setTimeout(() => t.classList.remove('show'), 2400);
+}
+
+async function getLocation() {
+  return new Promise((resolve) => {
+    if (!navigator.geolocation) { resolve({lat:35.4676,lng:-97.5164}); return; }
+    navigator.geolocation.getCurrentPosition(
+      pos => resolve({lat:pos.coords.latitude, lng:pos.coords.longitude}),
+      () => resolve({lat:35.4676,lng:-97.5164}),
+      {timeout:5000}
+    );
+  });
 }
 
 init();
