@@ -2,7 +2,7 @@
 uvicorn==0.30.6
 psycopg2-binary
 python-dotenv==1.0.1
-passlib[bcrypt]==1.7.4
+bcrypt
 python-jose[cryptography]==3.3.0
 python-multipart==0.0.9
 stripe==10.5.0
