@@ -221,6 +221,7 @@ html,body { height:100%; font-family:"DM Sans",sans-serif; background:var(--crea
 .back-bar { background:var(--earth); padding:11px 18px; display:flex; align-items:center; }
 .back-btn { background:none; border:none; color:var(--wheat); font-size:14px; cursor:pointer; font-family:"DM Sans",sans-serif; display:flex; align-items:center; gap:5px; }
 </style>
+<script src="https://js.stripe.com/v3/"></script>
 </head>
 <body>
 <div id="app">
@@ -366,6 +367,22 @@ html,body { height:100%; font-family:"DM Sans",sans-serif; background:var(--crea
   </nav>
 </div>
 
+<div class="modal-overlay" id="checkoutModal" style="align-items:center;">
+  <div style="background:var(--cream);border-radius:22px;padding:24px 20px;width:100%;max-width:420px;margin:20px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;">
+      <div style="font-family:'Playfair Display',serif;font-size:18px;font-weight:700;">Secure Checkout</div>
+      <button onclick="closeCheckoutModal()" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--text-light);">x</button>
+    </div>
+    <div id="checkoutLoading" style="display:flex;align-items:center;justify-content:center;padding:40px;">
+      <div class="spinner"></div>
+    </div>
+    <div id="checkoutForm" style="display:none;">
+      <div id="paymentElementMount" style="margin-bottom:16px;"></div>
+      <div class="trust-strip" style="margin:0 0 14px;">Payments secured by Stripe. We never store your card details.</div>
+      <button id="payNowBtn" onclick="submitPayment()" class="checkout-btn" style="margin:0;width:100%;">Pay Now</button>
+    </div>
+  </div>
+</div>
 <div class="toast" id="toast"></div>
 
 <script>
@@ -549,7 +566,7 @@ async function openProducer(id) {
   const el = document.getElementById('producerProfileContent');
   el.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
   try {
-    const [pRes, prRes] = await Promise.all([fetch(API+'/api/producers/'+id), fetch(API+'/api/products/producer/'+id)]);
+    const [pRes, prRes] = await Promise.all([fetch(API+'/api/producers/profile/'+id), fetch(API+'/api/products/producer/'+id)]);
     const producer = await pRes.json();
     const products = await prRes.json();
     const fulfill = [producer.fulfillment_pickup&&'🚗 Pickup', producer.fulfillment_delivery&&'🚚 Delivery', producer.fulfillment_shipping&&'📦 Ships'].filter(Boolean);
@@ -665,9 +682,75 @@ function changeQty(idx, delta) {
 
 function setFulfill(f) { fulfillType = f; renderCart(); }
 
-function doCheckout() {
+let stripeInstance = null;
+let stripeElements = null;
+let paymentElement = null;
+
+async function doCheckout() {
   if (!token) return navigate('auth');
-  showToast('Stripe payment coming in Phase 2 🌾');
+  if (!cart || !cart.items.length) return;
+  document.getElementById('checkoutModal').classList.add('show');
+  if (!stripeInstance) {
+    const keyRes = await fetch(location.origin + '/api/stripe/publishable-key');
+    const keyData = await keyRes.json();
+    stripeInstance = Stripe(keyData.key);
+  }
+  const sub = cart.items.reduce((s,i) => s + i.price*i.quantity, 0);
+  const tax = sub * cart.tax_rate;
+  const dFee = fulfillType === 'delivery' ? cart.delivery_fee : 0;
+  const total = Math.round((sub + tax + dFee) * 100);
+  try {
+    const res = await fetch(location.origin + '/api/stripe/create-payment-intent', {
+      method: 'POST',
+      headers: {'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json'},
+      body: JSON.stringify({amount: total, producer_id: cart.producer_id})
+    });
+    const data = await res.json();
+    if (!res.ok) { showToast(data.detail || 'Payment setup failed'); closeCheckoutModal(); return; }
+    stripeElements = stripeInstance.elements({clientSecret: data.client_secret, appearance: {theme: 'stripe', variables: {colorPrimary: '#4A6741'}}});
+    paymentElement = stripeElements.create('payment');
+    document.getElementById('paymentElementMount').innerHTML = '';
+    paymentElement.mount('#paymentElementMount');
+    document.getElementById('checkoutLoading').style.display = 'none';
+    document.getElementById('checkoutForm').style.display = 'block';
+  } catch(e) { showToast('Payment setup error'); closeCheckoutModal(); }
+}
+
+function closeCheckoutModal() {
+  document.getElementById('checkoutModal').classList.remove('show');
+  document.getElementById('checkoutLoading').style.display = 'flex';
+  document.getElementById('checkoutForm').style.display = 'none';
+  if (paymentElement) { paymentElement.unmount(); paymentElement = null; }
+}
+
+async function submitPayment() {
+  const btn = document.getElementById('payNowBtn');
+  btn.disabled = true; btn.textContent = 'Processing...';
+  try {
+    const {error, paymentIntent} = await stripeInstance.confirmPayment({
+      elements: stripeElements,
+      redirect: 'if_required'
+    });
+    if (error) { showToast(error.message); btn.disabled = false; btn.textContent = 'Pay Now'; return; }
+    const orderRes = await fetch(location.origin + '/api/orders/from-payment', {
+      method: 'POST',
+      headers: {'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json'},
+      body: JSON.stringify({
+        producer_id: cart.producer_id,
+        items: cart.items.map(i => ({product_id: i.product_id, quantity: i.quantity})),
+        fulfillment_type: fulfillType,
+        payment_intent_id: paymentIntent.id
+      })
+    });
+    const orderData = await orderRes.json();
+    if (!orderRes.ok) { showToast(orderData.detail || 'Order failed'); btn.disabled = false; btn.textContent = 'Pay Now'; return; }
+    cart = null;
+    localStorage.removeItem('fop_cart');
+    updateAuthUI();
+    closeCheckoutModal();
+    showToast('Order placed! Producer has 12 hours to confirm.');
+    navigate('orders');
+  } catch(e) { showToast('Payment error'); btn.disabled = false; btn.textContent = 'Pay Now'; }
 }
 
 // ── SEARCH ──
