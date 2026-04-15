@@ -17,7 +17,9 @@ def get_publishable_key():
         raise HTTPException(500, "Stripe publishable key not configured")
     return {"key": key}
 
-class CreatePaymentIntentRequest(BaseModel):\n    amount: int\n    producer_id: int
+class CreatePaymentIntentRequest(BaseModel):
+    amount: int
+    producer_id: int
 
 @router.post("/create-payment-intent")
 def create_payment_intent(req: CreatePaymentIntentRequest, user=Depends(get_current_shopper)):
@@ -104,5 +106,3 @@ async def stripe_webhook(request: Request):
         cur.execute("UPDATE orders SET status = 'cancelled', cancel_reason = 'Payment failed', cancelled_at = NOW() WHERE stripe_payment_intent_id = %s AND status = 'pending'", (intent["id"],))
         conn.commit(); cur.close(); conn.close()
     return {"received": True}
-
-
