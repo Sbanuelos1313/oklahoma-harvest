@@ -1,4 +1,4 @@
-﻿from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, HTTPException, Depends
 from pydantic import BaseModel
 from typing import List
 from datetime import datetime, timedelta
@@ -311,3 +311,95 @@ def run_auto_cancel():
     conn.commit()
     print(f"Auto-cancel: processed {len(expired)} expired orders")
     cur.close(); conn.close()
+
+
+# ── PLACE ORDER FROM CONFIRMED PAYMENT ────────────────────────────────────
+
+class PlaceOrderFromPaymentRequest(BaseModel):
+    producer_id: int
+    items: List[OrderItem]
+    fulfillment_type: str = "pickup"
+    delivery_address: str = None
+    pickup_notes: str = None
+    payment_intent_id: str
+
+@router.post("/from-payment")
+def place_order_from_payment(req: PlaceOrderFromPaymentRequest, user=Depends(get_current_shopper)):
+    """Place order after Stripe payment is confirmed on frontend."""
+    conn = get_conn(); cur = conn.cursor()
+
+    # Verify payment intent exists and is succeeded
+    try:
+        intent = stripe.PaymentIntent.retrieve(req.payment_intent_id)
+        if intent.status not in ("succeeded", "requires_capture"):
+            cur.close(); conn.close()
+            raise HTTPException(402, f"Payment not confirmed: {intent.status}")
+    except stripe.error.StripeError as e:
+        cur.close(); conn.close()
+        raise HTTPException(402, f"Payment verification failed: {str(e)}")
+
+    # Validate producer
+    cur.execute("""
+        SELECT id, tax_rate, delivery_fee FROM producers
+        WHERE id = %s AND is_active = TRUE AND admin_approved = TRUE
+    """, (req.producer_id,))
+    producer = cur.fetchone()
+    if not producer: cur.close(); conn.close(); raise HTTPException(404, "Producer not found")
+    prod_id, tax_rate, delivery_fee = producer
+
+    # Price items
+    subtotal = 0.0
+    items_to_insert = []
+    for item in req.items:
+        cur.execute("SELECT id, name, unit, price, quantity_available, producer_id FROM products WHERE id = %s AND is_active = TRUE", (item.product_id,))
+        product = cur.fetchone()
+        if not product: cur.close(); conn.close(); raise HTTPException(404, f"Product {item.product_id} not found")
+        p_id, p_name, p_unit, p_price, p_qty, p_producer_id = product
+        if p_producer_id != req.producer_id: cur.close(); conn.close(); raise HTTPException(400, "Product from wrong producer")
+        if p_qty < item.quantity: cur.close(); conn.close(); raise HTTPException(400, f"Insufficient stock for {p_name}")
+        line_total = round(p_price * item.quantity, 2)
+        subtotal += line_total
+        items_to_insert.append((item.product_id, p_name, p_unit, item.quantity, p_price, line_total))
+
+    subtotal = round(subtotal, 2)
+    d_fee = round(delivery_fee, 2) if req.fulfillment_type == "delivery" else 0.0
+    tax_amount = round(subtotal * tax_rate, 2)
+    total = round(subtotal + d_fee + tax_amount, 2)
+    respond_by = datetime.utcnow() + timedelta(hours=AUTO_CANCEL_HOURS)
+
+    # Create order
+    cur.execute("""
+        INSERT INTO orders (shopper_id, producer_id, status, fulfillment_type,
+            subtotal, tax_amount, delivery_fee, total,
+            stripe_payment_intent_id, respond_by_at, pickup_notes, delivery_address)
+        VALUES (%s,%s,'pending',%s,%s,%s,%s,%s,%s,%s,%s,%s) RETURNING id
+    """, (user["id"], req.producer_id, req.fulfillment_type, subtotal, tax_amount,
+          d_fee, total, req.payment_intent_id, respond_by, req.pickup_notes, req.delivery_address))
+    order_id = cur.fetchone()[0]
+
+    for p_id, p_name, p_unit, qty, price, line_total in items_to_insert:
+        cur.execute("INSERT INTO order_items (order_id, product_id, product_name, product_unit, quantity, unit_price, subtotal) VALUES (%s,%s,%s,%s,%s,%s,%s)",
+                    (order_id, p_id, p_name, p_unit, qty, price, line_total))
+        cur.execute("UPDATE products SET quantity_available = quantity_available - %s WHERE id = %s", (qty, p_id))
+
+    # Notify producer
+    cur.execute("""
+        SELECT u.email, u.full_name, p.shop_name FROM producers p JOIN users u ON p.user_id = u.id WHERE p.id = %s
+    """, (req.producer_id,))
+    prod_info = cur.fetchone()
+
+    cur.execute("""
+        INSERT INTO notifications (user_id, type, title, body, order_id)
+        SELECT u.id, 'order_placed', 'New Order Received', 'Order #' || %s || ' — respond within 12 hours', %s
+        FROM producers p JOIN users u ON p.user_id = u.id WHERE p.id = %s
+    """, (order_id, order_id, req.producer_id))
+
+    conn.commit(); cur.close(); conn.close()
+
+    if prod_info:
+        prod_email, prod_name, shop_name = prod_info
+        items_text = "<br>".join([f"{i[3]}x {i[1]} — ${i[5]:.2f}" for i in items_to_insert])
+        from emails import email_new_order
+        send_email_async(email_new_order, prod_email, prod_name, shop_name, order_id, user["full_name"], items_text, total, req.fulfillment_type)
+
+    return {"order_id": order_id, "total": total, "status": "pending", "message": "Order placed successfully!"}
