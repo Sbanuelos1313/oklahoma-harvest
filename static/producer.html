@@ -467,6 +467,7 @@ async function doLogin() {
   const email = document.getElementById('loginEmail').value.trim();
   const pw = document.getElementById('loginPw').value;
   const err = document.getElementById('authErr');
+  err.textContent = '';
   err.classList.remove('show');
   if (!email || !pw) { err.textContent = 'Please fill in all fields'; err.classList.add('show'); return; }
   try {
