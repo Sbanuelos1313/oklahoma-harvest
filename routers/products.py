@@ -1,6 +1,6 @@
 ﻿from fastapi import APIRouter, HTTPException, Depends
 from pydantic import BaseModel
-from typing import List
+from typing import List, Optional
 from database import get_conn
 from auth import get_current_producer, get_current_user
 
@@ -152,3 +152,4 @@ def search_products(q: str = None, category: str = None, lat: float = None, lng:
     rows = cur.fetchall(); cols = [d[0] for d in cur.description]
     cur.close(); conn.close()
     return [dict(zip(cols, r)) for r in rows]
+
