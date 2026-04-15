@@ -2,7 +2,7 @@
 import os
 
 resend.api_key = os.getenv("RESEND_API_KEY")
-FROM_EMAIL = "From Our Place <onboarding@resend.dev>"
+FROM_EMAIL = "From Our Place <noreply@chronos-ai.net>"
 
 def send_email(to, subject, html):
     try:
@@ -43,3 +43,4 @@ def email_order_cancelled(to_email, shopper_name, shop_name, order_id, total, au
     reason = "was not confirmed in time" if auto else "has been cancelled"
     content = f"<h2 style='color:#2D1A0E;'>Order cancelled</h2><p>Hi {shopper_name}, your order #{order_id} from <strong>{shop_name}</strong> {reason}. A full refund of <strong></strong> has been issued.</p><a href='https://from-our-place.chronos-ai.net/static/app.html' style='display:block;background:#4A6741;color:white;text-align:center;padding:13px;border-radius:11px;text-decoration:none;font-weight:700;'>Find Another Producer</a>"
     send_email(to_email, f"Order #{order_id} cancelled - full refund issued", base_template(content))
+
