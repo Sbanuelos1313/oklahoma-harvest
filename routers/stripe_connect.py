@@ -8,7 +8,7 @@ import os
 router = APIRouter(prefix="/api/stripe", tags=["stripe"])
 stripe.api_key = os.getenv("STRIPE_SECRET_KEY")
 STRIPE_WEBHOOK_SECRET = os.getenv("STRIPE_WEBHOOK_SECRET", "")
-APP_URL = os.getenv("APP_URL", "https://from-our-place-api.onrender.com")
+APP_URL = os.getenv("APP_URL", "https://from-our-place.chronos-ai.net")
 
 @router.get("/publishable-key")
 def get_publishable_key():
@@ -17,9 +17,7 @@ def get_publishable_key():
         raise HTTPException(500, "Stripe publishable key not configured")
     return {"key": key}
 
-class CreatePaymentIntentRequest(BaseModel):
-    amount: int
-    producer_id: int
+class CreatePaymentIntentRequest(BaseModel):\n    amount: int\n    producer_id: int
 
 @router.post("/create-payment-intent")
 def create_payment_intent(req: CreatePaymentIntentRequest, user=Depends(get_current_shopper)):
@@ -106,3 +104,5 @@ async def stripe_webhook(request: Request):
         cur.execute("UPDATE orders SET status = 'cancelled', cancel_reason = 'Payment failed', cancelled_at = NOW() WHERE stripe_payment_intent_id = %s AND status = 'pending'", (intent["id"],))
         conn.commit(); cur.close(); conn.close()
     return {"received": True}
+
+
