@@ -461,7 +461,11 @@ function init() {
   const name = user ? ', ' + user.full_name.split(' ')[0] + '!' : '';
   document.getElementById('homeGreeting').textContent = g + name;
   updateAuthUI();
-  loadProducers();
+  if (!user) {
+    navigate('auth');
+  } else {
+    loadProducers();
+  }
 }
 
 // ── AUTH UI ──

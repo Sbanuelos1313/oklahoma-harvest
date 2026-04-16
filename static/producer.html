@@ -407,6 +407,7 @@ html,body{height:100%;font-family:"DM Sans",sans-serif;background:#C8A87A;color:
     </div>
 
     <nav class="bottom-nav">
+      <button class="bnav-item" onclick="window.location.href='index.html'"><span class="bnav-icon">🏠</span>Home</button>
       <button class="bnav-item active" id="bnav-dashboard" onclick="navigate('dashboard')"><span class="bnav-icon">📊</span>Dashboard</button>
       <button class="bnav-item" id="bnav-products" onclick="navigate('products')"><span class="bnav-icon">🌱</span>Products</button>
       <button class="bnav-item" id="bnav-stripe" onclick="navigate('stripe')"><span class="bnav-icon">💳</span>Payments</button>
@@ -877,5 +878,12 @@ async function doForgotPassword() {
   } catch { err.textContent = 'Connection error — try again'; err.classList.add('show'); }
 }
 </script>
+
+<div style="position:fixed;bottom:76px;right:16px;z-index:99;">
+  <a href="https://forms.gle/bUWcVYSsHYb8RQuE6" target="_blank"
+     style="display:flex;align-items:center;gap:6px;background:#4A6741;color:white;padding:9px 14px;border-radius:18px;text-decoration:none;font-family:DM Sans,sans-serif;font-size:11px;font-weight:700;box-shadow:0 4px 14px rgba(0,0,0,0.2);">
+    💬 Feedback
+  </a>
+</div>
 </body>
 </html>
