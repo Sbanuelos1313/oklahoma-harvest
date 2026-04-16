@@ -220,8 +220,33 @@ html,body { height:100%; font-family:"DM Sans",sans-serif; background:var(--crea
 /* BACK BAR */
 .back-bar { background:var(--earth); padding:11px 18px; display:flex; align-items:center; }
 .back-btn { background:none; border:none; color:var(--wheat); font-size:14px; cursor:pointer; font-family:"DM Sans",sans-serif; display:flex; align-items:center; gap:5px; }
+
+.forgot-link { display:block; text-align:right; font-size:12px; color:var(--text-mid); margin-top:-8px; margin-bottom:14px; cursor:pointer; text-decoration:underline; }
+.forgot-link:hover { color:var(--sage); }
+.forgot-form { display:none; }
+.forgot-success { font-size:13px; color:var(--sage); text-align:center; padding:8px 0; display:none; }
 </style>
-<script src="https://js.stripe.com/v3/"></script>
+<script src="https://js.stripe.com/v3/">
+function showForgot() {
+  document.getElementById('forgotForm').style.display = 'block';
+  document.getElementById('loginFields').style.display = 'none';
+  document.getElementById('forgotEmail').value = document.getElementById('loginEmail').value || '';
+  document.getElementById('forgotSuccess').style.display = 'none';
+}
+function hideForgot() {
+  document.getElementById('forgotForm').style.display = 'none';
+  document.getElementById('loginFields').style.display = 'block';
+  document.getElementById('forgotSuccess').style.display = 'none';
+}
+async function doForgotPassword() {
+  const email = document.getElementById('forgotEmail').value.trim();
+  if (!email) return showErr('Please enter your email');
+  try {
+    const res = await fetch(API + '/api/users/forgot-password', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({email})});
+    document.getElementById('forgotSuccess').style.display = 'block';
+  } catch { showErr('Connection error — try again'); }
+}
+</script>
 </head>
 <body>
 <div id="app">
@@ -339,7 +364,14 @@ html,body { height:100%; font-family:"DM Sans",sans-serif; background:var(--crea
           <div id="loginForm">
             <div class="form-grp"><label class="form-lbl">Email</label><input class="form-inp" type="email" id="loginEmail" placeholder="your@email.com"></div>
             <div class="form-grp"><label class="form-lbl">Password</label><input class="form-inp" type="password" id="loginPw" placeholder="••••••••"></div>
-            <button class="submit-btn" onclick="doLogin()">Sign In</button>
+            <span class="forgot-link" onclick="showForgot()">Forgot password?</span>
+            <div id="forgotForm" class="forgot-form">
+              <div class="form-grp"><label class="form-lbl">Enter your email</label><input class="form-inp" type="email" id="forgotEmail" placeholder="your@email.com"></div>
+              <button class="submit-btn" onclick="doForgotPassword()" style="margin-bottom:8px;">Send Reset Link</button>
+              <div id="forgotSuccess" class="forgot-success">✅ Reset link sent! Check your email.</div>
+              <span class="forgot-link" style="text-align:center;" onclick="hideForgot()">← Back to Sign In</span>
+            </div>
+            <div id="loginFields"><button class="submit-btn" onclick="doLogin()">Sign In</button></div>
           </div>
           <div id="registerForm" style="display:none">
             <div class="form-grp"><label class="form-lbl">Full Name</label><input class="form-inp" type="text" id="regName" placeholder="Your name"></div>
@@ -352,6 +384,7 @@ html,body { height:100%; font-family:"DM Sans",sans-serif; background:var(--crea
                 <div class="role-opt" id="roleProducerOpt" onclick="pickRole('producer')"><div class="role-opt-icon">🌱</div><div class="role-opt-txt">Producer</div></div>
               </div>
             </div>
+            <div id="producerNote" style="display:none;font-size:12px;color:var(--text-mid);text-align:center;margin-bottom:12px;padding:8px;background:rgba(74,103,65,0.08);border-radius:8px;">🌱 You'll set up your farm shop right after creating your account.</div>
             <button class="submit-btn" onclick="doRegister()">Create Account</button>
           </div>
         </div>
@@ -459,6 +492,7 @@ function pickRole(r) {
   selectedRole = r;
   document.getElementById('roleShopperOpt').className = 'role-opt' + (r === 'shopper' ? ' sel' : '');
   document.getElementById('roleProducerOpt').className = 'role-opt' + (r === 'producer' ? ' sel' : '');
+  document.getElementById('producerNote').style.display = r === 'producer' ? 'block' : 'none';
 }
 
 function showErr(msg) {
@@ -491,7 +525,7 @@ async function doRegister() {
     if (!res.ok) return showErr(d.detail || 'Registration failed');
     saveSession(d);
     showToast('Welcome to From Our Place! 🌾');
-    navigate(selectedRole === 'producer' ? 'account' : 'home');
+    if (selectedRole === 'producer') { showToast('Account created! Setting up your shop... 🌱'); setTimeout(() => { window.location.href = 'producer.html'; }, 1500); } else { navigate('home'); }
   } catch { showErr('Connection error — try again'); }
 }
 
