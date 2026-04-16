@@ -1,7 +1,7 @@
-{
+﻿{
   "name": "From Our Place",
   "short_name": "From Our Place",
-  "description": "Oklahoma Farm to Table Marketplace",
+  "description": "Farm to Table Marketplace",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#C8A87A",

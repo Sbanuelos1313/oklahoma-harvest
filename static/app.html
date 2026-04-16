@@ -1,9 +1,9 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>From Our Place — Shop Local</title>
+<title>From Our Place â€” Shop Local</title>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,800;1,400&family=DM+Sans:wght@300;400;500;600&family=Satisfy&display=swap" rel="stylesheet">
 <style>
 :root {
@@ -234,7 +234,7 @@ html,body { height:100%; font-family:"DM Sans",sans-serif; background:var(--crea
     <div class="nav-actions">
       <a href="/" style="background:none;border:none;color:rgba(250,245,236,0.5);font-size:11px;font-weight:600;font-family:DM Sans,sans-serif;cursor:pointer;text-decoration:none;padding:4px 8px;border-radius:10px;border:1px solid rgba(250,245,236,0.15);">&#x2302; Home</a>
       <button class="nav-icon-btn" onclick="navigate('cart')">
-        🛒<span class="cart-badge" id="cartBadge">0</span>
+        ðŸ›’<span class="cart-badge" id="cartBadge">0</span>
       </button>
       <button class="nav-auth-btn" id="authBtn" onclick="navigate('auth')">Sign In</button>
     </div>
@@ -245,21 +245,21 @@ html,body { height:100%; font-family:"DM Sans",sans-serif; background:var(--crea
     <!-- HOME -->
     <div class="view active" id="view-home">
       <div class="home-header">
-        <div class="home-greeting" id="homeGreeting">Good morning 🌅</div>
+        <div class="home-greeting" id="homeGreeting">Good morning ðŸŒ…</div>
         <div class="home-title">Find local food near you</div>
         <div class="home-search-bar" onclick="navigate('search')">
-          <span>🔍</span><span>eggs, sourdough, honey...</span>
+          <span>ðŸ”</span><span>eggs, sourdough, honey...</span>
         </div>
       </div>
       <div class="cat-scroll" id="catScroll">
         <button class="cat-chip active" onclick="filterCat(this,null)">All</button>
-        <button class="cat-chip inactive" onclick="filterCat(this,'eggs_dairy')">🥚 Eggs & Dairy</button>
-        <button class="cat-chip inactive" onclick="filterCat(this,'meat')">🥩 Meat</button>
-        <button class="cat-chip inactive" onclick="filterCat(this,'vegetables')">🌽 Vegetables</button>
-        <button class="cat-chip inactive" onclick="filterCat(this,'fruit')">🍓 Fruit</button>
-        <button class="cat-chip inactive" onclick="filterCat(this,'baked')">🍞 Baked</button>
-        <button class="cat-chip inactive" onclick="filterCat(this,'pantry')">🍯 Pantry</button>
-        <button class="cat-chip inactive" onclick="filterCat(this,'herbs')">🌿 Herbs</button>
+        <button class="cat-chip inactive" onclick="filterCat(this,'eggs_dairy')">ðŸ¥š Eggs & Dairy</button>
+        <button class="cat-chip inactive" onclick="filterCat(this,'meat')">ðŸ¥© Meat</button>
+        <button class="cat-chip inactive" onclick="filterCat(this,'vegetables')">ðŸŒ½ Vegetables</button>
+        <button class="cat-chip inactive" onclick="filterCat(this,'fruit')">ðŸ“ Fruit</button>
+        <button class="cat-chip inactive" onclick="filterCat(this,'baked')">ðŸž Baked</button>
+        <button class="cat-chip inactive" onclick="filterCat(this,'pantry')">ðŸ¯ Pantry</button>
+        <button class="cat-chip inactive" onclick="filterCat(this,'herbs')">ðŸŒ¿ Herbs</button>
       </div>
       <div class="section-header">
         <span class="section-title">Producers Near You</span>
@@ -274,27 +274,27 @@ html,body { height:100%; font-family:"DM Sans",sans-serif; background:var(--crea
     <div class="view" id="view-search">
       <div class="search-header">
         <div class="search-input-wrap">
-          <span style="color:rgba(250,245,236,0.45);font-size:16px">🔍</span>
+          <span style="color:rgba(250,245,236,0.45);font-size:16px">ðŸ”</span>
           <input type="text" id="searchInput" placeholder="Search products, farms..." oninput="doSearch(this.value)" autofocus>
         </div>
       </div>
       <div class="cat-scroll" id="searchCatScroll">
         <button class="cat-chip active" onclick="filterSearchCat(this,null)">All</button>
-        <button class="cat-chip inactive" onclick="filterSearchCat(this,'eggs_dairy')">🥚 Eggs</button>
-        <button class="cat-chip inactive" onclick="filterSearchCat(this,'meat')">🥩 Meat</button>
-        <button class="cat-chip inactive" onclick="filterSearchCat(this,'vegetables')">🌽 Veg</button>
-        <button class="cat-chip inactive" onclick="filterSearchCat(this,'baked')">🍞 Baked</button>
-        <button class="cat-chip inactive" onclick="filterSearchCat(this,'pantry')">🍯 Pantry</button>
+        <button class="cat-chip inactive" onclick="filterSearchCat(this,'eggs_dairy')">ðŸ¥š Eggs</button>
+        <button class="cat-chip inactive" onclick="filterSearchCat(this,'meat')">ðŸ¥© Meat</button>
+        <button class="cat-chip inactive" onclick="filterSearchCat(this,'vegetables')">ðŸŒ½ Veg</button>
+        <button class="cat-chip inactive" onclick="filterSearchCat(this,'baked')">ðŸž Baked</button>
+        <button class="cat-chip inactive" onclick="filterSearchCat(this,'pantry')">ðŸ¯ Pantry</button>
       </div>
       <div id="searchResults" class="search-results">
-        <div style="text-align:center;padding:40px 20px;color:var(--text-light);font-size:14px;">Search for fresh local products 🌾</div>
+        <div style="text-align:center;padding:40px 20px;color:var(--text-light);font-size:14px;">Search for fresh local products ðŸŒ¾</div>
       </div>
     </div>
 
     <!-- PRODUCER PROFILE -->
     <div class="view" id="view-producer">
       <div class="back-bar">
-        <button class="back-btn" onclick="navigate('home')">← Back</button>
+        <button class="back-btn" onclick="navigate('home')">â† Back</button>
       </div>
       <div id="producerProfileContent"></div>
     </div>
@@ -337,7 +337,7 @@ html,body { height:100%; font-family:"DM Sans",sans-serif; background:var(--crea
           <div id="authErr" class="auth-err"></div>
           <div id="loginForm">
             <div class="form-grp"><label class="form-lbl">Email</label><input class="form-inp" type="email" id="loginEmail" placeholder="your@email.com"></div>
-            <div class="form-grp"><label class="form-lbl">Password</label><input class="form-inp" type="password" id="loginPw" placeholder="••••••••"></div>
+            <div class="form-grp"><label class="form-lbl">Password</label><input class="form-inp" type="password" id="loginPw" placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢"></div>
             <button class="submit-btn" onclick="doLogin()">Sign In</button>
           </div>
           <div id="registerForm" style="display:none">
@@ -347,8 +347,8 @@ html,body { height:100%; font-family:"DM Sans",sans-serif; background:var(--crea
             <div class="form-grp">
               <label class="form-lbl">I am a...</label>
               <div class="role-pick">
-                <div class="role-opt sel" id="roleShopperOpt" onclick="pickRole('shopper')"><div class="role-opt-icon">🛍️</div><div class="role-opt-txt">Shopper</div></div>
-                <div class="role-opt" id="roleProducerOpt" onclick="pickRole('producer')"><div class="role-opt-icon">🌱</div><div class="role-opt-txt">Producer</div></div>
+                <div class="role-opt sel" id="roleShopperOpt" onclick="pickRole('shopper')"><div class="role-opt-icon">ðŸ›ï¸</div><div class="role-opt-txt">Shopper</div></div>
+                <div class="role-opt" id="roleProducerOpt" onclick="pickRole('producer')"><div class="role-opt-icon">ðŸŒ±</div><div class="role-opt-txt">Producer</div></div>
               </div>
             </div>
             <button class="submit-btn" onclick="doRegister()">Create Account</button>
@@ -360,11 +360,11 @@ html,body { height:100%; font-family:"DM Sans",sans-serif; background:var(--crea
   </div>
 
   <nav class="bottom-nav">
-    <button class="bnav-item active" id="bnav-home" onclick="navigate('home')"><span class="bnav-icon">🏠</span>Home</button>
-    <button class="bnav-item" id="bnav-search" onclick="navigate('search')"><span class="bnav-icon">🔍</span>Search</button>
-    <button class="bnav-item" id="bnav-cart" onclick="navigate('cart')"><span class="bnav-icon">🛒</span>Cart</button>
-    <button class="bnav-item" id="bnav-orders" onclick="navigate('orders')"><span class="bnav-icon">📋</span>Orders</button>
-    <button class="bnav-item" id="bnav-account" onclick="navigate('account')"><span class="bnav-icon">👤</span>Profile</button>
+    <button class="bnav-item active" id="bnav-home" onclick="navigate('home')"><span class="bnav-icon">ðŸ </span>Home</button>
+    <button class="bnav-item" id="bnav-search" onclick="navigate('search')"><span class="bnav-icon">ðŸ”</span>Search</button>
+    <button class="bnav-item" id="bnav-cart" onclick="navigate('cart')"><span class="bnav-icon">ðŸ›’</span>Cart</button>
+    <button class="bnav-item" id="bnav-orders" onclick="navigate('orders')"><span class="bnav-icon">ðŸ“‹</span>Orders</button>
+    <button class="bnav-item" id="bnav-account" onclick="navigate('account')"><span class="bnav-icon">ðŸ‘¤</span>Profile</button>
   </nav>
 </div>
 
@@ -401,12 +401,12 @@ let selectedRole = 'shopper';
 let searchCat = null;
 let searchTimer = null;
 
-const EMOJIS = ['🥬','🍯','🥩','🥛','🍞','🌶️','🥚','🌽','🍅','🫙'];
+const EMOJIS = ['ðŸ¥¬','ðŸ¯','ðŸ¥©','ðŸ¥›','ðŸž','ðŸŒ¶ï¸','ðŸ¥š','ðŸŒ½','ðŸ…','ðŸ«™'];
 const IMG_CLS = ['pcard-img-1','pcard-img-2','pcard-img-3','pcard-img-4','pcard-img-5','pcard-img-6'];
-const CAT_EMOJI = {eggs_dairy:'🥚',meat:'🥩',vegetables:'🌽',fruit:'🍓',baked:'🍞',pantry:'🍯',herbs:'🌿',other:'🛒'};
+const CAT_EMOJI = {eggs_dairy:'ðŸ¥š',meat:'ðŸ¥©',vegetables:'ðŸŒ½',fruit:'ðŸ“',baked:'ðŸž',pantry:'ðŸ¯',herbs:'ðŸŒ¿',other:'ðŸ›’'};
 const CAT_BG = {eggs_dairy:'background:linear-gradient(135deg,#FFF8E1,#FFECB3)',meat:'background:linear-gradient(135deg,#FCE4EC,#F8BBD9)',vegetables:'background:linear-gradient(135deg,#E8F4E8,#C8DBC5)',fruit:'background:linear-gradient(135deg,#F3E5F5,#E1BEE7)',baked:'background:linear-gradient(135deg,#FFF3E0,#FFD9A0)',pantry:'background:linear-gradient(135deg,#E3F2FD,#BBDEFB)',herbs:'background:linear-gradient(135deg,#E8F4E8,#A5D6A7)',other:'background:#F5F5F5'};
 
-// ── NAVIGATE ──
+// â”€â”€ NAVIGATE â”€â”€
 function navigate(view) {
   document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
   document.querySelectorAll('.bnav-item').forEach(b => b.classList.remove('active'));
@@ -420,17 +420,17 @@ function navigate(view) {
   if (view === 'cart') renderCart();
 }
 
-// ── INIT ──
+// â”€â”€ INIT â”€â”€
 function init() {
   const h = new Date().getHours();
-  const g = h < 12 ? 'Good morning 🌅' : h < 17 ? 'Good afternoon ☀️' : 'Good evening 🌙';
+  const g = h < 12 ? 'Good morning ðŸŒ…' : h < 17 ? 'Good afternoon â˜€ï¸' : 'Good evening ðŸŒ™';
   const name = user ? ', ' + user.full_name.split(' ')[0] + '!' : '';
   document.getElementById('homeGreeting').textContent = g + name;
   updateAuthUI();
   loadProducers();
 }
 
-// ── AUTH UI ──
+// â”€â”€ AUTH UI â”€â”€
 function updateAuthUI() {
   const btn = document.getElementById('authBtn');
   const badge = document.getElementById('cartBadge');
@@ -474,9 +474,9 @@ async function doLogin() {
     const d = await res.json();
     if (!res.ok) return showErr(d.detail || 'Login failed');
     saveSession(d);
-    showToast('Welcome back, ' + d.full_name.split(' ')[0] + '! 🌾');
+    showToast('Welcome back, ' + d.full_name.split(' ')[0] + '! ðŸŒ¾');
     navigate('home');
-  } catch { showErr('Connection error — try again'); }
+  } catch { showErr('Connection error â€” try again'); }
 }
 
 async function doRegister() {
@@ -489,9 +489,9 @@ async function doRegister() {
     const d = await res.json();
     if (!res.ok) return showErr(d.detail || 'Registration failed');
     saveSession(d);
-    showToast('Welcome to From Our Place! 🌾');
+    showToast('Welcome to From Our Place! ðŸŒ¾');
     navigate(selectedRole === 'producer' ? 'account' : 'home');
-  } catch { showErr('Connection error — try again'); }
+  } catch { showErr('Connection error â€” try again'); }
 }
 
 function saveSession(d) {
@@ -501,7 +501,7 @@ function saveSession(d) {
   localStorage.setItem('fop_user', JSON.stringify(user));
   updateAuthUI();
   const h = new Date().getHours();
-  const g = h < 12 ? 'Good morning 🌅' : h < 17 ? 'Good afternoon ☀️' : 'Good evening 🌙';
+  const g = h < 12 ? 'Good morning ðŸŒ…' : h < 17 ? 'Good afternoon â˜€ï¸' : 'Good evening ðŸŒ™';
   document.getElementById('homeGreeting').textContent = g + ', ' + user.full_name.split(' ')[0] + '!';
 }
 
@@ -513,7 +513,7 @@ function doLogout() {
   navigate('home');
 }
 
-// ── LOAD PRODUCERS ──
+// â”€â”€ LOAD PRODUCERS â”€â”€
 async function getLocation() {
   return new Promise((resolve) => {
     if (!navigator.geolocation) { resolve({lat:35.4676,lng:-97.5164}); return; }
@@ -535,23 +535,23 @@ async function loadProducers(category) {
     const res = await fetch(url);
     const data = await res.json();
     if (!data.length) {
-      el.innerHTML = '<div style="text-align:center;padding:40px 20px;color:var(--text-light);font-size:14px;">No producers in your area yet 🌱<br><small style="display:block;margin-top:6px">Be the first to join!</small></div>';
+      el.innerHTML = '<div style="text-align:center;padding:40px 20px;color:var(--text-light);font-size:14px;">No producers in your area yet ðŸŒ±<br><small style="display:block;margin-top:6px">Be the first to join!</small></div>';
       return;
     }
     el.innerHTML = data.map((p,i) => {
       const emoji = EMOJIS[i % EMOJIS.length];
       const cls = IMG_CLS[i % IMG_CLS.length];
-      const dist = p.distance_miles ? p.distance_miles.toFixed(1) + ' mi · ' : '';
-      const rating = p.avg_rating > 0 ? '⭐ ' + p.avg_rating.toFixed(1) + ' · ' : '';
-      const fulfill = [p.fulfillment_pickup && '🚗 Pickup', p.fulfillment_delivery && '🚚 Delivery', p.fulfillment_shipping && '📦 Ships'].filter(Boolean).join(' · ');
+      const dist = p.distance_miles ? p.distance_miles.toFixed(1) + ' mi Â· ' : '';
+      const rating = p.avg_rating > 0 ? 'â­ ' + p.avg_rating.toFixed(1) + ' Â· ' : '';
+      const fulfill = [p.fulfillment_pickup && 'ðŸš— Pickup', p.fulfillment_delivery && 'ðŸšš Delivery', p.fulfillment_shipping && 'ðŸ“¦ Ships'].filter(Boolean).join(' Â· ');
       return `<div class="producer-card" onclick="openProducer(${p.id})">
-        <div class="pcard-img ${cls}"><span>${emoji}</span><span class="verified-badge">✓ Verified</span></div>
+        <div class="pcard-img ${cls}"><span>${emoji}</span><span class="verified-badge">âœ“ Verified</span></div>
         <div class="pcard-body">
           <div class="pcard-name">${p.shop_name}</div>
-          <div class="pcard-meta">📍 ${p.city||'Oklahoma'}, ${p.state||'OK'} · ${dist}${rating}</div>
+          <div class="pcard-meta">ðŸ“ ${p.city||'Oklahoma'}, ${p.state||'OK'} Â· ${dist}${rating}</div>
           <div class="pcard-footer">
             <span class="fulfill-text">${fulfill}</span>
-            <button class="shop-btn" onclick="event.stopPropagation();openProducer(${p.id})">Shop →</button>
+            <button class="shop-btn" onclick="event.stopPropagation();openProducer(${p.id})">Shop â†’</button>
           </div>
         </div>
       </div>`;
@@ -567,7 +567,7 @@ function filterCat(btn, cat) {
   loadProducers(cat);
 }
 
-// ── PRODUCER PROFILE ──
+// â”€â”€ PRODUCER PROFILE â”€â”€
 async function openProducer(id) {
   navigate('producer');
   const el = document.getElementById('producerProfileContent');
@@ -576,15 +576,15 @@ async function openProducer(id) {
     const [pRes, prRes] = await Promise.all([fetch(API+'/api/producers/profile/'+id), fetch(API+'/api/products/producer/'+id)]);
     const producer = await pRes.json();
     const products = await prRes.json();
-    const fulfill = [producer.fulfillment_pickup&&'🚗 Pickup', producer.fulfillment_delivery&&'🚚 Delivery', producer.fulfillment_shipping&&'📦 Ships'].filter(Boolean);
+    const fulfill = [producer.fulfillment_pickup&&'ðŸš— Pickup', producer.fulfillment_delivery&&'ðŸšš Delivery', producer.fulfillment_shipping&&'ðŸ“¦ Ships'].filter(Boolean);
     el.innerHTML = `
       <div class="profile-hero">
-        <div class="profile-avatar">🌱</div>
+        <div class="profile-avatar">ðŸŒ±</div>
         <div>
           <div class="profile-name">${producer.shop_name}</div>
-          <div class="profile-meta">📍 ${producer.city||'Oklahoma'}, ${producer.state||'OK'}${producer.avg_rating>0?' · ⭐ '+producer.avg_rating.toFixed(1)+' ('+producer.review_count+'rev)':''}</div>
+          <div class="profile-meta">ðŸ“ ${producer.city||'Oklahoma'}, ${producer.state||'OK'}${producer.avg_rating>0?' Â· â­ '+producer.avg_rating.toFixed(1)+' ('+producer.review_count+'rev)':''}</div>
           <div class="profile-badges">
-            <span class="pbadge pbadge-verified">✓ Verified</span>
+            <span class="pbadge pbadge-verified">âœ“ Verified</span>
             ${fulfill.map(f => '<span class="pbadge pbadge-method">'+f+'</span>').join('')}
           </div>
         </div>
@@ -596,13 +596,13 @@ async function openProducer(id) {
       </div>
       <div class="products-grid">
         ${products.length ? products.map(p => {
-          const em = CAT_EMOJI[p.category]||'🛒';
+          const em = CAT_EMOJI[p.category]||'ðŸ›’';
           const bg = CAT_BG[p.category]||'background:#F5F5F5';
           return `<div class="product-tile" onclick="addToCart(${JSON.stringify(p).replace(/"/g,'&quot;')}, ${JSON.stringify(producer).replace(/"/g,'&quot;')})">
             <div class="ptile-img" style="${bg}">${em}</div>
             <div class="ptile-body">
               <div class="ptile-name">${p.name}</div>
-              <div class="ptile-unit">per ${p.unit} · ${p.quantity_available} left</div>
+              <div class="ptile-unit">per ${p.unit} Â· ${p.quantity_available} left</div>
               <div class="ptile-price">$${p.price.toFixed(2)}</div>
               <button class="add-btn">+ Add to Cart</button>
             </div>
@@ -614,7 +614,7 @@ async function openProducer(id) {
   }
 }
 
-// ── CART ──
+// â”€â”€ CART â”€â”€
 function addToCart(product, producer) {
   if (cart && cart.producer_id !== producer.id) {
     if (!confirm('Your cart has items from ' + cart.producer_name + '. Replace cart?')) return;
@@ -623,17 +623,17 @@ function addToCart(product, producer) {
   if (!cart) cart = {producer_id: producer.id, producer_name: producer.shop_name, tax_rate: producer.tax_rate||0.08375, delivery_fee: producer.delivery_fee||0, items:[]};
   const ex = cart.items.find(i => i.product_id === product.id);
   if (ex) ex.quantity++;
-  else cart.items.push({product_id:product.id, name:product.name, unit:product.unit, price:product.price, quantity:1, emoji:CAT_EMOJI[product.category]||'🛒'});
+  else cart.items.push({product_id:product.id, name:product.name, unit:product.unit, price:product.price, quantity:1, emoji:CAT_EMOJI[product.category]||'ðŸ›’'});
   localStorage.setItem('fop_cart', JSON.stringify(cart));
   updateAuthUI();
-  showToast(product.name + ' added 🛒');
+  showToast(product.name + ' added ðŸ›’');
 }
 
 let fulfillType = 'pickup';
 function renderCart() {
   const el = document.getElementById('cartContent');
   if (!cart || !cart.items.length) {
-    el.innerHTML = '<div class="empty-cart"><div class="empty-icon">🛒</div><div class="empty-text">Your cart is empty</div><div class="empty-sub">Find fresh local products near you</div><button class="go-shop-btn" onclick="navigate(\'home\')">Shop Local</button></div>';
+    el.innerHTML = '<div class="empty-cart"><div class="empty-icon">ðŸ›’</div><div class="empty-text">Your cart is empty</div><div class="empty-sub">Find fresh local products near you</div><button class="go-shop-btn" onclick="navigate(\'home\')">Shop Local</button></div>';
     document.getElementById('cartProducerName').textContent = '';
     return;
   }
@@ -651,7 +651,7 @@ function renderCart() {
           <div class="cart-item-sub">$${item.price.toFixed(2)} / ${item.unit}</div>
         </div>
         <div class="qty-ctrl">
-          <button class="qty-btn" onclick="changeQty(${idx},-1)">−</button>
+          <button class="qty-btn" onclick="changeQty(${idx},-1)">âˆ’</button>
           <span class="qty-num">${item.quantity}</span>
           <button class="qty-btn" onclick="changeQty(${idx},1)">+</button>
         </div>
@@ -661,8 +661,8 @@ function renderCart() {
     <div class="fulfill-section">
       <div class="fulfill-label">Fulfillment</div>
       <div class="fulfill-opts">
-        <div class="fulfill-opt ${fulfillType==='pickup'?'selected':''}" onclick="setFulfill('pickup')">🚗 Pickup</div>
-        <div class="fulfill-opt ${fulfillType==='delivery'?'selected':''}" onclick="setFulfill('delivery')">🚚 Delivery<br><small>+$${cart.delivery_fee.toFixed(2)}</small></div>
+        <div class="fulfill-opt ${fulfillType==='pickup'?'selected':''}" onclick="setFulfill('pickup')">ðŸš— Pickup</div>
+        <div class="fulfill-opt ${fulfillType==='delivery'?'selected':''}" onclick="setFulfill('delivery')">ðŸšš Delivery<br><small>+$${cart.delivery_fee.toFixed(2)}</small></div>
       </div>
     </div>
     <div class="cart-summary">
@@ -671,9 +671,9 @@ function renderCart() {
       ${dFee > 0 ? '<div class="sum-row"><span>Delivery</span><span>$'+dFee.toFixed(2)+'</span></div>' : ''}
       <div class="sum-total"><span>Total</span><span>$${total.toFixed(2)}</span></div>
     </div>
-    <div class="trust-strip">🔒 <span><strong>Secure card payment.</strong> Producers paid automatically via Stripe.</span></div>
+    <div class="trust-strip">ðŸ”’ <span><strong>Secure card payment.</strong> Producers paid automatically via Stripe.</span></div>
     ${token
-      ? '<button class="checkout-btn" onclick="doCheckout()">💳 Checkout · $'+total.toFixed(2)+'</button>'
+      ? '<button class="checkout-btn" onclick="doCheckout()">ðŸ’³ Checkout Â· $'+total.toFixed(2)+'</button>'
       : '<button class="checkout-btn" onclick="navigate(\'auth\')">Sign in to Checkout</button>'}
   `;
 }
@@ -760,11 +760,11 @@ async function submitPayment() {
   } catch(e) { showToast('Payment error'); btn.disabled = false; btn.textContent = 'Pay Now'; }
 }
 
-// ── SEARCH ──
+// â”€â”€ SEARCH â”€â”€
 function doSearch(q) {
   clearTimeout(searchTimer);
   if (!q && !searchCat) {
-    document.getElementById('searchResults').innerHTML = '<div style="text-align:center;padding:40px 20px;color:var(--text-light);font-size:14px;">Search for fresh local products 🌾</div>';
+    document.getElementById('searchResults').innerHTML = '<div style="text-align:center;padding:40px 20px;color:var(--text-light);font-size:14px;">Search for fresh local products ðŸŒ¾</div>';
     return;
   }
   searchTimer = setTimeout(() => runSearch(q, searchCat), 350);
@@ -789,13 +789,13 @@ async function runSearch(q, cat) {
     const data = await res.json();
     if (!data.length) { el.innerHTML = '<div style="text-align:center;padding:40px 20px;color:var(--text-light)">No results found</div>'; return; }
     el.innerHTML = data.map(p => {
-      const em = CAT_EMOJI[p.category]||'🛒';
+      const em = CAT_EMOJI[p.category]||'ðŸ›’';
       const bg = CAT_BG[p.category]||'';
       return `<div class="product-result" onclick="openProducer(${p.producer_id})">
         <div class="product-result-img" style="${bg}">${em}</div>
         <div style="flex:1;min-width:0">
           <div class="product-result-name">${p.name}</div>
-          <div class="product-result-farm">🌾 ${p.shop_name} · ${p.city||'OK'}</div>
+          <div class="product-result-farm">ðŸŒ¾ ${p.shop_name} Â· ${p.city||'OK'}</div>
         </div>
         <div class="product-result-price">$${p.price.toFixed(2)}<br><small style="font-size:9px;color:var(--text-light)">/${p.unit}</small></div>
       </div>`;
@@ -803,7 +803,7 @@ async function runSearch(q, cat) {
   } catch { el.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-light)">Search error</div>'; }
 }
 
-// ── ORDERS ──
+// â”€â”€ ORDERS â”€â”€
 async function loadOrders() {
   const el = document.getElementById('ordersList');
   if (!token) { el.innerHTML = '<div style="text-align:center;padding:40px 20px;color:var(--text-light)">Sign in to view orders</div>'; return; }
@@ -811,14 +811,14 @@ async function loadOrders() {
   try {
     const res = await fetch(API+'/api/orders/my', {headers:{'Authorization':'Bearer '+token}});
     const data = await res.json();
-    if (!data.length) { el.innerHTML = '<div style="text-align:center;padding:40px 20px;color:var(--text-light);font-size:14px;">No orders yet 🌾<br><small style="display:block;margin-top:6px">Start shopping!</small></div>'; return; }
+    if (!data.length) { el.innerHTML = '<div style="text-align:center;padding:40px 20px;color:var(--text-light);font-size:14px;">No orders yet ðŸŒ¾<br><small style="display:block;margin-top:6px">Start shopping!</small></div>'; return; }
     const prog = {pending:20,confirmed:45,ready_for_pickup:75,out_for_delivery:75,fulfilled:100,cancelled:0,auto_cancelled:0};
     el.innerHTML = data.map(o => `<div class="order-card">
       <div class="ocard-header">
-        <span class="ocard-icon">🌾</span>
+        <span class="ocard-icon">ðŸŒ¾</span>
         <div>
           <div class="ocard-name">${o.shop_name}</div>
-          <div class="ocard-meta">Order #${o.id} · $${o.total.toFixed(2)}</div>
+          <div class="ocard-meta">Order #${o.id} Â· $${o.total.toFixed(2)}</div>
         </div>
         <span class="status-chip s-${o.status}">${o.status.replace(/_/g,' ')}</span>
       </div>
@@ -828,13 +828,13 @@ async function loadOrders() {
   } catch { el.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-light)">Could not load orders</div>'; }
 }
 
-// ── ACCOUNT ──
+// â”€â”€ ACCOUNT â”€â”€
 function renderAccount() {
   const el = document.getElementById('accountContent');
   if (!user) {
     el.innerHTML = `<div class="auth-wrap" style="min-height:50vh">
       <div style="text-align:center">
-        <div style="font-size:52px;margin-bottom:14px">👤</div>
+        <div style="font-size:52px;margin-bottom:14px">ðŸ‘¤</div>
         <div style="font-family:'Playfair Display',serif;font-size:20px;color:var(--cream);margin-bottom:6px">Sign in to your account</div>
         <button class="nav-auth-btn" style="margin-top:14px" onclick="navigate('auth')">Sign In / Register</button>
       </div>
@@ -843,21 +843,21 @@ function renderAccount() {
   }
   el.innerHTML = `
     <div class="account-header">
-      <div class="account-avatar">👤</div>
+      <div class="account-avatar">ðŸ‘¤</div>
       <div class="account-name">${user.full_name}</div>
-      <div class="account-role">${user.role === 'producer' ? '🌱 Producer Account' : '🛍️ Shopper Account'}</div>
+      <div class="account-role">${user.role === 'producer' ? 'ðŸŒ± Producer Account' : 'ðŸ›ï¸ Shopper Account'}</div>
     </div>
     <div class="menu-list">
-      <div class="menu-item" onclick="navigate('orders')"><div class="menu-icon">📋</div><span class="menu-label">My Orders</span><span class="menu-arrow">›</span></div>
-      <div class="menu-item"><div class="menu-icon">❤️</div><span class="menu-label">Saved Producers</span><span class="menu-arrow">›</span></div>
-      <div class="menu-item"><div class="menu-icon">📍</div><span class="menu-label">Location & Radius</span><span class="menu-arrow">›</span></div>
-      <div class="menu-item"><div class="menu-icon">🔔</div><span class="menu-label">Notifications</span><span class="menu-arrow">›</span></div>
-      ${user.role === 'producer' ? '<div class="menu-item" onclick="window.location.href=\'/producer.html\'"><div class="menu-icon">🌱</div><span class="menu-label">Producer Dashboard</span><span class="menu-arrow">›</span></div>' : ''}
-      <div class="menu-item" onclick="doLogout()" style="margin-top:6px"><div class="menu-icon">🚪</div><span class="menu-label" style="color:#C62828">Sign Out</span></div>
+      <div class="menu-item" onclick="navigate('orders')"><div class="menu-icon">ðŸ“‹</div><span class="menu-label">My Orders</span><span class="menu-arrow">â€º</span></div>
+      <div class="menu-item"><div class="menu-icon">â¤ï¸</div><span class="menu-label">Saved Producers</span><span class="menu-arrow">â€º</span></div>
+      <div class="menu-item"><div class="menu-icon">ðŸ“</div><span class="menu-label">Location & Radius</span><span class="menu-arrow">â€º</span></div>
+      <div class="menu-item"><div class="menu-icon">ðŸ””</div><span class="menu-label">Notifications</span><span class="menu-arrow">â€º</span></div>
+      ${user.role === 'producer' ? '<div class="menu-item" onclick="window.location.href=\'/producer.html\'"><div class="menu-icon">ðŸŒ±</div><span class="menu-label">Producer Dashboard</span><span class="menu-arrow">â€º</span></div>' : ''}
+      <div class="menu-item" onclick="doLogout()" style="margin-top:6px"><div class="menu-icon">ðŸšª</div><span class="menu-label" style="color:#C62828">Sign Out</span></div>
     </div>`;
 }
 
-// ── TOAST ──
+// â”€â”€ TOAST â”€â”€
 function showToast(msg) {
   const t = document.getElementById('toast');
   t.textContent = msg; t.classList.add('show');
@@ -868,3 +868,4 @@ init();
 </script>
 </body>
 </html>
+
