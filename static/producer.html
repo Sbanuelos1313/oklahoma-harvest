@@ -250,7 +250,16 @@ html,body{height:100%;font-family:"DM Sans",sans-serif;background:#C8A87A;color:
         <div id="loginForm">
           <div class="form-grp"><label class="form-lbl">Email</label><input class="form-inp" type="email" id="loginEmail" placeholder="your@email.com"></div>
           <div class="form-grp"><label class="form-lbl">Password</label><input class="form-inp" type="password" id="loginPw" placeholder="••••••••"></div>
+          <span class="forgot-link" onclick="showForgot()">Forgot password?</span>
+          <div id="forgotForm" class="forgot-form">
+            <div class="form-grp" style="margin-top:4px;"><label class="form-lbl">Enter your email</label><input class="form-inp" type="email" id="forgotEmail" placeholder="your@email.com"></div>
+            <button class="submit-btn" onclick="doForgotPassword()" style="margin-bottom:8px;">Send Reset Link</button>
+            <div id="forgotSuccess" class="forgot-success">✅ Reset link sent! Check your email.</div>
+            <span class="forgot-link" style="text-align:center;" onclick="hideForgot()">← Back to Sign In</span>
+          </div>
+          <div id="loginFields">
           <button class="submit-btn" onclick="doLogin()">Sign In</button>
+          </div>
           <p style="text-align:center;margin-top:14px;font-size:12px;color:var(--text-light)">Are you a shopper? <a href="/static/app.html" style="color:var(--sage);font-weight:600">Shop here →</a></p>
         </div>
         <!-- REGISTER -->
@@ -845,6 +854,28 @@ async function getLocation() {
 }
 
 init();
+
+function showForgot() {
+  document.getElementById('forgotForm').style.display = 'block';
+  document.getElementById('loginFields').style.display = 'none';
+  document.getElementById('forgotSuccess').style.display = 'none';
+  const loginEmail = document.getElementById('loginEmail');
+  if (loginEmail) document.getElementById('forgotEmail').value = loginEmail.value || '';
+}
+function hideForgot() {
+  document.getElementById('forgotForm').style.display = 'none';
+  document.getElementById('loginFields').style.display = 'block';
+  document.getElementById('forgotSuccess').style.display = 'none';
+}
+async function doForgotPassword() {
+  const email = document.getElementById('forgotEmail').value.trim();
+  const err = document.getElementById('authErr');
+  if (!email) { err.textContent = 'Please enter your email'; err.classList.add('show'); return; }
+  try {
+    await fetch(API + '/api/users/forgot-password', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({email})});
+    document.getElementById('forgotSuccess').style.display = 'block';
+  } catch { err.textContent = 'Connection error — try again'; err.classList.add('show'); }
+}
 </script>
 </body>
 </html>
