@@ -1,9 +1,9 @@
-&#xFF;<!DOCTYPE html>
+&#xFEFF;<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>From Our Place &#xE2;&#xAC;&#x1D; Producer Portal</title>
+<title>From Our Place &#xE2;&#x20AC;&#x201D; Producer Portal</title>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,800;1,400&family=DM+Sans:wght@300;400;500;600&family=Satisfy&display=swap" rel="stylesheet">
 <style>
 :root {
@@ -197,9 +197,9 @@ html,body{height:100%;font-family:"DM Sans",sans-serif;background:var(--cream);c
         <!-- LOGIN -->
         <div id="loginForm">
           <div class="form-grp"><label class="form-lbl">Email</label><input class="form-inp" type="email" id="loginEmail" placeholder="your@email.com"></div>
-          <div class="form-grp"><label class="form-lbl">Password</label><input class="form-inp" type="password" id="loginPw" placeholder="&#x2B22;&#x2B22;&#x2B22;&#x2B22;&#x2B22;&#x2B22;&#x2B22;&#x2B22;"></div>
+          <div class="form-grp"><label class="form-lbl">Password</label><input class="form-inp" type="password" id="loginPw" placeholder="&#xE2;&#x20AC;&#xA2;&#xE2;&#x20AC;&#xA2;&#xE2;&#x20AC;&#xA2;&#xE2;&#x20AC;&#xA2;&#xE2;&#x20AC;&#xA2;&#xE2;&#x20AC;&#xA2;&#xE2;&#x20AC;&#xA2;&#xE2;&#x20AC;&#xA2;"></div>
           <button class="submit-btn" onclick="doLogin()">Sign In</button>
-          <p style="text-align:center;margin-top:14px;font-size:12px;color:var(--text-light)">Are you a shopper? <a href="/static/app.html" style="color:var(--sage);font-weight:600">Shop here &#xE2;&#x20;&#x19;</a></p>
+          <p style="text-align:center;margin-top:14px;font-size:12px;color:var(--text-light)">Are you a shopper? <a href="/static/app.html" style="color:var(--sage);font-weight:600">Shop here &#xE2;&#x2020;&#x2019;</a></p>
         </div>
         <!-- REGISTER -->
         <div id="registerForm" style="display:none">
@@ -242,15 +242,15 @@ html,body{height:100%;font-family:"DM Sans",sans-serif;background:var(--cream);c
       <div class="form-section-title">Fulfillment Options</div>
       <div style="background:var(--white);border-radius:12px;padding:4px 14px;border:1px solid rgba(45,26,14,0.07);margin-bottom:14px;">
         <div class="toggle-row">
-          <div><div class="toggle-label">&#xF0;&#x78;&#x61;&#x14; Pickup</div><div class="toggle-sub">Customers come to you</div></div>
+          <div><div class="toggle-label">&#xF0;&#x178;&#x161;&#x2014; Pickup</div><div class="toggle-sub">Customers come to you</div></div>
           <button class="toggle on" id="togglePickup" onclick="toggleFulfill('pickup')"></button>
         </div>
         <div class="toggle-row">
-          <div><div class="toggle-label">&#xF0;&#x78;&#x61;&#x61; Delivery</div><div class="toggle-sub">You deliver to customers</div></div>
+          <div><div class="toggle-label">&#xF0;&#x178;&#x161;&#x161; Delivery</div><div class="toggle-sub">You deliver to customers</div></div>
           <button class="toggle" id="toggleDelivery" onclick="toggleFulfill('delivery')"></button>
         </div>
         <div class="toggle-row">
-          <div><div class="toggle-label">&#xF0;&#x78;&#x1C;&#xA6; Shipping</div><div class="toggle-sub">Ship products via carrier</div></div>
+          <div><div class="toggle-label">&#xF0;&#x178;&#x201C;&#xA6; Shipping</div><div class="toggle-sub">Ship products via carrier</div></div>
           <button class="toggle" id="toggleShipping" onclick="toggleFulfill('shipping')"></button>
         </div>
       </div>
@@ -262,7 +262,7 @@ html,body{height:100%;font-family:"DM Sans",sans-serif;background:var(--cream);c
       </div>
       <p style="font-size:11px;color:var(--text-light);margin-bottom:16px;line-height:1.5;">You are responsible for collecting and remitting sales tax. Set your applicable rate.</p>
 
-      <button class="submit-btn" onclick="doSetupShop()">Submit for Approval &#xE2;&#x20;&#x19;</button>
+      <button class="submit-btn" onclick="doSetupShop()">Submit for Approval &#xE2;&#x2020;&#x2019;</button>
       <p style="font-size:11px;color:var(--text-light);text-align:center;margin-top:10px;line-height:1.5;">Your shop will be reviewed by our team before going live.</p>
     </div>
   </div>
@@ -286,7 +286,7 @@ html,body{height:100%;font-family:"DM Sans",sans-serif;background:var(--cream);c
       <!-- DASHBOARD -->
       <div class="view active" id="view-dashboard">
         <div class="dash-header">
-          <div class="dash-greeting" id="dashGreeting">Good morning &#xF0;&#x78;&#x52;&#x26;</div>
+          <div class="dash-greeting" id="dashGreeting">Good morning &#xF0;&#x178;&#x152;&#x2026;</div>
           <div class="dash-shop" id="dashShopName">Loading...</div>
           <div class="dash-status">
             <span class="status-pill" id="dashStatusPill">Loading...</span>
@@ -294,9 +294,9 @@ html,body{height:100%;font-family:"DM Sans",sans-serif;background:var(--cream);c
         </div>
         <div id="pendingBanner"></div>
         <div class="stat-row" id="dashStats">
-          <div class="stat-box amber"><div class="stat-num" id="statPending">&#xE2;&#xAC;&#x1D;</div><div class="stat-lbl">Pending</div></div>
-          <div class="stat-box green"><div class="stat-num" id="statConfirmed">&#xE2;&#xAC;&#x1D;</div><div class="stat-lbl">Confirmed</div></div>
-          <div class="stat-box"><div class="stat-num" id="statProducts">&#xE2;&#xAC;&#x1D;</div><div class="stat-lbl">Products</div></div>
+          <div class="stat-box amber"><div class="stat-num" id="statPending">&#xE2;&#x20AC;&#x201D;</div><div class="stat-lbl">Pending</div></div>
+          <div class="stat-box green"><div class="stat-num" id="statConfirmed">&#xE2;&#x20AC;&#x201D;</div><div class="stat-lbl">Confirmed</div></div>
+          <div class="stat-box"><div class="stat-num" id="statProducts">&#xE2;&#x20AC;&#x201D;</div><div class="stat-lbl">Products</div></div>
         </div>
         <div class="section-hdr" style="padding-top:4px;">
           <div class="section-hdr-title">Incoming Orders</div>
@@ -316,7 +316,7 @@ html,body{height:100%;font-family:"DM Sans",sans-serif;background:var(--cream);c
         <div id="productsList" class="products-list" style="margin-top:12px;">
           <div class="loading"><div class="spinner"></div></div>
         </div>
-        <button class="add-product-btn" onclick="openAddProduct()">&#xEF;&#xBC;&#x39; Add New Product</button>
+        <button class="add-product-btn" onclick="openAddProduct()">&#xEF;&#xBC;&#x2039; Add New Product</button>
       </div>
 
       <!-- STRIPE -->
@@ -331,26 +331,26 @@ html,body{height:100%;font-family:"DM Sans",sans-serif;background:var(--cream);c
       <!-- PROFILE -->
       <div class="view" id="view-profile">
         <div class="profile-header">
-          <div class="profile-avatar">&#xF0;&#x78;&#x52;&#xB1;</div>
-          <div class="profile-name" id="profileName">&#xE2;&#xAC;&#x1D;</div>
-          <div class="profile-role">&#xF0;&#x78;&#x52;&#xB1; Producer Account</div>
+          <div class="profile-avatar">&#xF0;&#x178;&#x152;&#xB1;</div>
+          <div class="profile-name" id="profileName">&#xE2;&#x20AC;&#x201D;</div>
+          <div class="profile-role">&#xF0;&#x178;&#x152;&#xB1; Producer Account</div>
         </div>
         <div class="menu-list">
-          <div class="menu-item" onclick="navigate('stripe')"><div class="menu-icon">&#xF0;&#x78;&#x19;&#xB3;</div><span class="menu-label">Payment Setup</span><span class="menu-arrow">&#x2B3A;</span></div>
-          <div class="menu-item"><div class="menu-icon">&#xF0;&#x78;&#x8F;&#xAA;</div><span class="menu-label">Edit Shop Profile</span><span class="menu-arrow">&#x2B3A;</span></div>
-          <div class="menu-item"><div class="menu-icon">&#xF0;&#x78;&#x1C;&#x8D;</div><span class="menu-label">Location & Radius</span><span class="menu-arrow">&#x2B3A;</span></div>
-          <div class="menu-item"><div class="menu-icon">&#xF0;&#x78;&#x19;&#xB8;</div><span class="menu-label">Tax Rate & Fees</span><span class="menu-arrow">&#x2B3A;</span></div>
-          <div class="menu-item" onclick="doLogout()" style="margin-top:6px"><div class="menu-icon">&#xF0;&#x78;&#x61;&#xAA;</div><span class="menu-label" style="color:var(--red)">Sign Out</span></div>
+          <div class="menu-item" onclick="navigate('stripe')"><div class="menu-icon">&#xF0;&#x178;&#x2019;&#xB3;</div><span class="menu-label">Payment Setup</span><span class="menu-arrow">&#xE2;&#x20AC;&#xBA;</span></div>
+          <div class="menu-item"><div class="menu-icon">&#xF0;&#x178;&#x8F;&#xAA;</div><span class="menu-label">Edit Shop Profile</span><span class="menu-arrow">&#xE2;&#x20AC;&#xBA;</span></div>
+          <div class="menu-item"><div class="menu-icon">&#xF0;&#x178;&#x201C;&#x8D;</div><span class="menu-label">Location & Radius</span><span class="menu-arrow">&#xE2;&#x20AC;&#xBA;</span></div>
+          <div class="menu-item"><div class="menu-icon">&#xF0;&#x178;&#x2019;&#xB8;</div><span class="menu-label">Tax Rate & Fees</span><span class="menu-arrow">&#xE2;&#x20AC;&#xBA;</span></div>
+          <div class="menu-item" onclick="doLogout()" style="margin-top:6px"><div class="menu-icon">&#xF0;&#x178;&#x161;&#xAA;</div><span class="menu-label" style="color:var(--red)">Sign Out</span></div>
         </div>
       </div>
 
     </div>
 
     <nav class="bottom-nav">
-      <button class="bnav-item active" id="bnav-dashboard" onclick="navigate('dashboard')"><span class="bnav-icon">&#xF0;&#x78;&#x1C;&#x60;</span>Dashboard</button>
-      <button class="bnav-item" id="bnav-products" onclick="navigate('products')"><span class="bnav-icon">&#xF0;&#x78;&#x52;&#xB1;</span>Products</button>
-      <button class="bnav-item" id="bnav-stripe" onclick="navigate('stripe')"><span class="bnav-icon">&#xF0;&#x78;&#x19;&#xB3;</span>Payments</button>
-      <button class="bnav-item" id="bnav-profile" onclick="navigate('profile')"><span class="bnav-icon">&#xF0;&#x78;&#x18;&#xA4;</span>Profile</button>
+      <button class="bnav-item active" id="bnav-dashboard" onclick="navigate('dashboard')"><span class="bnav-icon">&#xF0;&#x178;&#x201C;&#x160;</span>Dashboard</button>
+      <button class="bnav-item" id="bnav-products" onclick="navigate('products')"><span class="bnav-icon">&#xF0;&#x178;&#x152;&#xB1;</span>Products</button>
+      <button class="bnav-item" id="bnav-stripe" onclick="navigate('stripe')"><span class="bnav-icon">&#xF0;&#x178;&#x2019;&#xB3;</span>Payments</button>
+      <button class="bnav-item" id="bnav-profile" onclick="navigate('profile')"><span class="bnav-icon">&#xF0;&#x178;&#x2018;&#xA4;</span>Profile</button>
     </nav>
   </div>
 
@@ -361,7 +361,7 @@ html,body{height:100%;font-family:"DM Sans",sans-serif;background:var(--cream);c
   <div class="modal">
     <div class="modal-title">
       Add Product
-      <button class="modal-close" onclick="closeModal()">&#xE2;&#x53;&#x22;</button>
+      <button class="modal-close" onclick="closeModal()">&#xE2;&#x153;&#x2022;</button>
     </div>
     <div id="addProductErr" class="auth-err"></div>
     <div class="form-grp"><label class="form-lbl">Product Name *</label><input class="form-inp" type="text" id="pName" placeholder="e.g. Farm Fresh Eggs"></div>
@@ -369,14 +369,14 @@ html,body{height:100%;font-family:"DM Sans",sans-serif;background:var(--cream);c
       <label class="form-lbl">Category *</label>
       <select class="form-select" id="pCategory">
         <option value="">Select category...</option>
-        <option value="eggs_dairy">&#xF0;&#x78;&#xA5;&#x61; Eggs & Dairy</option>
-        <option value="meat">&#xF0;&#x78;&#xA5;&#xA9; Meat & Poultry</option>
-        <option value="vegetables">&#xF0;&#x78;&#x52;&#xBD; Vegetables</option>
-        <option value="fruit">&#xF0;&#x78;&#x8D;&#x1C; Fruit</option>
-        <option value="baked">&#xF0;&#x78;&#x8D;&#x7E; Baked Goods</option>
-        <option value="pantry">&#xF0;&#x78;&#x8D;&#xAF; Pantry & Preserves</option>
-        <option value="herbs">&#xF0;&#x78;&#x52;&#xBF; Herbs & Plants</option>
-        <option value="other">&#xF0;&#x78;&#x1C;&#xA6; Other</option>
+        <option value="eggs_dairy">&#xF0;&#x178;&#xA5;&#x161; Eggs & Dairy</option>
+        <option value="meat">&#xF0;&#x178;&#xA5;&#xA9; Meat & Poultry</option>
+        <option value="vegetables">&#xF0;&#x178;&#x152;&#xBD; Vegetables</option>
+        <option value="fruit">&#xF0;&#x178;&#x8D;&#x201C; Fruit</option>
+        <option value="baked">&#xF0;&#x178;&#x8D;&#x17E; Baked Goods</option>
+        <option value="pantry">&#xF0;&#x178;&#x8D;&#xAF; Pantry & Preserves</option>
+        <option value="herbs">&#xF0;&#x178;&#x152;&#xBF; Herbs & Plants</option>
+        <option value="other">&#xF0;&#x178;&#x201C;&#xA6; Other</option>
       </select>
     </div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
@@ -404,9 +404,9 @@ let user = JSON.parse(localStorage.getItem('fop_producer_user') || 'null');
 let shop = null;
 let fulfillment = {pickup: true, delivery: false, shipping: false};
 
-const CAT_EMOJI = {eggs_dairy:'&#xF0;&#x78;&#xA5;&#x61;',meat:'&#xF0;&#x78;&#xA5;&#xA9;',vegetables:'&#xF0;&#x78;&#x52;&#xBD;',fruit:'&#xF0;&#x78;&#x8D;&#x1C;',baked:'&#xF0;&#x78;&#x8D;&#x7E;',pantry:'&#xF0;&#x78;&#x8D;&#xAF;',herbs:'&#xF0;&#x78;&#x52;&#xBF;',other:'&#xF0;&#x78;&#x3A;&#x19;'};
+const CAT_EMOJI = {eggs_dairy:'&#xF0;&#x178;&#xA5;&#x161;',meat:'&#xF0;&#x178;&#xA5;&#xA9;',vegetables:'&#xF0;&#x178;&#x152;&#xBD;',fruit:'&#xF0;&#x178;&#x8D;&#x201C;',baked:'&#xF0;&#x178;&#x8D;&#x17E;',pantry:'&#xF0;&#x178;&#x8D;&#xAF;',herbs:'&#xF0;&#x178;&#x152;&#xBF;',other:'&#xF0;&#x178;&#x203A;&#x2019;'};
 
-// &#xE2;&#x1D;&#xAC;&#xE2;&#x1D;&#xAC; INIT &#xE2;&#x1D;&#xAC;&#xE2;&#x1D;&#xAC;
+// &#xE2;&#x201D;&#x20AC;&#xE2;&#x201D;&#x20AC; INIT &#xE2;&#x201D;&#x20AC;&#xE2;&#x201D;&#x20AC;
 async function init() {
   if (token && user) {
     try {
@@ -432,7 +432,7 @@ async function loadShop() {
   try {
     const res = await fetch(API + '/api/producers/me', {headers:{'Authorization':'Bearer '+token}});
     if (res.status === 404) {
-      // No shop yet &#xE2;&#xAC;&#x1D; show setup
+      // No shop yet &#xE2;&#x20AC;&#x201D; show setup
       document.getElementById('authScreen').style.display = 'none';
       document.getElementById('setupScreen').style.display = 'block';
       document.getElementById('producerApp').style.display = 'none';
@@ -452,16 +452,16 @@ function showApp() {
   document.getElementById('navShopName').textContent = shop.shop_name || '';
   document.getElementById('profileName').textContent = user.full_name || '';
   const h = new Date().getHours();
-  const g = h < 12 ? 'Good morning &#xF0;&#x78;&#x52;&#x26;' : h < 17 ? 'Good afternoon &#xE2;&#xDC;&#xAC;&#xEF;&#xB8;&#x8F;' : 'Good evening &#xF0;&#x78;&#x52;&#x22;';
+  const g = h < 12 ? 'Good morning &#xF0;&#x178;&#x152;&#x2026;' : h < 17 ? 'Good afternoon &#xE2;&#x2DC;&#x20AC;&#xEF;&#xB8;&#x8F;' : 'Good evening &#xF0;&#x178;&#x152;&#x2122;';
   document.getElementById('dashGreeting').textContent = g;
   document.getElementById('dashShopName').textContent = shop.shop_name;
   const pill = document.getElementById('dashStatusPill');
-  if (shop.admin_approved) { pill.textContent = '&#xE2;&#x53;&#x1C; Approved & Live'; pill.className = 'status-pill status-approved'; }
-  else { pill.textContent = '&#x23F3; Pending Approval'; pill.className = 'status-pill status-pending'; }
+  if (shop.admin_approved) { pill.textContent = '&#xE2;&#x153;&#x201C; Approved & Live'; pill.className = 'status-pill status-approved'; }
+  else { pill.textContent = '&#xE2;&#x8F;&#xB3; Pending Approval'; pill.className = 'status-pill status-pending'; }
   loadDashboard();
 }
 
-// &#xE2;&#x1D;&#xAC;&#xE2;&#x1D;&#xAC; AUTH &#xE2;&#x1D;&#xAC;&#xE2;&#x1D;&#xAC;
+// &#xE2;&#x201D;&#x20AC;&#xE2;&#x201D;&#x20AC; AUTH &#xE2;&#x201D;&#x20AC;&#xE2;&#x201D;&#x20AC;
 function switchTab(tab) {
   document.getElementById('loginForm').style.display = tab === 'login' ? 'block' : 'none';
   document.getElementById('registerForm').style.display = tab === 'register' ? 'block' : 'none';
@@ -502,7 +502,7 @@ async function doRegister() {
     // Show setup
     document.getElementById('authScreen').style.display = 'none';
     document.getElementById('setupScreen').style.display = 'block';
-    showToast('Account created! Now set up your shop &#xF0;&#x78;&#x52;&#xBE;');
+    showToast('Account created! Now set up your shop &#xF0;&#x178;&#x152;&#xBE;');
   } catch { err.textContent = 'Connection error'; err.classList.add('show'); }
 }
 
@@ -520,7 +520,7 @@ function doLogout() {
   showToast('Signed out');
 }
 
-// &#xE2;&#x1D;&#xAC;&#xE2;&#x1D;&#xAC; SHOP SETUP &#xE2;&#x1D;&#xAC;&#xE2;&#x1D;&#xAC;
+// &#xE2;&#x201D;&#x20AC;&#xE2;&#x201D;&#x20AC; SHOP SETUP &#xE2;&#x201D;&#x20AC;&#xE2;&#x201D;&#x20AC;
 function toggleFulfill(type) {
   fulfillment[type] = !fulfillment[type];
   const btn = document.getElementById('toggle' + type.charAt(0).toUpperCase() + type.slice(1));
@@ -557,13 +557,13 @@ async function doSetupShop() {
       })
     });
     const d = await res.json();
-    if (!res.ok) { showToast(d.detail || 'Setup failed'); btn.disabled = false; btn.textContent = 'Submit for Approval &#xE2;&#x20;&#x19;'; return; }
-    showToast('Shop submitted for approval! &#xF0;&#x78;&#x52;&#xBE;');
+    if (!res.ok) { showToast(d.detail || 'Setup failed'); btn.disabled = false; btn.textContent = 'Submit for Approval &#xE2;&#x2020;&#x2019;'; return; }
+    showToast('Shop submitted for approval! &#xF0;&#x178;&#x152;&#xBE;');
     await loadShop();
-  } catch { showToast('Connection error'); btn.disabled = false; btn.textContent = 'Submit for Approval &#xE2;&#x20;&#x19;'; }
+  } catch { showToast('Connection error'); btn.disabled = false; btn.textContent = 'Submit for Approval &#xE2;&#x2020;&#x2019;'; }
 }
 
-// &#xE2;&#x1D;&#xAC;&#xE2;&#x1D;&#xAC; NAVIGATE &#xE2;&#x1D;&#xAC;&#xE2;&#x1D;&#xAC;
+// &#xE2;&#x201D;&#x20AC;&#xE2;&#x201D;&#x20AC; NAVIGATE &#xE2;&#x201D;&#x20AC;&#xE2;&#x201D;&#x20AC;
 function navigate(view) {
   document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
   document.querySelectorAll('.bnav-item').forEach(b => b.classList.remove('active'));
@@ -576,22 +576,22 @@ function navigate(view) {
   if (view === 'stripe') loadStripe();
 }
 
-// &#xE2;&#x1D;&#xAC;&#xE2;&#x1D;&#xAC; DASHBOARD &#xE2;&#x1D;&#xAC;&#xE2;&#x1D;&#xAC;
+// &#xE2;&#x201D;&#x20AC;&#xE2;&#x201D;&#x20AC; DASHBOARD &#xE2;&#x201D;&#x20AC;&#xE2;&#x201D;&#x20AC;
 async function loadDashboard() {
   const el = document.getElementById('incomingOrders');
   // Show pending banner if not approved
   const banner = document.getElementById('pendingBanner');
   if (!shop.admin_approved) {
     banner.innerHTML = `<div class="pending-banner">
-      <span class="pending-icon">&#x23F3;</span>
+      <span class="pending-icon">&#xE2;&#x8F;&#xB3;</span>
       <div>
         <div class="pending-title">Awaiting Admin Approval</div>
-        <div class="pending-text">Your shop is under review. You'll be notified once approved and can start receiving orders. This usually takes 1&#xE2;&#xAC;&#x1C;2 business days.</div>
+        <div class="pending-text">Your shop is under review. You'll be notified once approved and can start receiving orders. This usually takes 1&#xE2;&#x20AC;&#x201C;2 business days.</div>
       </div>
     </div>`;
     el.innerHTML = '<div style="text-align:center;padding:32px 20px;color:var(--text-light);font-size:13px;">Orders will appear here once your shop is approved</div>';
-    document.getElementById('statPending').textContent = '&#xE2;&#xAC;&#x1D;';
-    document.getElementById('statConfirmed').textContent = '&#xE2;&#xAC;&#x1D;';
+    document.getElementById('statPending').textContent = '&#xE2;&#x20AC;&#x201D;';
+    document.getElementById('statConfirmed').textContent = '&#xE2;&#x20AC;&#x201D;';
     return;
   }
   banner.innerHTML = '';
@@ -609,7 +609,7 @@ async function loadDashboard() {
     document.getElementById('statConfirmed').textContent = confirmed;
     document.getElementById('statProducts').textContent = products.filter(p => p.is_active).length;
     if (!orders.length) {
-      el.innerHTML = '<div style="text-align:center;padding:32px 20px;color:var(--text-light);font-size:13px;">No orders yet &#xF0;&#x78;&#x52;&#xBE;<br><small style="display:block;margin-top:6px">Orders will appear here when shoppers place them</small></div>';
+      el.innerHTML = '<div style="text-align:center;padding:32px 20px;color:var(--text-light);font-size:13px;">No orders yet &#xF0;&#x178;&#x152;&#xBE;<br><small style="display:block;margin-top:6px">Orders will appear here when shoppers place them</small></div>';
       return;
     }
     el.innerHTML = orders.map(o => orderCardHTML(o)).join('');
@@ -620,22 +620,22 @@ async function loadDashboard() {
 
 function orderCardHTML(o) {
   const countdown = o.status === 'pending' && o.hours_remaining > 0
-    ? `<span class="countdown">&#x23F1; ${Math.floor(o.hours_remaining)}h remaining</span>` : '';
+    ? `<span class="countdown">&#xE2;&#x8F;&#xB1; ${Math.floor(o.hours_remaining)}h remaining</span>` : '';
   const actions = o.status === 'pending'
     ? `<div class="ocard-actions">
-        <button class="btn-accept" onclick="updateOrderStatus(${o.id},'confirmed')">&#xE2;&#x53;&#x1C; Accept</button>
-        <button class="btn-decline" onclick="updateOrderStatus(${o.id},'cancelled')">&#xE2;&#x53;&#x22; Decline</button>
+        <button class="btn-accept" onclick="updateOrderStatus(${o.id},'confirmed')">&#xE2;&#x153;&#x201C; Accept</button>
+        <button class="btn-decline" onclick="updateOrderStatus(${o.id},'cancelled')">&#xE2;&#x153;&#x2022; Decline</button>
        </div>`
     : o.status === 'confirmed'
     ? `<div class="ocard-actions">
-        <button class="btn-ready" onclick="updateOrderStatus(${o.id},'ready_for_pickup')">&#xF0;&#x78;&#x1C;&#xA6; Mark Ready</button>
+        <button class="btn-ready" onclick="updateOrderStatus(${o.id},'ready_for_pickup')">&#xF0;&#x178;&#x201C;&#xA6; Mark Ready</button>
        </div>` : '';
   return `<div class="order-card">
     <div class="ocard-top">
-      <span class="ocard-icon">&#xF0;&#x78;&#x3A;&#x19;</span>
+      <span class="ocard-icon">&#xF0;&#x178;&#x203A;&#x2019;</span>
       <div>
         <div class="ocard-name">${o.shopper_name || 'Customer'}</div>
-        <div class="ocard-meta">Order #${o.id} &#xB7; ${o.fulfillment_type} &#xB7; $${parseFloat(o.total).toFixed(2)}</div>
+        <div class="ocard-meta">Order #${o.id} &#xC2;&#xB7; ${o.fulfillment_type} &#xC2;&#xB7; $${parseFloat(o.total).toFixed(2)}</div>
       </div>
       <span class="status-chip s-${o.status}">${o.status.replace(/_/g,' ')}</span>
     </div>
@@ -652,12 +652,12 @@ async function updateOrderStatus(id, status) {
       body: JSON.stringify({status})
     });
     const d = await res.json();
-    if (res.ok) { showToast('Order ' + (labels[status]||status) + 'd &#xE2;&#x53;&#x1C;'); loadDashboard(); }
+    if (res.ok) { showToast('Order ' + (labels[status]||status) + 'd &#xE2;&#x153;&#x201C;'); loadDashboard(); }
     else showToast(d.detail || 'Failed');
   } catch { showToast('Connection error'); }
 }
 
-// &#xE2;&#x1D;&#xAC;&#xE2;&#x1D;&#xAC; PRODUCTS &#xE2;&#x1D;&#xAC;&#xE2;&#x1D;&#xAC;
+// &#xE2;&#x201D;&#x20AC;&#xE2;&#x201D;&#x20AC; PRODUCTS &#xE2;&#x201D;&#x20AC;&#xE2;&#x201D;&#x20AC;
 async function loadProducts() {
   const el = document.getElementById('productsList');
   el.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
@@ -665,14 +665,14 @@ async function loadProducts() {
     const res = await fetch(API + '/api/products/my', {headers:{'Authorization':'Bearer '+token}});
     const data = await res.json();
     if (!data.length) {
-      el.innerHTML = '<div style="text-align:center;padding:32px 20px;color:var(--text-light);font-size:13px;">No products yet &#xF0;&#x78;&#x52;&#xB1;<br><small style="display:block;margin-top:6px">Add your first product below</small></div>';
+      el.innerHTML = '<div style="text-align:center;padding:32px 20px;color:var(--text-light);font-size:13px;">No products yet &#xF0;&#x178;&#x152;&#xB1;<br><small style="display:block;margin-top:6px">Add your first product below</small></div>';
       return;
     }
     el.innerHTML = data.map(p => `<div class="product-item">
-      <span class="product-emoji">${CAT_EMOJI[p.category]||'&#xF0;&#x78;&#x3A;&#x19;'}</span>
+      <span class="product-emoji">${CAT_EMOJI[p.category]||'&#xF0;&#x178;&#x203A;&#x2019;'}</span>
       <div style="flex:1;min-width:0">
         <div class="product-name">${p.name}</div>
-        <div class="product-meta">$${parseFloat(p.price).toFixed(2)} / ${p.unit} &#xB7; ${p.quantity_available} left</div>
+        <div class="product-meta">$${parseFloat(p.price).toFixed(2)} / ${p.unit} &#xC2;&#xB7; ${p.quantity_available} left</div>
       </div>
       <span class="product-price">$${parseFloat(p.price).toFixed(2)}</span>
       <button class="toggle product-toggle ${p.is_active ? 'on' : ''}" onclick="toggleProduct(${p.id}, ${p.is_active})"></button>
@@ -688,11 +688,11 @@ async function toggleProduct(id, currentActive) {
       method:'PATCH', headers:{'Authorization':'Bearer '+token,'Content-Type':'application/json'},
       body: JSON.stringify({is_active: !currentActive})
     });
-    if (res.ok) { loadProducts(); showToast(!currentActive ? 'Product activated &#xE2;&#x53;&#x1C;' : 'Product paused'); }
+    if (res.ok) { loadProducts(); showToast(!currentActive ? 'Product activated &#xE2;&#x153;&#x201C;' : 'Product paused'); }
   } catch { showToast('Connection error'); }
 }
 
-// &#xE2;&#x1D;&#xAC;&#xE2;&#x1D;&#xAC; ADD PRODUCT MODAL &#xE2;&#x1D;&#xAC;&#xE2;&#x1D;&#xAC;
+// &#xE2;&#x201D;&#x20AC;&#xE2;&#x201D;&#x20AC; ADD PRODUCT MODAL &#xE2;&#x201D;&#x20AC;&#xE2;&#x201D;&#x20AC;
 function openAddProduct() {
   document.getElementById('addProductModal').classList.add('show');
   document.getElementById('addProductErr').classList.remove('show');
@@ -719,7 +719,7 @@ async function doAddProduct() {
     const d = await res.json();
     if (!res.ok) { err.textContent = d.detail || 'Failed to add product'; err.classList.add('show'); return; }
     closeModal();
-    showToast(name + ' added &#xE2;&#x53;&#x1C;');
+    showToast(name + ' added &#xE2;&#x153;&#x201C;');
     // Clear form
     ['pName','pPrice','pUnit','pQty','pDesc'].forEach(id => document.getElementById(id).value = '');
     document.getElementById('pCategory').value = '';
@@ -728,7 +728,7 @@ async function doAddProduct() {
   } catch { err.textContent = 'Connection error'; err.classList.add('show'); }
 }
 
-// &#xE2;&#x1D;&#xAC;&#xE2;&#x1D;&#xAC; STRIPE &#xE2;&#x1D;&#xAC;&#xE2;&#x1D;&#xAC;
+// &#xE2;&#x201D;&#x20AC;&#xE2;&#x201D;&#x20AC; STRIPE &#xE2;&#x201D;&#x20AC;&#xE2;&#x201D;&#x20AC;
 async function loadStripe() {
   const el = document.getElementById('stripeContent');
   el.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
@@ -738,9 +738,9 @@ async function loadStripe() {
     if (d.onboarding_complete) {
       el.innerHTML = `<div class="stripe-card">
         <div class="stripe-label">Payment Status</div>
-        <div class="stripe-title">Stripe Connected &#xE2;&#x53;&#x1C;</div>
+        <div class="stripe-title">Stripe Connected &#xE2;&#x153;&#x201C;</div>
         <div class="stripe-sub">Your Stripe account is set up. Payments from orders will be automatically transferred to your bank account.</div>
-        <div class="stripe-complete">&#xE2;&#x61;&#xA1; Auto-payouts enabled &#xB7; Powered by Stripe Connect</div>
+        <div class="stripe-complete">&#xE2;&#x161;&#xA1; Auto-payouts enabled &#xC2;&#xB7; Powered by Stripe Connect</div>
       </div>
       <div style="padding:14px 18px;font-size:13px;color:var(--text-mid);line-height:1.6;">
         Your payout schedule is set in your Stripe dashboard. Platform fee: <strong>0%</strong> at launch.
@@ -750,7 +750,7 @@ async function loadStripe() {
         <div class="stripe-label">Action Required</div>
         <div class="stripe-title">Set Up Payouts</div>
         <div class="stripe-sub">Connect your bank account via Stripe to receive payments from orders. Takes about 5 minutes.</div>
-        <button class="stripe-btn" onclick="startStripeOnboarding()">&#xE2;&#x61;&#xA1; Connect with Stripe &#xE2;&#x20;&#x19;</button>
+        <button class="stripe-btn" onclick="startStripeOnboarding()">&#xE2;&#x161;&#xA1; Connect with Stripe &#xE2;&#x2020;&#x2019;</button>
       </div>
       <div style="padding:14px 18px;font-size:12px;color:var(--text-light);line-height:1.6;">
         From Our Place uses Stripe Connect to securely route payments directly to your bank. We never hold your money. Platform fee: <strong>0%</strong> at launch.
@@ -768,12 +768,12 @@ async function startStripeOnboarding() {
     const res = await fetch(API + '/api/stripe/connect/onboard', {method:'POST', headers:{'Authorization':'Bearer '+token}});
     const d = await res.json();
     if (d.onboarding_url) window.location.href = d.onboarding_url;
-    else if (d.complete) showToast('Stripe already connected &#xE2;&#x53;&#x1C;');
+    else if (d.complete) showToast('Stripe already connected &#xE2;&#x153;&#x201C;');
     else showToast(d.detail || 'Error starting Stripe onboarding');
   } catch { showToast('Connection error'); }
 }
 
-// &#xE2;&#x1D;&#xAC;&#xE2;&#x1D;&#xAC; TOAST &#xE2;&#x1D;&#xAC;&#xE2;&#x1D;&#xAC;
+// &#xE2;&#x201D;&#x20AC;&#xE2;&#x201D;&#x20AC; TOAST &#xE2;&#x201D;&#x20AC;&#xE2;&#x201D;&#x20AC;
 function showToast(msg) {
   const t = document.getElementById('toast');
   t.textContent = msg; t.classList.add('show');
