@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -143,11 +143,17 @@ async function demoLogin(role) {
     localStorage.setItem(d.token, data.token);
     localStorage.setItem(d.user, JSON.stringify({id:data.user_id, role:data.role, full_name:data.full_name}));
     window.location.href = d.dest;
-  } catch(e) { window.location.href = d.dest; }
+  } catch(e) { alert('Connection error'); if(arrow) arrow.textContent = String.fromCharCode(0x203A); }
 }
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => navigator.serviceWorker.register('/static/sw.js'));
 }
 </script>
+<div style="position:fixed;bottom:20px;right:20px;z-index:999;">
+  <a href="https://forms.gle/bUWcVYSsHYb8RQuE6" target="_blank"
+     style="display:flex;align-items:center;gap:7px;background:#4A6741;color:white;padding:10px 16px;border-radius:20px;text-decoration:none;font-family:DM Sans,sans-serif;font-size:12px;font-weight:700;box-shadow:0 4px 16px rgba(0,0,0,0.25);">
+    &#x1F4AC; Give Feedback
+  </a>
+</div>
 </body>
 </html>

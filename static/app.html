@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -367,8 +367,8 @@ html,body { height:100%; font-family:"DM Sans",sans-serif; background:var(--crea
   </nav>
 </div>
 
-<div class="modal-overlay" id="checkoutModal" style="display:none;" style="align-items:center;justify-content:center;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:300;">
-  <div style="background:var(--cream);border-radius:22px;padding:24px 20px;width:calc(100% - 40px);max-width:420px;">
+<div class="modal-overlay" id="checkoutModal" style="align-items:center;">
+  <div style="background:var(--cream);border-radius:22px;padding:24px 20px;width:100%;max-width:420px;margin:20px;">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;">
       <div style="font-family:'Playfair Display',serif;font-size:18px;font-weight:700;">Secure Checkout</div>
       <button onclick="closeCheckoutModal()" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--text-light);">x</button>
@@ -383,20 +383,15 @@ html,body { height:100%; font-family:"DM Sans",sans-serif; background:var(--crea
     </div>
   </div>
 </div>
+<div style="position:fixed;bottom:76px;right:16px;z-index:99;">
+  <a href="https://forms.gle/bUWcVYSsHYb8RQuE6" target="_blank"
+     style="display:flex;align-items:center;gap:6px;background:#4A6741;color:white;padding:9px 14px;border-radius:18px;text-decoration:none;font-family:DM Sans,sans-serif;font-size:11px;font-weight:700;box-shadow:0 4px 14px rgba(0,0,0,0.2);">
+    &#x1F4AC; Feedback
+  </a>
+</div>
 <div class="toast" id="toast"></div>
 
 <script>
-async function getLocation() {
-  return new Promise((resolve) => {
-    if (!navigator.geolocation) { resolve({lat:35.4676,lng:-97.5164}); return; }
-    navigator.geolocation.getCurrentPosition(
-      pos => resolve({lat:pos.coords.latitude, lng:pos.coords.longitude}),
-      () => resolve({lat:35.4676,lng:-97.5164}),
-      {timeout:5000}
-    );
-  });
-}
-
 const API = window.location.origin;
 let token = localStorage.getItem('fop_token');
 let user = JSON.parse(localStorage.getItem('fop_user') || 'null');
@@ -518,6 +513,17 @@ function doLogout() {
 }
 
 // ── LOAD PRODUCERS ──
+async function getLocation() {
+  return new Promise((resolve) => {
+    if (!navigator.geolocation) { resolve({lat:35.4676,lng:-97.5164}); return; }
+    navigator.geolocation.getCurrentPosition(
+      pos => resolve({lat:pos.coords.latitude, lng:pos.coords.longitude}),
+      () => resolve({lat:35.4676,lng:-97.5164}),
+      {timeout:5000}
+    );
+  });
+}
+
 async function loadProducers(category) {
   const el = document.getElementById('producersList');
   el.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
@@ -691,7 +697,7 @@ async function doCheckout() {
   if (!cart || !cart.items.length) return;
   document.getElementById('checkoutModal').classList.add('show');
   if (!stripeInstance) {
-    const keyRes = await fetch(API + '/api/stripe/publishable-key');
+    const keyRes = await fetch(location.origin + '/api/stripe/publishable-key');
     const keyData = await keyRes.json();
     stripeInstance = Stripe(keyData.key);
   }
@@ -700,7 +706,7 @@ async function doCheckout() {
   const dFee = fulfillType === 'delivery' ? cart.delivery_fee : 0;
   const total = Math.round((sub + tax + dFee) * 100);
   try {
-    const res = await fetch(API + '/api/stripe/create-payment-intent', {
+    const res = await fetch(location.origin + '/api/stripe/create-payment-intent', {
       method: 'POST',
       headers: {'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json'},
       body: JSON.stringify({amount: total, producer_id: cart.producer_id})
@@ -732,7 +738,7 @@ async function submitPayment() {
       redirect: 'if_required'
     });
     if (error) { showToast(error.message); btn.disabled = false; btn.textContent = 'Pay Now'; return; }
-    const orderRes = await fetch(API + '/api/orders/from-payment', {
+    const orderRes = await fetch(location.origin + '/api/orders/from-payment', {
       method: 'POST',
       headers: {'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json'},
       body: JSON.stringify({
@@ -861,5 +867,3 @@ init();
 </script>
 </body>
 </html>
-
-
