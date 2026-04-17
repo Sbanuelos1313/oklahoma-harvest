@@ -537,15 +537,15 @@ function init() {
 function updateAuthUI() {
   const btn = document.getElementById('authBtn');
   const badge = document.getElementById('cartBadge');
-  const signOutBtn = document.getElementById('signOutBtn'); // ADD THIS
+  const signOutBtn = document.getElementById('signOutBtn');
   if (user) {
     btn.textContent = user.full_name.split(' ')[0];
     btn.onclick = () => navigate('account');
-    if (signOutBtn) signOutBtn.style.display = 'block'; // ADD THIS
+    if (signOutBtn) signOutBtn.style.display = 'block';
   } else {
     btn.textContent = 'Sign In';
     btn.onclick = () => navigate('auth');
-    if (signOutBtn) signOutBtn.style.display = 'none'; // ADD THIS
+    if (signOutBtn) signOutBtn.style.display = 'none';
   }
 
 function switchTab(tab) {
