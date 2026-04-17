@@ -620,7 +620,7 @@ function doLogout() {
   localStorage.removeItem('fop_token'); localStorage.removeItem('fop_user'); localStorage.removeItem('fop_cart');
   updateAuthUI();
   showToast('Signed out');
-  navigate('home');
+  navigate('auth');
 }
 
 // ── LOAD PRODUCERS ──
