@@ -264,7 +264,7 @@ async function doForgotPassword() {
       <span class="nav-brand-text">From Our Place</span>
     </div>
     <div class="nav-actions">
-      <button onclick="doLogout()" style="background:rgba(250,245,236,0.9);color:var(--earth);font-size:12px;font-weight:700;font-family:DM Sans,sans-serif;cursor:pointer;padding:6px 14px;border-radius:20px;border:none;box-shadow:0 1px 4px rgba(0,0,0,0.15);">Sign Out</button>
+      <button id="signOutBtn" onclick="doLogout()" style="background:rgba(250,245,236,0.9);color:var(--earth);font-size:12px;font-weight:700;font-family:DM Sans,sans-serif;cursor:pointer;padding:6px 14px;border-radius:20px;border:none;box-shadow:0 1px 4px rgba(0,0,0,0.15);">Sign Out</button>
       <button class="nav-icon-btn" onclick="navigate('cart')">
         🛒<span class="cart-badge" id="cartBadge">0</span>
       </button>
@@ -426,7 +426,7 @@ async function doForgotPassword() {
               <span class="forgot-link" style="text-align:center;" onclick="hideForgot()">← Back to Sign In</span>
             </div>
             <div id="loginFields"><button class="submit-btn" onclick="doLogin()">Sign In</button>
-            <p style="text-align:center;margin-top:14px;font-size:12px;color:var(--text-light)">← <button onclick="doLogout()" style="background:rgba(250,245,236,0.9);color:var(--earth);font-size:12px;font-weight:700;font-family:DM Sans,sans-serif;cursor:pointer;padding:6px 14px;border-radius:20px;border:none;box-shadow:0 1px 4px rgba(0,0,0,0.15);">Sign Out</button></p>
+            <p style="text-align:center;margin-top:14px;font-size:12px;color:var(--text-light)">← <a href="/" style="color:var(--sage);font-weight:600">Back to Home</a></p>
           </div>
           </div>
           <div id="registerForm" style="display:none">
@@ -537,17 +537,16 @@ function init() {
 function updateAuthUI() {
   const btn = document.getElementById('authBtn');
   const badge = document.getElementById('cartBadge');
+  const signOutBtn = document.getElementById('signOutBtn'); // ADD THIS
   if (user) {
     btn.textContent = user.full_name.split(' ')[0];
     btn.onclick = () => navigate('account');
+    if (signOutBtn) signOutBtn.style.display = 'block'; // ADD THIS
   } else {
     btn.textContent = 'Sign In';
     btn.onclick = () => navigate('auth');
+    if (signOutBtn) signOutBtn.style.display = 'none'; // ADD THIS
   }
-  const qty = cart ? cart.items.reduce((s,i) => s + i.quantity, 0) : 0;
-  if (qty > 0) { badge.style.display = 'flex'; badge.textContent = qty; }
-  else badge.style.display = 'none';
-}
 
 function switchTab(tab) {
   document.getElementById('loginForm').style.display = tab === 'login' ? 'block' : 'none';
@@ -963,7 +962,7 @@ function renderAccount() {
       <div class="menu-item"><div class="menu-icon">📍</div><span class="menu-label">Location & Radius</span><span class="menu-arrow">›</span></div>
       <div class="menu-item"><div class="menu-icon">🔔</div><span class="menu-label">Notifications</span><span class="menu-arrow">›</span></div>
       ${user.role === 'producer' ? '<div class="menu-item" onclick="window.location.href=\'/producer.html\'"><div class="menu-icon">🌱</div><span class="menu-label">Producer Dashboard</span><span class="menu-arrow">›</span></div>' : ''}
-      <div class="menu-item" onclick="doLogout()" style="margin-top:6px"><div class="menu-icon">🚪</div><span class="menu-label" style="color:#C62828">Sign Out</span></div>
+      <div class="menu-item" onclick="doLogout()" style="display:none;margin-top:6px"><div class="menu-icon">🚪</div><span class="menu-label" style="color:#C62828">Sign Out</span></div>
     </div>`;
 }
 
