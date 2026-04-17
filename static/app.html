@@ -547,6 +547,7 @@ function updateAuthUI() {
     btn.onclick = () => navigate('auth');
     if (signOutBtn) signOutBtn.style.display = 'none';
   }
+}
 
 function switchTab(tab) {
   document.getElementById('loginForm').style.display = tab === 'login' ? 'block' : 'none';
@@ -934,7 +935,7 @@ async function loadOrders() {
       <div class="order-bar"><div class="order-bar-fill" style="width:${prog[o.status]||0}%"></div></div>
       <div style="font-size:11px;color:var(--text-light)">${new Date(o.created_at).toLocaleDateString()}</div>
     </div>`).join('');
-  } } catch { el.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-light)">Could not load orders</div>'; }
+  } catch { el.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-light)">Could not load orders</div>'; }
 }
 
 // ── ACCOUNT ──
