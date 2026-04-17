@@ -179,6 +179,10 @@ html,body{height:100%;font-family:"DM Sans",sans-serif;background:#C8A87A;color:
 /* TOAST */
 .toast{position:fixed;bottom:82px;left:50%;transform:translateX(-50%) translateY(16px);background:var(--earth);color:var(--cream);padding:10px 18px;border-radius:18px;font-size:13px;font-weight:600;opacity:0;transition:all 0.28s;z-index:999;white-space:nowrap;box-shadow:0 4px 20px rgba(0,0,0,0.28);pointer-events:none;}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+.forgot-link { display:block; text-align:right; font-size:12px; color:var(--text-mid); margin-top:-6px; margin-bottom:12px; cursor:pointer; text-decoration:underline; }
+.forgot-link:hover { color:var(--sage); }
+.forgot-success { font-size:13px; color:var(--sage); text-align:center; padding:6px 0; }
 </style>
 </head>
 <body>
@@ -251,14 +255,14 @@ html,body{height:100%;font-family:"DM Sans",sans-serif;background:#C8A87A;color:
           <div class="form-grp"><label class="form-lbl">Email</label><input class="form-inp" type="email" id="loginEmail" placeholder="your@email.com"></div>
           <div class="form-grp"><label class="form-lbl">Password</label><input class="form-inp" type="password" id="loginPw" placeholder="••••••••"></div>
           <span class="forgot-link" onclick="showForgot()">Forgot password?</span>
-          <div id="forgotForm" class="forgot-form">
+          <div id="forgotForm" style="display:none;">
             <div class="form-grp" style="margin-top:4px;"><label class="form-lbl">Enter your email</label><input class="form-inp" type="email" id="forgotEmail" placeholder="your@email.com"></div>
             <button class="submit-btn" onclick="doForgotPassword()" style="margin-bottom:8px;">Send Reset Link</button>
-            <div id="forgotSuccess" class="forgot-success">✅ Reset link sent! Check your email.</div>
-            <span class="forgot-link" style="text-align:center;" onclick="hideForgot()">← Back to Sign In</span>
+            <div id="forgotSuccess" style="display:none;font-size:13px;color:var(--sage);text-align:center;padding:6px 0;">✅ Reset link sent! Check your email.</div>
+            <span class="forgot-link" style="text-align:center;display:block;" onclick="hideForgot()">← Back to Sign In</span>
           </div>
           <div id="loginFields">
-          <button class="submit-btn" onclick="doLogin()">Sign In</button>
+            <button class="submit-btn" onclick="doLogin()">Sign In</button>
           </div>
           <p style="text-align:center;margin-top:14px;font-size:12px;color:var(--text-light)">Are you a shopper? <a href="/static/app.html" style="color:var(--sage);font-weight:600">Shop here →</a></p>
         </div>
