@@ -264,7 +264,7 @@ async function doForgotPassword() {
       <span class="nav-brand-text">From Our Place</span>
     </div>
     <div class="nav-actions">
-      <a href="/" style="background:rgba(250,245,236,0.9);color:var(--earth);font-size:12px;font-weight:700;font-family:DM Sans,sans-serif;cursor:pointer;text-decoration:none;padding:6px 14px;border-radius:20px;border:none;box-shadow:0 1px 4px rgba(0,0,0,0.15);">🏠 Home</a>
+      <button onclick="doLogout()" style="background:rgba(250,245,236,0.9);color:var(--earth);font-size:12px;font-weight:700;font-family:DM Sans,sans-serif;cursor:pointer;padding:6px 14px;border-radius:20px;border:none;box-shadow:0 1px 4px rgba(0,0,0,0.15);">Sign Out</button>
       <button class="nav-icon-btn" onclick="navigate('cart')">
         🛒<span class="cart-badge" id="cartBadge">0</span>
       </button>
@@ -426,7 +426,7 @@ async function doForgotPassword() {
               <span class="forgot-link" style="text-align:center;" onclick="hideForgot()">← Back to Sign In</span>
             </div>
             <div id="loginFields"><button class="submit-btn" onclick="doLogin()">Sign In</button>
-            <p style="text-align:center;margin-top:14px;font-size:12px;color:var(--text-light)">← <a href="/" style="color:var(--sage);font-weight:600">Back to Home</a></p>
+            <p style="text-align:center;margin-top:14px;font-size:12px;color:var(--text-light)">← <button onclick="doLogout()" style="background:rgba(250,245,236,0.9);color:var(--earth);font-size:12px;font-weight:700;font-family:DM Sans,sans-serif;cursor:pointer;padding:6px 14px;border-radius:20px;border:none;box-shadow:0 1px 4px rgba(0,0,0,0.15);">Sign Out</button></p>
           </div>
           </div>
           <div id="registerForm" style="display:none">
