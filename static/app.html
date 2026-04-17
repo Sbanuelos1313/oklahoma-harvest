@@ -461,10 +461,13 @@ function init() {
   const name = user ? ', ' + user.full_name.split(' ')[0] + '!' : '';
   document.getElementById('homeGreeting').textContent = g + name;
   updateAuthUI();
-  if (!user) {
+  const params = new URLSearchParams(window.location.search);
+  const forceAuth = params.get('signin') === '1';
+  if (!user || forceAuth) {
     navigate('auth');
   } else {
     loadProducers();
+    navigate('home');
   }
 }
 
@@ -534,6 +537,12 @@ async function doRegister() {
 }
 
 function saveSession(d) {
+  // Clean signin param from URL without reload
+  const url = new URL(window.location.href);
+  if (url.searchParams.has('signin')) {
+    url.searchParams.delete('signin');
+    window.history.replaceState({}, '', url.pathname);
+  }
   token = d.token;
   user = {id: d.user_id, role: d.role, full_name: d.full_name};
   localStorage.setItem('fop_token', token);
