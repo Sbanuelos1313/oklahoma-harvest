@@ -592,7 +592,7 @@ function doLogout() {
   token = null; user = null; cart = null;
   localStorage.removeItem('fop_token'); localStorage.removeItem('fop_user'); localStorage.removeItem('fop_cart');
   updateAuthUI();
-  showToast('Signed out');
+  showToast('Signed out &#x1F44B;');
   navigate('auth');
 }
 
@@ -961,7 +961,7 @@ function renderAccount() {
 // &#x2500;&#x2500; TOAST &#x2500;&#x2500;
 function showToast(msg) {
   const t = document.getElementById('toast');
-  t.textContent = msg; t.classList.add('show');
+  t.innerHTML = msg; t.classList.add('show');
   setTimeout(() => t.classList.remove('show'), 2400);
 }
 
