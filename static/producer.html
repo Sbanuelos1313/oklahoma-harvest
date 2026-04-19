@@ -560,8 +560,8 @@ function saveSession(d) {
 function doLogout() {
   token = null; user = null; shop = null;
   localStorage.removeItem('fop_producer_token'); localStorage.removeItem('fop_producer_user');
-  showAuth();
   showToast('Signed out');
+  setTimeout(() => { window.location.href = '/static/index.html'; }, 1000);
 }
 
 // &#x2500;&#x2500; SHOP SETUP &#x2500;&#x2500;

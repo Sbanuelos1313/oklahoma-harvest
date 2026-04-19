@@ -417,7 +417,7 @@ body:has(#view-auth.active) .bottom-nav { display:none !important; }
         </div>
       </div>
           <p style="text-align:center;margin-top:16px;font-size:12px;">
-            <a onclick="navigate('home')" style="color:rgba(250,245,236,0.6);cursor:pointer;text-decoration:none;">&#x2190; Back to Home</a>
+            <a href="/static/index.html" style="color:var(--text-light);cursor:pointer;text-decoration:none;">&#x2190; Back to Home</a>
           </p>
     </div>
 
@@ -593,7 +593,7 @@ function doLogout() {
   localStorage.removeItem('fop_token'); localStorage.removeItem('fop_user'); localStorage.removeItem('fop_cart');
   updateAuthUI();
   showToast('Signed out &#x1F44B;');
-  navigate('auth');
+  setTimeout(() => { window.location.href = '/static/index.html'; }, 1000);
 }
 
 // &#x2500;&#x2500; LOAD PRODUCERS &#x2500;&#x2500;
