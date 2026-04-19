@@ -476,13 +476,32 @@ async function loadShop() {
   try {
     const res = await fetch(API + '/api/producers/me', {headers:{'Authorization':'Bearer '+token}});
     if (res.status === 404) {
-      // No shop yet &#x2014; show setup
+      // No shop yet — show setup
+      document.getElementById('authScreen').style.display = 'none';
+      document.getElementById('setupScreen').style.display = 'block';
+      document.getElementById('producerApp').style.display = 'none';
+      return;
+    }
+    if (res.status === 401 || res.status === 403) {
+      // Token expired or invalid
+      showAuth();
+      return;
+    }
+    if (!res.ok) {
+      // Other error — still try to show setup rather than loop
       document.getElementById('authScreen').style.display = 'none';
       document.getElementById('setupScreen').style.display = 'block';
       document.getElementById('producerApp').style.display = 'none';
       return;
     }
     shop = await res.json();
+    if (!shop || !shop.shop_name) {
+      // Empty shop data — show setup
+      document.getElementById('authScreen').style.display = 'none';
+      document.getElementById('setupScreen').style.display = 'block';
+      document.getElementById('producerApp').style.display = 'none';
+      return;
+    }
     showApp();
   } catch {
     showAuth();
