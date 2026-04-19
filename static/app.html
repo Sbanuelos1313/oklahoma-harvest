@@ -477,7 +477,16 @@ function navigate(view) {
   const isAuth = view === 'auth';
   document.querySelector('.top-nav').style.visibility = isAuth ? 'hidden' : 'visible';
   document.querySelector('.bottom-nav').style.visibility = isAuth ? 'hidden' : 'visible';
-  if (view === 'home') loadProducers();
+  if (view === 'home') {
+    loadProducers();
+    const h = new Date().getHours();
+    const g = h < 12 ? 'Good morning &#x1F305;' : h < 17 ? 'Good afternoon &#x2600;&#xFE0F;' : 'Good evening &#x1F319;';
+    const greetEl = document.getElementById('homeGreeting');
+    if (greetEl) {
+      const name = user ? ', ' + user.full_name.split(' ')[0] + '!' : '';
+      greetEl.innerHTML = g + name;
+    }
+  }
   if (view === 'orders') loadOrders();
   if (view === 'account') renderAccount();
   if (view === 'cart') renderCart();
@@ -584,7 +593,7 @@ function doLogout() {
   localStorage.removeItem('fop_token'); localStorage.removeItem('fop_user'); localStorage.removeItem('fop_cart');
   updateAuthUI();
   showToast('Signed out');
-  navigate('home');
+  navigate('auth');
 }
 
 // &#x2500;&#x2500; LOAD PRODUCERS &#x2500;&#x2500;
