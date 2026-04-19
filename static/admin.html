@@ -546,7 +546,7 @@ async function loadDashboard() {
 }
 
 // &#x2500;&#x2500; PENDING PRODUCERS &#x2500;&#x2500;
-async async function loadPending(contentId, countId) {
+async function loadPending(contentId, countId) {
   const el = document.getElementById(contentId);
   el.innerHTML = '<div class="loading"><div class="spinner"></div>Loading...</div>';
   try {
