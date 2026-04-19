@@ -27,7 +27,7 @@ html,body{height:100%;font-family:"DM Sans",sans-serif;background:#F5EFE6;color:
 .nav-brand-text{font-family:"Satisfy",cursive;font-size:17px;color:var(--text-mid);white-space:nowrap;}
 .nav-badge{background:var(--sage);color:white;font-size:9px;font-weight:700;padding:2px 8px;border-radius:8px;letter-spacing:0.5px;}
 .nav-right{display:flex;align-items:center;gap:10px;}
-.nav-user{font-size:12px;color:var(--text-mid);}
+.nav-user{font-size:13px;font-weight:600;color:var(--text-mid);font-family:"DM Sans",sans-serif;}
 .nav-btn{background:none;border:1px solid rgba(250,245,236,0.2);color:var(--cream);padding:6px 14px;border-radius:16px;font-size:12px;font-weight:600;font-family:"DM Sans",sans-serif;cursor:pointer;}
 
 /* BOTTOM NAV */
@@ -327,9 +327,9 @@ html,body{height:100%;font-family:"DM Sans",sans-serif;background:#F5EFE6;color:
         <span class="nav-brand-text">From Our Place</span>
       </div>
       <div class="nav-right">
-      <a href="/" style="background:none;border:none;color:rgba(250,245,236,0.5);font-size:11px;font-weight:600;font-family:DM Sans,sans-serif;cursor:pointer;text-decoration:none;padding:4px 8px;border-radius:10px;border:1px solid rgba(250,245,236,0.15);">&#x2302; Home</a>
         <span class="nav-user" id="navShopName"></span>
         <span class="nav-badge">PRODUCER</span>
+        <button class="nav-signout" onclick="doLogout()">Sign Out</button>
       </div>
     </nav>
 
@@ -459,7 +459,7 @@ let fulfillment = {pickup: true, delivery: false, shipping: false};
 const CAT_EMOJI = {eggs_dairy:'&#x1F95A;',meat:'&#x1F969;',vegetables:'&#x1F33D;',fruit:'&#x1F353;',baked:'&#x1F35E;',pantry:'&#x1F36F;',herbs:'&#x1F33F;',other:'&#x1F6D2;'};
 
 // &#x2500;&#x2500; INIT &#x2500;&#x2500;
-async function init() {
+function init() {
   // Always show auth first &#x2014; never skip past login
   showAuth();
   // If we have a saved token, silently validate in background
@@ -476,7 +476,7 @@ async function loadShop() {
   try {
     const res = await fetch(API + '/api/producers/me', {headers:{'Authorization':'Bearer '+token}});
     if (res.status === 404) {
-      // No shop yet — show setup
+      // No shop yet &#x2014; show setup
       document.getElementById('authScreen').style.display = 'none';
       document.getElementById('setupScreen').style.display = 'block';
       document.getElementById('producerApp').style.display = 'none';
@@ -488,7 +488,7 @@ async function loadShop() {
       return;
     }
     if (!res.ok) {
-      // Other error — still try to show setup rather than loop
+      // Other error &#x2014; still try to show setup rather than loop
       document.getElementById('authScreen').style.display = 'none';
       document.getElementById('setupScreen').style.display = 'block';
       document.getElementById('producerApp').style.display = 'none';
@@ -496,7 +496,7 @@ async function loadShop() {
     }
     shop = await res.json();
     if (!shop || !shop.shop_name) {
-      // Empty shop data — show setup
+      // Empty shop data &#x2014; show setup
       document.getElementById('authScreen').style.display = 'none';
       document.getElementById('setupScreen').style.display = 'block';
       document.getElementById('producerApp').style.display = 'none';
