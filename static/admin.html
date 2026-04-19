@@ -18,7 +18,7 @@
   --red:#C62828;--red-bg:#FFEBEE;--amber:#B86A1A;--amber-bg:#FFF3E0;
 }
 *{margin:0;padding:0;box-sizing:border-box;}
-html,body{height:100%;}body{font-family:"DM Sans",sans-serif;background:#C8A87A;color:var(--text-dark);min-height:100vh;}
+html,body{height:100%;background:#F5EFE6;}body{font-family:"DM Sans",sans-serif;background:#C8A87A;color:var(--text-dark);min-height:100vh;}
 
 /* LOGIN */
 .auth-wrap{position:relative;width:100%;height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 20px;background:#C8A87A;overflow:hidden;}
@@ -39,7 +39,7 @@ html,body{height:100%;}body{font-family:"DM Sans",sans-serif;background:#C8A87A;
 /* LAYOUT */
 .app-layout{display:flex;min-height:100vh;}
 .sidebar{width:240px;background:var(--sage);flex-shrink:0;display:flex;flex-direction:column;position:fixed;z-index:10;top:0;left:0;bottom:0;}
-.main-area{margin-left:240px;flex:1;min-height:100vh;}
+.main-area{margin-left:240px;flex:1;min-height:100vh;background:#F5EFE6;position:relative;z-index:1;}
 
 /* SIDEBAR */
 .sidebar-brand{padding:20px 18px 16px;border-bottom:1px solid rgba(255,255,255,0.15);}
@@ -421,7 +421,6 @@ tr:hover td{background:#FAFAF8;}
 <div class="toast" id="toast"></div>
 
 <script>
-(async function() {
 const API = window.location.origin;
 let token = localStorage.getItem('fop_admin_token');
 let adminUser = JSON.parse(localStorage.getItem('fop_admin_user') || 'null');
@@ -446,7 +445,7 @@ async function init() {
 }
 
 // &#x2500;&#x2500; LOGIN &#x2500;&#x2500;
-async window.doLogin = async function() {
+async function doLogin() {
   const email = document.getElementById('loginEmail').value.trim();
   const pw = document.getElementById('loginPw').value;
   const errEl = document.getElementById('loginErr');
@@ -468,7 +467,7 @@ async window.doLogin = async function() {
   } catch { errEl.textContent = 'Connection error'; errEl.classList.add('show'); }
 }
 
-window.doLogout = function() {
+function doLogout() {
   token = null; adminUser = null;
   localStorage.removeItem('fop_admin_token'); localStorage.removeItem('fop_admin_user');
   document.getElementById('adminApp').style.display = 'none';
@@ -484,7 +483,7 @@ function showAdmin() {
 }
 
 // &#x2500;&#x2500; NAVIGATION &#x2500;&#x2500;
-window.showView = function(view) {
+function showView(view) {
   document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
   document.getElementById('view-' + view).classList.add('active');
@@ -511,7 +510,7 @@ async function api(path, method = 'GET', body = null) {
 }
 
 // &#x2500;&#x2500; DASHBOARD &#x2500;&#x2500;
-async window.loadDashboard = async function() {
+async function loadDashboard() {
   const grid = document.getElementById('statGrid');
   grid.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
   try {
@@ -547,7 +546,7 @@ async window.loadDashboard = async function() {
 }
 
 // &#x2500;&#x2500; PENDING PRODUCERS &#x2500;&#x2500;
-async window.loadPending = async function(contentId, countId) {
+async async function loadPending(contentId, countId) {
   const el = document.getElementById(contentId);
   el.innerHTML = '<div class="loading"><div class="spinner"></div>Loading...</div>';
   try {
@@ -649,7 +648,7 @@ async function loadOrders() {
 }
 
 // &#x2500;&#x2500; APPROVE / SUSPEND &#x2500;&#x2500;
-async window.approveProducer = async function(id, name) {
+async function approveProducer(id, name) {
   if (!confirm('Approve ' + name + '?')) return;
   try {
     const res = await api('/api/producers/admin/' + id + '/approve', 'POST');
@@ -663,7 +662,7 @@ async window.approveProducer = async function(id, name) {
   } catch { showToast('Connection error'); }
 }
 
-async window.suspendProducer = async function(id, name) {
+async function suspendProducer(id, name) {
   if (!confirm('Suspend ' + name + '? This will hide them from shoppers.')) return;
   try {
     const res = await api('/api/producers/admin/' + id + '/suspend', 'POST');
@@ -677,7 +676,7 @@ async window.suspendProducer = async function(id, name) {
 }
 
 // &#x2500;&#x2500; MODAL &#x2500;&#x2500;
-window.closeModal = function() { document.getElementById('producerModal').classList.remove('show'); }
+function closeModal() { document.getElementById('producerModal').classList.remove('show'); }
 function modalApprove() { approveProducer(modalProducerId, document.getElementById('modalTitle').textContent); closeModal(); }
 function modalSuspend() { suspendProducer(modalProducerId, document.getElementById('modalTitle').textContent); closeModal(); }
 
@@ -689,8 +688,6 @@ function showToast(msg) {
 }
 
 init();
-
-})();
 </script>
 </body>
 </html>
