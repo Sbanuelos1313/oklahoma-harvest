@@ -516,11 +516,11 @@ function showApp() {
   document.getElementById('profileName').textContent = user.full_name || '';
   const h = new Date().getHours();
   const g = h < 12 ? 'Good morning &#x1F305;' : h < 17 ? 'Good afternoon &#x2600;&#xFE0F;' : 'Good evening &#x1F319;';
-  document.getElementById('dashGreeting').textContent = g;
+  document.getElementById('dashGreeting').innerHTML = g;
   document.getElementById('dashShopName').textContent = shop.shop_name;
   const pill = document.getElementById('dashStatusPill');
-  if (shop.admin_approved) { pill.textContent = '&#x2713; Approved & Live'; pill.className = 'status-pill status-approved'; }
-  else { pill.textContent = '&#x23F3; Pending Approval'; pill.className = 'status-pill status-pending'; }
+  if (shop.admin_approved) { pill.innerHTML = '&#x2713; Approved &amp; Live'; pill.className = 'status-pill status-approved'; }
+  else { pill.innerHTML = '&#x23F3; Pending Approval'; pill.className = 'status-pill status-pending'; }
   loadDashboard();
 }
 
@@ -620,10 +620,10 @@ async function doSetupShop() {
       })
     });
     const d = await res.json();
-    if (!res.ok) { showToast(d.detail || 'Setup failed'); btn.disabled = false; btn.textContent = 'Submit for Approval &#x2192;'; return; }
+    if (!res.ok) { showToast(d.detail || 'Setup failed'); btn.disabled = false; btn.innerHTML = 'Submit for Approval &#x2192;'; return; }
     showToast('Shop submitted for approval! &#x1F33E;');
     await loadShop();
-  } catch { showToast('Connection error'); btn.disabled = false; btn.textContent = 'Submit for Approval &#x2192;'; }
+  } catch { showToast('Connection error'); btn.disabled = false; btn.innerHTML = 'Submit for Approval &#x2192;'; }
 }
 
 // &#x2500;&#x2500; NAVIGATE &#x2500;&#x2500;
@@ -653,8 +653,8 @@ async function loadDashboard() {
       </div>
     </div>`;
     el.innerHTML = '<div style="text-align:center;padding:32px 20px;color:var(--text-light);font-size:13px;">Orders will appear here once your shop is approved</div>';
-    document.getElementById('statPending').textContent = '&#x2014;';
-    document.getElementById('statConfirmed').textContent = '&#x2014;';
+    document.getElementById('statPending').innerHTML = '&#x2014;';
+    document.getElementById('statConfirmed').innerHTML = '&#x2014;';
     return;
   }
   banner.innerHTML = '';
@@ -839,7 +839,7 @@ async function startStripeOnboarding() {
 // &#x2500;&#x2500; TOAST &#x2500;&#x2500;
 function showToast(msg) {
   const t = document.getElementById('toast');
-  t.textContent = msg; t.classList.add('show');
+  t.innerHTML = msg; t.classList.add('show');
   setTimeout(() => t.classList.remove('show'), 2400);
 }
 
