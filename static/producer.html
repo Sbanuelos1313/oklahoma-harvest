@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>From Our Place — Producer Portal</title>
+<title>From Our Place &#x2014; Producer Portal</title>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,800;1,400&family=DM+Sans:wght@300;400;500;600&family=Satisfy&display=swap" rel="stylesheet">
 <style>
 :root {
@@ -20,11 +20,11 @@ html,body{height:100%;font-family:"DM Sans",sans-serif;background:#F5EFE6;color:
 #app{min-height:100vh;}
 
 /* TOP NAV */
-.top-nav{background:var(--earth);padding:0 18px;height:54px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:0 2px 12px rgba(0,0,0,0.3);}
+.top-nav{background-color:#F0E6D3;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='54'%3E%3Cline x1='18' y1='54' x2='18' y2='5' stroke='%238C6A20' stroke-width='1.2' opacity='0.35'/%3E%3Cellipse cx='18' cy='4' rx='3' ry='7' fill='%238C6A20' opacity='0.3'/%3E%3Cellipse cx='12' cy='14' rx='2.5' ry='6' fill='%238C6A20' opacity='0.22' transform='rotate(18,12,14)'/%3E%3Cellipse cx='24' cy='14' rx='2.5' ry='6' fill='%238C6A20' opacity='0.22' transform='rotate(-18,24,14)'/%3E%3Cline x1='80' y1='54' x2='80' y2='30' stroke='%235A7A3A' stroke-width='1' opacity='0.28'/%3E%3Cellipse cx='80' cy='26' rx='2.5' ry='6' fill='%23C8A870' opacity='0.28'/%3E%3Cellipse cx='80' cy='26' rx='2.5' ry='6' fill='%23C8A870' opacity='0.25' transform='rotate(60,80,32)'/%3E%3Cellipse cx='80' cy='26' rx='2.5' ry='6' fill='%23C8A870' opacity='0.25' transform='rotate(120,80,32)'/%3E%3Cline x1='140' y1='54' x2='140' y2='18' stroke='%238C6A20' stroke-width='1' opacity='0.25'/%3E%3Cellipse cx='135' cy='22' rx='4' ry='1.5' fill='%234A6A2A' opacity='0.2' transform='rotate(-28,135,22)'/%3E%3Cellipse cx='145' cy='22' rx='4' ry='1.5' fill='%234A6A2A' opacity='0.2' transform='rotate(28,145,22)'/%3E%3Ccircle cx='190' cy='35' r='3' fill='%23C8901A' opacity='0.2'/%3E%3C/svg%3E");background-repeat:repeat-x;background-size:220px 54px;padding:0 18px;height:54px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;border-bottom:1px solid rgba(45,26,14,0.12);}
 .nav-brand{display:flex;align-items:center;gap:10px;cursor:pointer;}
 .nav-logo{width:34px;height:34px;border-radius:50%;overflow:hidden;border:1.5px solid var(--wheat);}
 .nav-logo img{width:100%;height:100%;object-fit:cover;}
-.nav-brand-text{font-family:"Satisfy",cursive;font-size:17px;color:var(--cream);}
+.nav-brand-text{font-family:"Satisfy",cursive;font-size:17px;color:var(--text-mid);white-space:nowrap;}
 .nav-badge{background:var(--sage);color:white;font-size:9px;font-weight:700;padding:2px 8px;border-radius:8px;letter-spacing:0.5px;}
 .nav-right{display:flex;align-items:center;gap:10px;}
 .nav-user{font-size:12px;color:rgba(250,245,236,0.6);}
@@ -242,9 +242,9 @@ html,body{height:100%;font-family:"DM Sans",sans-serif;background:#F5EFE6;color:
         <!-- LOGIN -->
         <div id="loginForm">
           <div class="form-grp"><label class="form-lbl">Email</label><input class="form-inp" type="email" id="loginEmail" placeholder="your@email.com"></div>
-          <div class="form-grp"><label class="form-lbl">Password</label><input class="form-inp" type="password" id="loginPw" placeholder="••••••••"></div>
+          <div class="form-grp"><label class="form-lbl">Password</label><input class="form-inp" type="password" id="loginPw" placeholder="&#x2022;&#x2022;&#x2022;&#x2022;&#x2022;&#x2022;&#x2022;&#x2022;"></div>
           <button class="submit-btn" onclick="doLogin()">Sign In</button>
-          <p style="text-align:center;margin-top:14px;font-size:12px;color:var(--text-light)">Are you a shopper? <a href="/static/app.html" style="color:var(--sage);font-weight:600">Shop here →</a></p>
+          <p style="text-align:center;margin-top:14px;font-size:12px;color:var(--text-light)">Are you a shopper? <a href="/static/app.html" style="color:var(--sage);font-weight:600">Shop here &#x2192;</a></p>
         </div>
         <!-- REGISTER -->
         <div id="registerForm" style="display:none">
@@ -287,15 +287,15 @@ html,body{height:100%;font-family:"DM Sans",sans-serif;background:#F5EFE6;color:
       <div class="form-section-title">Fulfillment Options</div>
       <div style="background:var(--white);border-radius:12px;padding:4px 14px;border:1px solid rgba(45,26,14,0.07);margin-bottom:14px;">
         <div class="toggle-row">
-          <div><div class="toggle-label">🚗 Pickup</div><div class="toggle-sub">Customers come to you</div></div>
+          <div><div class="toggle-label">&#x1F697; Pickup</div><div class="toggle-sub">Customers come to you</div></div>
           <button class="toggle on" id="togglePickup" onclick="toggleFulfill('pickup')"></button>
         </div>
         <div class="toggle-row">
-          <div><div class="toggle-label">🚚 Delivery</div><div class="toggle-sub">You deliver to customers</div></div>
+          <div><div class="toggle-label">&#x1F69A; Delivery</div><div class="toggle-sub">You deliver to customers</div></div>
           <button class="toggle" id="toggleDelivery" onclick="toggleFulfill('delivery')"></button>
         </div>
         <div class="toggle-row">
-          <div><div class="toggle-label">📦 Shipping</div><div class="toggle-sub">Ship products via carrier</div></div>
+          <div><div class="toggle-label">&#x1F4E6; Shipping</div><div class="toggle-sub">Ship products via carrier</div></div>
           <button class="toggle" id="toggleShipping" onclick="toggleFulfill('shipping')"></button>
         </div>
       </div>
@@ -307,7 +307,7 @@ html,body{height:100%;font-family:"DM Sans",sans-serif;background:#F5EFE6;color:
       </div>
       <p style="font-size:11px;color:var(--text-light);margin-bottom:16px;line-height:1.5;">You are responsible for collecting and remitting sales tax. Set your applicable rate.</p>
 
-      <button class="submit-btn" onclick="doSetupShop()">Submit for Approval →</button>
+      <button class="submit-btn" onclick="doSetupShop()">Submit for Approval &#x2192;</button>
       <p style="font-size:11px;color:var(--text-light);text-align:center;margin-top:10px;line-height:1.5;">Your shop will be reviewed by our team before going live.</p>
     </div>
   </div>
@@ -331,7 +331,7 @@ html,body{height:100%;font-family:"DM Sans",sans-serif;background:#F5EFE6;color:
       <!-- DASHBOARD -->
       <div class="view active" id="view-dashboard">
         <div class="dash-header">
-          <div class="dash-greeting" id="dashGreeting">Good morning 🌅</div>
+          <div class="dash-greeting" id="dashGreeting">Good morning &#x1F305;</div>
           <div class="dash-shop" id="dashShopName">Loading...</div>
           <div class="dash-status">
             <span class="status-pill" id="dashStatusPill">Loading...</span>
@@ -339,9 +339,9 @@ html,body{height:100%;font-family:"DM Sans",sans-serif;background:#F5EFE6;color:
         </div>
         <div id="pendingBanner"></div>
         <div class="stat-row" id="dashStats">
-          <div class="stat-box amber"><div class="stat-num" id="statPending">—</div><div class="stat-lbl">Pending</div></div>
-          <div class="stat-box green"><div class="stat-num" id="statConfirmed">—</div><div class="stat-lbl">Confirmed</div></div>
-          <div class="stat-box"><div class="stat-num" id="statProducts">—</div><div class="stat-lbl">Products</div></div>
+          <div class="stat-box amber"><div class="stat-num" id="statPending">&#x2014;</div><div class="stat-lbl">Pending</div></div>
+          <div class="stat-box green"><div class="stat-num" id="statConfirmed">&#x2014;</div><div class="stat-lbl">Confirmed</div></div>
+          <div class="stat-box"><div class="stat-num" id="statProducts">&#x2014;</div><div class="stat-lbl">Products</div></div>
         </div>
         <div class="section-hdr" style="padding-top:4px;">
           <div class="section-hdr-title">Incoming Orders</div>
@@ -361,7 +361,7 @@ html,body{height:100%;font-family:"DM Sans",sans-serif;background:#F5EFE6;color:
         <div id="productsList" class="products-list" style="margin-top:12px;">
           <div class="loading"><div class="spinner"></div></div>
         </div>
-        <button class="add-product-btn" onclick="openAddProduct()">＋ Add New Product</button>
+        <button class="add-product-btn" onclick="openAddProduct()">&#xFF0B; Add New Product</button>
       </div>
 
       <!-- STRIPE -->
@@ -376,26 +376,26 @@ html,body{height:100%;font-family:"DM Sans",sans-serif;background:#F5EFE6;color:
       <!-- PROFILE -->
       <div class="view" id="view-profile">
         <div class="profile-header">
-          <div class="profile-avatar">🌱</div>
-          <div class="profile-name" id="profileName">—</div>
-          <div class="profile-role">🌱 Producer Account</div>
+          <div class="profile-avatar">&#x1F331;</div>
+          <div class="profile-name" id="profileName">&#x2014;</div>
+          <div class="profile-role">&#x1F331; Producer Account</div>
         </div>
         <div class="menu-list">
-          <div class="menu-item" onclick="navigate('stripe')"><div class="menu-icon">💳</div><span class="menu-label">Payment Setup</span><span class="menu-arrow">›</span></div>
-          <div class="menu-item"><div class="menu-icon">🏪</div><span class="menu-label">Edit Shop Profile</span><span class="menu-arrow">›</span></div>
-          <div class="menu-item"><div class="menu-icon">📍</div><span class="menu-label">Location & Radius</span><span class="menu-arrow">›</span></div>
-          <div class="menu-item"><div class="menu-icon">💸</div><span class="menu-label">Tax Rate & Fees</span><span class="menu-arrow">›</span></div>
-          <div class="menu-item" onclick="doLogout()" style="margin-top:6px"><div class="menu-icon">🚪</div><span class="menu-label" style="color:var(--red)">Sign Out</span></div>
+          <div class="menu-item" onclick="navigate('stripe')"><div class="menu-icon">&#x1F4B3;</div><span class="menu-label">Payment Setup</span><span class="menu-arrow">&#x203A;</span></div>
+          <div class="menu-item"><div class="menu-icon">&#x1F3EA;</div><span class="menu-label">Edit Shop Profile</span><span class="menu-arrow">&#x203A;</span></div>
+          <div class="menu-item"><div class="menu-icon">&#x1F4CD;</div><span class="menu-label">Location & Radius</span><span class="menu-arrow">&#x203A;</span></div>
+          <div class="menu-item"><div class="menu-icon">&#x1F4B8;</div><span class="menu-label">Tax Rate & Fees</span><span class="menu-arrow">&#x203A;</span></div>
+          <div class="menu-item" onclick="doLogout()" style="margin-top:6px"><div class="menu-icon">&#x1F6AA;</div><span class="menu-label" style="color:var(--red)">Sign Out</span></div>
         </div>
       </div>
 
     </div>
 
     <nav class="bottom-nav">
-      <button class="bnav-item active" id="bnav-dashboard" onclick="navigate('dashboard')"><span class="bnav-icon">📊</span>Dashboard</button>
-      <button class="bnav-item" id="bnav-products" onclick="navigate('products')"><span class="bnav-icon">🌱</span>Products</button>
-      <button class="bnav-item" id="bnav-stripe" onclick="navigate('stripe')"><span class="bnav-icon">💳</span>Payments</button>
-      <button class="bnav-item" id="bnav-profile" onclick="navigate('profile')"><span class="bnav-icon">👤</span>Profile</button>
+      <button class="bnav-item active" id="bnav-dashboard" onclick="navigate('dashboard')"><span class="bnav-icon">&#x1F4CA;</span>Dashboard</button>
+      <button class="bnav-item" id="bnav-products" onclick="navigate('products')"><span class="bnav-icon">&#x1F331;</span>Products</button>
+      <button class="bnav-item" id="bnav-stripe" onclick="navigate('stripe')"><span class="bnav-icon">&#x1F4B3;</span>Payments</button>
+      <button class="bnav-item" id="bnav-profile" onclick="navigate('profile')"><span class="bnav-icon">&#x1F464;</span>Profile</button>
     </nav>
   </div>
 
@@ -406,7 +406,7 @@ html,body{height:100%;font-family:"DM Sans",sans-serif;background:#F5EFE6;color:
   <div class="modal">
     <div class="modal-title">
       Add Product
-      <button class="modal-close" onclick="closeModal()">✕</button>
+      <button class="modal-close" onclick="closeModal()">&#x2715;</button>
     </div>
     <div id="addProductErr" class="auth-err"></div>
     <div class="form-grp"><label class="form-lbl">Product Name *</label><input class="form-inp" type="text" id="pName" placeholder="e.g. Farm Fresh Eggs"></div>
@@ -414,14 +414,14 @@ html,body{height:100%;font-family:"DM Sans",sans-serif;background:#F5EFE6;color:
       <label class="form-lbl">Category *</label>
       <select class="form-select" id="pCategory">
         <option value="">Select category...</option>
-        <option value="eggs_dairy">🥚 Eggs & Dairy</option>
-        <option value="meat">🥩 Meat & Poultry</option>
-        <option value="vegetables">🌽 Vegetables</option>
-        <option value="fruit">🍓 Fruit</option>
-        <option value="baked">🍞 Baked Goods</option>
-        <option value="pantry">🍯 Pantry & Preserves</option>
-        <option value="herbs">🌿 Herbs & Plants</option>
-        <option value="other">📦 Other</option>
+        <option value="eggs_dairy">&#x1F95A; Eggs & Dairy</option>
+        <option value="meat">&#x1F969; Meat & Poultry</option>
+        <option value="vegetables">&#x1F33D; Vegetables</option>
+        <option value="fruit">&#x1F353; Fruit</option>
+        <option value="baked">&#x1F35E; Baked Goods</option>
+        <option value="pantry">&#x1F36F; Pantry & Preserves</option>
+        <option value="herbs">&#x1F33F; Herbs & Plants</option>
+        <option value="other">&#x1F4E6; Other</option>
       </select>
     </div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
@@ -449,22 +449,14 @@ let user = JSON.parse(localStorage.getItem('fop_producer_user') || 'null');
 let shop = null;
 let fulfillment = {pickup: true, delivery: false, shipping: false};
 
-const CAT_EMOJI = {eggs_dairy:'🥚',meat:'🥩',vegetables:'🌽',fruit:'🍓',baked:'🍞',pantry:'🍯',herbs:'🌿',other:'🛒'};
+const CAT_EMOJI = {eggs_dairy:'&#x1F95A;',meat:'&#x1F969;',vegetables:'&#x1F33D;',fruit:'&#x1F353;',baked:'&#x1F35E;',pantry:'&#x1F36F;',herbs:'&#x1F33F;',other:'&#x1F6D2;'};
 
-// ── INIT ──
+// &#x2500;&#x2500; INIT &#x2500;&#x2500;
 async function init() {
-  if (token && user) {
-    try {
-      const res = await fetch(API + '/api/users/me', {headers:{'Authorization':'Bearer '+token}});
-      const u = await res.json();
-      if (res.ok && (u.role === 'producer' || u.role === 'admin')) {
-        user = {...user, ...u};
-        await loadShop();
-        return;
-      }
-    } catch {}
-  }
+  // Always show auth first &#x2014; never skip past login
   showAuth();
+  // If we have a saved token, silently validate in background
+  // User must explicitly click Sign In to proceed
 }
 
 function showAuth() {
@@ -477,7 +469,7 @@ async function loadShop() {
   try {
     const res = await fetch(API + '/api/producers/me', {headers:{'Authorization':'Bearer '+token}});
     if (res.status === 404) {
-      // No shop yet — show setup
+      // No shop yet &#x2014; show setup
       document.getElementById('authScreen').style.display = 'none';
       document.getElementById('setupScreen').style.display = 'block';
       document.getElementById('producerApp').style.display = 'none';
@@ -497,16 +489,16 @@ function showApp() {
   document.getElementById('navShopName').textContent = shop.shop_name || '';
   document.getElementById('profileName').textContent = user.full_name || '';
   const h = new Date().getHours();
-  const g = h < 12 ? 'Good morning 🌅' : h < 17 ? 'Good afternoon ☀️' : 'Good evening 🌙';
+  const g = h < 12 ? 'Good morning &#x1F305;' : h < 17 ? 'Good afternoon &#x2600;&#xFE0F;' : 'Good evening &#x1F319;';
   document.getElementById('dashGreeting').textContent = g;
   document.getElementById('dashShopName').textContent = shop.shop_name;
   const pill = document.getElementById('dashStatusPill');
-  if (shop.admin_approved) { pill.textContent = '✓ Approved & Live'; pill.className = 'status-pill status-approved'; }
-  else { pill.textContent = '⏳ Pending Approval'; pill.className = 'status-pill status-pending'; }
+  if (shop.admin_approved) { pill.textContent = '&#x2713; Approved & Live'; pill.className = 'status-pill status-approved'; }
+  else { pill.textContent = '&#x23F3; Pending Approval'; pill.className = 'status-pill status-pending'; }
   loadDashboard();
 }
 
-// ── AUTH ──
+// &#x2500;&#x2500; AUTH &#x2500;&#x2500;
 function switchTab(tab) {
   document.getElementById('loginForm').style.display = tab === 'login' ? 'block' : 'none';
   document.getElementById('registerForm').style.display = tab === 'register' ? 'block' : 'none';
@@ -547,7 +539,7 @@ async function doRegister() {
     // Show setup
     document.getElementById('authScreen').style.display = 'none';
     document.getElementById('setupScreen').style.display = 'block';
-    showToast('Account created! Now set up your shop 🌾');
+    showToast('Account created! Now set up your shop &#x1F33E;');
   } catch { err.textContent = 'Connection error'; err.classList.add('show'); }
 }
 
@@ -565,7 +557,7 @@ function doLogout() {
   showToast('Signed out');
 }
 
-// ── SHOP SETUP ──
+// &#x2500;&#x2500; SHOP SETUP &#x2500;&#x2500;
 function toggleFulfill(type) {
   fulfillment[type] = !fulfillment[type];
   const btn = document.getElementById('toggle' + type.charAt(0).toUpperCase() + type.slice(1));
@@ -602,13 +594,13 @@ async function doSetupShop() {
       })
     });
     const d = await res.json();
-    if (!res.ok) { showToast(d.detail || 'Setup failed'); btn.disabled = false; btn.textContent = 'Submit for Approval →'; return; }
-    showToast('Shop submitted for approval! 🌾');
+    if (!res.ok) { showToast(d.detail || 'Setup failed'); btn.disabled = false; btn.textContent = 'Submit for Approval &#x2192;'; return; }
+    showToast('Shop submitted for approval! &#x1F33E;');
     await loadShop();
-  } catch { showToast('Connection error'); btn.disabled = false; btn.textContent = 'Submit for Approval →'; }
+  } catch { showToast('Connection error'); btn.disabled = false; btn.textContent = 'Submit for Approval &#x2192;'; }
 }
 
-// ── NAVIGATE ──
+// &#x2500;&#x2500; NAVIGATE &#x2500;&#x2500;
 function navigate(view) {
   document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
   document.querySelectorAll('.bnav-item').forEach(b => b.classList.remove('active'));
@@ -621,22 +613,22 @@ function navigate(view) {
   if (view === 'stripe') loadStripe();
 }
 
-// ── DASHBOARD ──
+// &#x2500;&#x2500; DASHBOARD &#x2500;&#x2500;
 async function loadDashboard() {
   const el = document.getElementById('incomingOrders');
   // Show pending banner if not approved
   const banner = document.getElementById('pendingBanner');
   if (!shop.admin_approved) {
     banner.innerHTML = `<div class="pending-banner">
-      <span class="pending-icon">⏳</span>
+      <span class="pending-icon">&#x23F3;</span>
       <div>
         <div class="pending-title">Awaiting Admin Approval</div>
-        <div class="pending-text">Your shop is under review. You'll be notified once approved and can start receiving orders. This usually takes 1–2 business days.</div>
+        <div class="pending-text">Your shop is under review. You'll be notified once approved and can start receiving orders. This usually takes 1&#x2013;2 business days.</div>
       </div>
     </div>`;
     el.innerHTML = '<div style="text-align:center;padding:32px 20px;color:var(--text-light);font-size:13px;">Orders will appear here once your shop is approved</div>';
-    document.getElementById('statPending').textContent = '—';
-    document.getElementById('statConfirmed').textContent = '—';
+    document.getElementById('statPending').textContent = '&#x2014;';
+    document.getElementById('statConfirmed').textContent = '&#x2014;';
     return;
   }
   banner.innerHTML = '';
@@ -654,7 +646,7 @@ async function loadDashboard() {
     document.getElementById('statConfirmed').textContent = confirmed;
     document.getElementById('statProducts').textContent = products.filter(p => p.is_active).length;
     if (!orders.length) {
-      el.innerHTML = '<div style="text-align:center;padding:32px 20px;color:var(--text-light);font-size:13px;">No orders yet 🌾<br><small style="display:block;margin-top:6px">Orders will appear here when shoppers place them</small></div>';
+      el.innerHTML = '<div style="text-align:center;padding:32px 20px;color:var(--text-light);font-size:13px;">No orders yet &#x1F33E;<br><small style="display:block;margin-top:6px">Orders will appear here when shoppers place them</small></div>';
       return;
     }
     el.innerHTML = orders.map(o => orderCardHTML(o)).join('');
@@ -665,22 +657,22 @@ async function loadDashboard() {
 
 function orderCardHTML(o) {
   const countdown = o.status === 'pending' && o.hours_remaining > 0
-    ? `<span class="countdown">⏱ ${Math.floor(o.hours_remaining)}h remaining</span>` : '';
+    ? `<span class="countdown">&#x23F1; ${Math.floor(o.hours_remaining)}h remaining</span>` : '';
   const actions = o.status === 'pending'
     ? `<div class="ocard-actions">
-        <button class="btn-accept" onclick="updateOrderStatus(${o.id},'confirmed')">✓ Accept</button>
-        <button class="btn-decline" onclick="updateOrderStatus(${o.id},'cancelled')">✕ Decline</button>
+        <button class="btn-accept" onclick="updateOrderStatus(${o.id},'confirmed')">&#x2713; Accept</button>
+        <button class="btn-decline" onclick="updateOrderStatus(${o.id},'cancelled')">&#x2715; Decline</button>
        </div>`
     : o.status === 'confirmed'
     ? `<div class="ocard-actions">
-        <button class="btn-ready" onclick="updateOrderStatus(${o.id},'ready_for_pickup')">📦 Mark Ready</button>
+        <button class="btn-ready" onclick="updateOrderStatus(${o.id},'ready_for_pickup')">&#x1F4E6; Mark Ready</button>
        </div>` : '';
   return `<div class="order-card">
     <div class="ocard-top">
-      <span class="ocard-icon">🛒</span>
+      <span class="ocard-icon">&#x1F6D2;</span>
       <div>
         <div class="ocard-name">${o.shopper_name || 'Customer'}</div>
-        <div class="ocard-meta">Order #${o.id} · ${o.fulfillment_type} · $${parseFloat(o.total).toFixed(2)}</div>
+        <div class="ocard-meta">Order #${o.id} &#xB7; ${o.fulfillment_type} &#xB7; $${parseFloat(o.total).toFixed(2)}</div>
       </div>
       <span class="status-chip s-${o.status}">${o.status.replace(/_/g,' ')}</span>
     </div>
@@ -697,12 +689,12 @@ async function updateOrderStatus(id, status) {
       body: JSON.stringify({status})
     });
     const d = await res.json();
-    if (res.ok) { showToast('Order ' + (labels[status]||status) + 'd ✓'); loadDashboard(); }
+    if (res.ok) { showToast('Order ' + (labels[status]||status) + 'd &#x2713;'); loadDashboard(); }
     else showToast(d.detail || 'Failed');
   } catch { showToast('Connection error'); }
 }
 
-// ── PRODUCTS ──
+// &#x2500;&#x2500; PRODUCTS &#x2500;&#x2500;
 async function loadProducts() {
   const el = document.getElementById('productsList');
   el.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
@@ -710,14 +702,14 @@ async function loadProducts() {
     const res = await fetch(API + '/api/products/my', {headers:{'Authorization':'Bearer '+token}});
     const data = await res.json();
     if (!data.length) {
-      el.innerHTML = '<div style="text-align:center;padding:32px 20px;color:var(--text-light);font-size:13px;">No products yet 🌱<br><small style="display:block;margin-top:6px">Add your first product below</small></div>';
+      el.innerHTML = '<div style="text-align:center;padding:32px 20px;color:var(--text-light);font-size:13px;">No products yet &#x1F331;<br><small style="display:block;margin-top:6px">Add your first product below</small></div>';
       return;
     }
     el.innerHTML = data.map(p => `<div class="product-item">
-      <span class="product-emoji">${CAT_EMOJI[p.category]||'🛒'}</span>
+      <span class="product-emoji">${CAT_EMOJI[p.category]||'&#x1F6D2;'}</span>
       <div style="flex:1;min-width:0">
         <div class="product-name">${p.name}</div>
-        <div class="product-meta">$${parseFloat(p.price).toFixed(2)} / ${p.unit} · ${p.quantity_available} left</div>
+        <div class="product-meta">$${parseFloat(p.price).toFixed(2)} / ${p.unit} &#xB7; ${p.quantity_available} left</div>
       </div>
       <span class="product-price">$${parseFloat(p.price).toFixed(2)}</span>
       <button class="toggle product-toggle ${p.is_active ? 'on' : ''}" onclick="toggleProduct(${p.id}, ${p.is_active})"></button>
@@ -733,11 +725,11 @@ async function toggleProduct(id, currentActive) {
       method:'PATCH', headers:{'Authorization':'Bearer '+token,'Content-Type':'application/json'},
       body: JSON.stringify({is_active: !currentActive})
     });
-    if (res.ok) { loadProducts(); showToast(!currentActive ? 'Product activated ✓' : 'Product paused'); }
+    if (res.ok) { loadProducts(); showToast(!currentActive ? 'Product activated &#x2713;' : 'Product paused'); }
   } catch { showToast('Connection error'); }
 }
 
-// ── ADD PRODUCT MODAL ──
+// &#x2500;&#x2500; ADD PRODUCT MODAL &#x2500;&#x2500;
 function openAddProduct() {
   document.getElementById('addProductModal').classList.add('show');
   document.getElementById('addProductErr').classList.remove('show');
@@ -764,7 +756,7 @@ async function doAddProduct() {
     const d = await res.json();
     if (!res.ok) { err.textContent = d.detail || 'Failed to add product'; err.classList.add('show'); return; }
     closeModal();
-    showToast(name + ' added ✓');
+    showToast(name + ' added &#x2713;');
     // Clear form
     ['pName','pPrice','pUnit','pQty','pDesc'].forEach(id => document.getElementById(id).value = '');
     document.getElementById('pCategory').value = '';
@@ -773,7 +765,7 @@ async function doAddProduct() {
   } catch { err.textContent = 'Connection error'; err.classList.add('show'); }
 }
 
-// ── STRIPE ──
+// &#x2500;&#x2500; STRIPE &#x2500;&#x2500;
 async function loadStripe() {
   const el = document.getElementById('stripeContent');
   el.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
@@ -783,9 +775,9 @@ async function loadStripe() {
     if (d.onboarding_complete) {
       el.innerHTML = `<div class="stripe-card">
         <div class="stripe-label">Payment Status</div>
-        <div class="stripe-title">Stripe Connected ✓</div>
+        <div class="stripe-title">Stripe Connected &#x2713;</div>
         <div class="stripe-sub">Your Stripe account is set up. Payments from orders will be automatically transferred to your bank account.</div>
-        <div class="stripe-complete">⚡ Auto-payouts enabled · Powered by Stripe Connect</div>
+        <div class="stripe-complete">&#x26A1; Auto-payouts enabled &#xB7; Powered by Stripe Connect</div>
       </div>
       <div style="padding:14px 18px;font-size:13px;color:var(--text-mid);line-height:1.6;">
         Your payout schedule is set in your Stripe dashboard. Platform fee: <strong>0%</strong> at launch.
@@ -795,7 +787,7 @@ async function loadStripe() {
         <div class="stripe-label">Action Required</div>
         <div class="stripe-title">Set Up Payouts</div>
         <div class="stripe-sub">Connect your bank account via Stripe to receive payments from orders. Takes about 5 minutes.</div>
-        <button class="stripe-btn" onclick="startStripeOnboarding()">⚡ Connect with Stripe →</button>
+        <button class="stripe-btn" onclick="startStripeOnboarding()">&#x26A1; Connect with Stripe &#x2192;</button>
       </div>
       <div style="padding:14px 18px;font-size:12px;color:var(--text-light);line-height:1.6;">
         From Our Place uses Stripe Connect to securely route payments directly to your bank. We never hold your money. Platform fee: <strong>0%</strong> at launch.
@@ -813,12 +805,12 @@ async function startStripeOnboarding() {
     const res = await fetch(API + '/api/stripe/connect/onboard', {method:'POST', headers:{'Authorization':'Bearer '+token}});
     const d = await res.json();
     if (d.onboarding_url) window.location.href = d.onboarding_url;
-    else if (d.complete) showToast('Stripe already connected ✓');
+    else if (d.complete) showToast('Stripe already connected &#x2713;');
     else showToast(d.detail || 'Error starting Stripe onboarding');
   } catch { showToast('Connection error'); }
 }
 
-// ── TOAST ──
+// &#x2500;&#x2500; TOAST &#x2500;&#x2500;
 function showToast(msg) {
   const t = document.getElementById('toast');
   t.textContent = msg; t.classList.add('show');
