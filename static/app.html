@@ -439,6 +439,16 @@ function init() {
   document.getElementById('homeGreeting').innerHTML = g + name;
   updateAuthUI();
   loadProducers();
+  // If arriving from producer portal sign-in link, force auth screen
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('signin') === '1') {
+    // Clear any saved session so user must log in fresh
+    localStorage.removeItem('fop_token');
+    localStorage.removeItem('fop_user');
+    token = null; user = null;
+    updateAuthUI();
+    navigate('auth');
+  }
 }
 
 // &#x2500;&#x2500; AUTH UI &#x2500;&#x2500;
