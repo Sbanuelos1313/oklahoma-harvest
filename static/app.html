@@ -942,19 +942,20 @@ function renderAccount() {
     </div>`;
     return;
   }
+  const initials = user.full_name.split(' ').map(n=>n[0]).join('').toUpperCase();
   el.innerHTML = `
     <div class="account-header">
-      <div class="account-avatar">&#x1F464;</div>
+      <div class="account-avatar" style="font-size:18px;font-weight:700;font-family:'DM Sans',sans-serif;color:white;">${initials}</div>
       <div class="account-name">${user.full_name}</div>
-      <div class="account-role">${user.role === 'producer' ? '&#x1F331; Producer Account' : '&#x1F6CD;&#xFE0F; Shopper Account'}</div>
+      <div class="account-role">Shopper Account</div>
     </div>
     <div class="menu-list">
       <div class="menu-item" onclick="navigate('orders')"><div class="menu-icon">&#x1F4CB;</div><span class="menu-label">My Orders</span><span class="menu-arrow">&#x203A;</span></div>
       <div class="menu-item"><div class="menu-icon">&#x2764;&#xFE0F;</div><span class="menu-label">Saved Producers</span><span class="menu-arrow">&#x203A;</span></div>
-      <div class="menu-item"><div class="menu-icon">&#x1F4CD;</div><span class="menu-label">Location & Radius</span><span class="menu-arrow">&#x203A;</span></div>
+      <div class="menu-item"><div class="menu-icon">&#x1F4CD;</div><span class="menu-label">Location &amp; Radius</span><span class="menu-arrow">&#x203A;</span></div>
       <div class="menu-item"><div class="menu-icon">&#x1F514;</div><span class="menu-label">Notifications</span><span class="menu-arrow">&#x203A;</span></div>
-      ${user.role === 'producer' ? '<div class="menu-item" onclick="window.location.href=\'/producer.html\'"><div class="menu-icon">&#x1F331;</div><span class="menu-label">Producer Dashboard</span><span class="menu-arrow">&#x203A;</span></div>' : ''}
-      <div class="menu-item" onclick="doLogout()" style="margin-top:6px"><div class="menu-icon">&#x1F6AA;</div><span class="menu-label" style="color:#C62828">Sign Out</span></div>
+      <div class="menu-item"><div class="menu-icon">&#x2699;&#xFE0F;</div><span class="menu-label">Account Settings</span><span class="menu-arrow">&#x203A;</span></div>
+      <div class="menu-item" onclick="doLogout()" style="margin-top:6px"><div class="menu-icon">&#x1F6AA;</div><span class="menu-label" style="color:#C62828;font-weight:600;">Sign Out</span></div>
     </div>`;
 }
 
