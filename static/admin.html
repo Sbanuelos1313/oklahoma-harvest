@@ -147,11 +147,11 @@ body{font-family:"DM Sans",sans-serif;background:#F5EFE6;}
     <div class="main-area">
       <div class="topbar">
         <button class="refresh-btn" onclick="refreshCurrent()">&#x21BB; Refresh</button>
-        <div class="topbar-title" id="topbarTitle">Dashboard</div>
+        <div class="topbar-title" id="topbarTitle">Dashboard</div><div id="topbarSub" style="display:none"></div>
       </div>
       <div class="content">
         <div class="view active" id="view-dashboard">
-          <div class="stat-grid">
+          <div class="stat-grid" id="statGrid">
             <div class="stat-card"><div class="stat-num" id="statPendingCount">—</div><div class="stat-lbl">Pending Approval</div></div>
             <div class="stat-card"><div class="stat-num" id="statTotalProducers">—</div><div class="stat-lbl">Total Producers</div></div>
             <div class="stat-card"><div class="stat-num" id="statTotalShoppers">—</div><div class="stat-lbl">Total Shoppers</div></div>
@@ -191,6 +191,16 @@ body{font-family:"DM Sans",sans-serif;background:#F5EFE6;}
   </div>
 </div>
 
+
+<div class="modal-overlay" id="producerModal">
+  <div class="modal">
+    <div class="modal-title" id="modalTitle">Producer Details</div>
+    <div id="modalBody"></div>
+    <div class="modal-actions">
+      <button class="btn-reject" onclick="closeModal()">Close</button>
+    </div>
+  </div>
+</div>
 <div class="toast" id="toast"></div>
 <script>
 const API = window.location.origin;
@@ -256,7 +266,7 @@ function doLogout() {
 function showAdmin() {
   document.getElementById('loginScreen').style.display = 'none';
   document.getElementById('adminApp').style.display = 'block';
-  document.getElementById('sidebarUser').textContent = adminUser.full_name;
+  // sidebarUser removed
   loadDashboard();
   loadPendingCount();
 }
