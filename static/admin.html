@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>From Our Place &#x2014; Admin</title>
+<title>From Our Place &#x2014; Admin</title><!-- v13 -->
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,800&family=DM+Sans:wght@300;400;500;600&family=Satisfy&display=swap" rel="stylesheet">
 <style>
 .bg-svg {
@@ -161,7 +161,19 @@ tr:hover td{background:#FAFAF8;}
 .top-botanical-strip {
   height: 54px;
   background-color: #F0E6D3;
-  background-image: url("data:image/svg+xml;charset=utf-8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='54'><line x1='18' y1='54' x2='18' y2='5' stroke='%238C6A20' stroke-width='1.2' opacity='0.35'/><ellipse cx='18' cy='4' rx='3' ry='7' fill='%238C6A20' opacity='0.3'/><line x1='80' y1='54' x2='80' y2='30' stroke='%235A7A3A' stroke-width='1' opacity='0.28'/><ellipse cx='80' cy='26' rx='2.5' ry='6' fill='%23C8A870' opacity='0.28'/><line x1='140' y1='54' x2='140' y2='18' stroke='%238C6A20' stroke-width='1' opacity='0.25'/><circle cx='190' cy='35' r='3' fill='%23C8901A' opacity='0.2'/></svg>");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='54'%3E%3Cline x1='18' y1='54' x2='18' y2='5' stroke='%238C6A20' stroke-width='1.2' opacity='0.35'/%3E%3Cellipse cx='18' cy='4' rx='3' ry='7' fill='%238C6A20' opacity='0.3'/%3E%3Cline x1='80' y1='54' x2='80' y2='30' stroke='%235A7A3A' stroke-width='1' opacity='0.28'/%3E%3Cellipse cx='80' cy='26' rx='2.5' ry='6' fill='%23C8A870' opacity='0.28'/%3E%3Cline x1='140' y1='54' x2='140' y2='18' stroke='%238C6A20' stroke-width='1' opacity='0.25'/%3E%3Ccircle cx='190' cy='35' r='3' fill='%23C8901A' opacity='0.2'/%3E%3C/svg%3E");
+  background-repeat: repeat-x;
+  background-size: 220px 54px;
+  position: sticky;
+  top: 0;
+  z-index: 11;
+}
+</style>
+
+.top-botanical-strip {
+  height: 54px;
+  background-color: #F0E6D3;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='54'%3E%3Cline x1='18' y1='54' x2='18' y2='5' stroke='%238C6A20' stroke-width='1.2' opacity='0.35'/%3E%3Cellipse cx='18' cy='4' rx='3' ry='7' fill='%238C6A20' opacity='0.3'/%3E%3Cline x1='80' y1='54' x2='80' y2='30' stroke='%235A7A3A' stroke-width='1' opacity='0.28'/%3E%3Cellipse cx='80' cy='26' rx='2.5' ry='6' fill='%23C8A870' opacity='0.28'/%3E%3Cline x1='140' y1='54' x2='140' y2='18' stroke='%238C6A20' stroke-width='1' opacity='0.25'/%3E%3Ccircle cx='190' cy='35' r='3' fill='%23C8901A' opacity='0.2'/%3E%3C/svg%3E");
   background-repeat: repeat-x;
   background-size: 220px 54px;
   position: sticky;
@@ -171,70 +183,45 @@ tr:hover td{background:#FAFAF8;}
 </style>
 
 <style>
-/* SIDEBAR OVERRIDE - all text matches Home/Sign Out color */
+/* OVERRIDE v13 */
 #adminApp { position:relative; z-index:1; background:#F5EFE6; }
 .app-layout { position:relative; z-index:1; }
 .sidebar { background: var(--parchment) !important; border-right: 1px solid rgba(45,26,14,0.1) !important; }
-.nav-item { color: var(--text-mid) !important; font-weight:500; }
+.sidebar-brand-name { color: #5C4033 !important; }
+.nav-section-label { color: #5C4033 !important; opacity:1 !important; }
+.nav-item { color: #5C4033 !important; opacity:1 !important; }
 .nav-item.active { background: var(--sage-bg) !important; color: var(--sage) !important; }
-.nav-section { color: var(--text-mid) !important; }
-.sidebar-logo-text { color: var(--text-mid) !important; }
-.admin-name { color: var(--text-mid) !important; }
-.logout-label { color: var(--text-mid) !important; font-weight:500; }
-.sidebar-footer { border-top: 1px solid rgba(45,26,14,0.08) !important; }
-.sidebar .nav-item { color: #5C4033 !important; }
-.sidebar .nav-section { color: #5C4033 !important; }
-.sidebar .sidebar-logo-text { color: #5C4033 !important; }
-.sidebar .admin-name { color: #5C4033 !important; }
-.sidebar .logout-label { color: #5C4033 !important; }
 .sidebar .nav-item span { color: #5C4033 !important; }
-
-/* Hide Loading... text */
-#sidebarUser { display:none !important; }
+.admin-name { display:none !important; }
 .sidebar-user { display:none !important; }
-
-/* Botanical topbar */
-.topbar { 
-  background-color:#F0E6D3 !important; 
-  background-image:url(data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22220%22%20height%3D%2254%22%3E%3Cline%20x1%3D%2218%22%20y1%3D%2254%22%20x2%3D%2218%22%20y2%3D%225%22%20stroke%3D%22%238C6A20%22%20stroke-width%3D%221.2%22%20opacity%3D%220.35%22%2F%3E%3Cellipse%20cx%3D%2218%22%20cy%3D%224%22%20rx%3D%223%22%20ry%3D%227%22%20fill%3D%22%238C6A20%22%20opacity%3D%220.3%22%2F%3E%3Cline%20x1%3D%2280%22%20y1%3D%2254%22%20x2%3D%2280%22%20y2%3D%2230%22%20stroke%3D%22%235A7A3A%22%20stroke-width%3D%221%22%20opacity%3D%220.28%22%2F%3E%3Cellipse%20cx%3D%2280%22%20cy%3D%2226%22%20rx%3D%222.5%22%20ry%3D%226%22%20fill%3D%22%23C8A870%22%20opacity%3D%220.28%22%2F%3E%3Cline%20x1%3D%22140%22%20y1%3D%2254%22%20x2%3D%22140%22%20y2%3D%2218%22%20stroke%3D%22%238C6A20%22%20stroke-width%3D%221%22%20opacity%3D%220.25%22%2F%3E%3Ccircle%20cx%3D%22190%22%20cy%3D%2235%22%20r%3D%223%22%20fill%3D%22%23C8901A%22%20opacity%3D%220.2%22%2F%3E%3C%2Fsvg%3E) !important;
-  background-repeat:repeat-x !important;
-  background-size:220px 54px !important;
-}
-.topbar-title { color:var(--text-mid) !important; }
-.topbar-sub { color:var(--text-light) !important; }
-.refresh-btn { background:var(--sage) !important; border:none !important; color:white !important; font-weight:700 !important; padding:7px 16px !important; border-radius:16px !important; }
-.topbar{background:var(--white);padding:14px 28px;border-bottom:1px solid rgba(45,26,14,0.08);display:flex;align-items:center;justify-content:space-between;position:sticky;top:54px;z-index:10;}
-.sidebar-brand-name { color: #5C4033 !important; font-family:"Satisfy",cursive !important; }
-.nav-section-label { color: #5C4033 !important; opacity:1 !important; letter-spacing:1px !important; }
-.admin-name { display:none !important; }
-
-.admin-name { display:none !important; }
-.sidebar .sidebar-logo-text { color: #5C4033 !important; font-size:16px !important; }
-.sidebar .nav-section { color: #5C4033 !important; font-weight:700 !important; font-size:10px !important; opacity:1 !important; }
-.sidebar .nav-item { color: #5C4033 !important; opacity:1 !important; }
-.sidebar .nav-item span { color: #5C4033 !important; opacity:1 !important; }
-.sidebar-logo-text { color: #5C4033 !important; opacity:1 !important; }
-
-/* Topbar: Dashboard title matches platform overview style */
-.topbar-title { font-family:"DM Sans",sans-serif !important; font-size:16px !important; font-weight:600 !important; color:var(--text-mid) !important; }
-.topbar-sub { font-size:12px !important; color:var(--text-light) !important; }
-
-/* Refresh button top right */
-.refresh-btn { margin-left:auto !important; }
-.topbar{background:var(--white);padding:14px 28px;border-bottom:1px solid rgba(45,26,14,0.08);display:flex;align-items:center;justify-content:space-between;position:sticky;top:54px;z-index:10;}
-
-/* Botanical strip at top of sidebar */
-.sidebar-brand { background-color:#F0E6D3; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='80'%3E%3Cline x1='18' y1='80' x2='18' y2='5' stroke='%238C6A20' stroke-width='1.2' opacity='0.35'/%3E%3Cellipse cx='18' cy='4' rx='3' ry='7' fill='%238C6A20' opacity='0.3'/%3E%3Cline x1='80' y1='80' x2='80' y2='30' stroke='%235A7A3A' stroke-width='1' opacity='0.28'/%3E%3Cellipse cx='80' cy='26' rx='2.5' ry='6' fill='%23C8A870' opacity='0.28'/%3E%3Cline x1='140' y1='80' x2='140' y2='18' stroke='%238C6A20' stroke-width='1' opacity='0.25'/%3E%3Ccircle cx='190' cy='45' r='3' fill='%23C8901A' opacity='0.2'/%3E%3C/svg%3E"); background-repeat:repeat-x; background-size:220px 80px; padding:20px 18px 16px !important; border-bottom:1px solid rgba(45,26,14,0.08) !important; }
-
-
-.sidebar-brand { border-bottom:1px solid rgba(45,26,14,0.08) !important; background-color:#F0E6D3 !important; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='80'%3E%3Cline x1='18' y1='80' x2='18' y2='5' stroke='%238C6A20' stroke-width='1.2' opacity='0.3'/%3E%3Cellipse cx='18' cy='4' rx='3' ry='7' fill='%238C6A20' opacity='0.28'/%3E%3Cline x1='80' y1='80' x2='80' y2='30' stroke='%235A7A3A' stroke-width='1' opacity='0.25'/%3E%3Cellipse cx='80' cy='26' rx='2.5' ry='6' fill='%23C8A870' opacity='0.25'/%3E%3Cline x1='140' y1='80' x2='140' y2='18' stroke='%238C6A20' stroke-width='1' opacity='0.22'/%3E%3Ccircle cx='190' cy='45' r='3' fill='%23C8901A' opacity='0.18'/%3E%3C/svg%3E") !important; background-repeat:repeat-x !important; background-size:220px 80px !important; }
-.main-area { background: #F5EFE6 !important; }
-body { background: #F5EFE6 !important; }
-.topbar { background: var(--white) !important; border-bottom: 1px solid rgba(45,26,14,0.08) !important; }
-.topbar-title { color: var(--text-dark) !important; }
-.topbar-sub { color: var(--text-light) !important; }
+.main-area { background:#F5EFE6 !important; }
+body { background:#F5EFE6 !important; }
+.topbar { background:var(--white) !important; border-bottom:1px solid rgba(45,26,14,0.08) !important; display:flex !important; align-items:center !important; justify-content:flex-start !important; gap:12px !important; position:sticky !important; top:54px !important; z-index:10 !important; }
+.topbar-title { color:var(--text-mid) !important; font-size:18px !important; }
+.topbar-sub { display:none !important; }
+.refresh-btn { background:var(--sage) !important; color:white !important; border:none !important; font-weight:700 !important; padding:7px 16px !important; border-radius:16px !important; order:-1 !important; }
 </style>
-<!-- v12 --></head>
+
+<style>
+/* OVERRIDE v13 */
+#adminApp { position:relative; z-index:1; background:#F5EFE6; }
+.app-layout { position:relative; z-index:1; }
+.sidebar { background: var(--parchment) !important; border-right: 1px solid rgba(45,26,14,0.1) !important; }
+.sidebar-brand-name { color: #5C4033 !important; }
+.nav-section-label { color: #5C4033 !important; opacity:1 !important; }
+.nav-item { color: #5C4033 !important; opacity:1 !important; }
+.nav-item.active { background: var(--sage-bg) !important; color: var(--sage) !important; }
+.sidebar .nav-item span { color: #5C4033 !important; }
+.admin-name { display:none !important; }
+.sidebar-user { display:none !important; }
+.main-area { background:#F5EFE6 !important; }
+body { background:#F5EFE6 !important; }
+.topbar { background:var(--white) !important; border-bottom:1px solid rgba(45,26,14,0.08) !important; display:flex !important; align-items:center !important; justify-content:flex-start !important; gap:12px !important; position:sticky !important; top:54px !important; z-index:10 !important; }
+.topbar-title { color:var(--text-mid) !important; font-size:18px !important; }
+.topbar-sub { display:none !important; }
+.refresh-btn { background:var(--sage) !important; color:white !important; border:none !important; font-weight:700 !important; padding:7px 16px !important; border-radius:16px !important; order:-1 !important; }
+</style>
+</head>
 <body>
 <svg class="bg-svg" viewBox="0 0 400 900" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
 <defs>
@@ -408,7 +395,8 @@ body { background: #F5EFE6 !important; }
 
     <!-- MAIN -->
     <div class="main-area">
-      <div class="top-botanical-strip"></div><div class="topbar"><line x1=%2218%22 y1=%2254%22 x2=%2218%22 y2=%225%22 stroke=%22%238C6A20%22 stroke-width=%221.2%22 opacity=%220.35%22/><ellipse cx=%2218%22 cy=%224%22 rx=%223%22 ry=%227%22 fill=%22%238C6A20%22 opacity=%220.3%22/><line x1=%2280%22 y1=%2254%22 x2=%2280%22 y2=%2230%22 stroke=%22%235A7A3A%22 stroke-width=%221%22 opacity=%220.28%22/><ellipse cx=%2280%22 cy=%2226%22 rx=%222.5%22 ry=%226%22 fill=%22%23C8A870%22 opacity=%220.28%22/><line x1=%22140%22 y1=%2254%22 x2=%22140%22 y2=%2218%22 stroke=%22%238C6A20%22 stroke-width=%221%22 opacity=%220.25%22/><circle cx=%22190%22 cy=%2235%22 r=%223%22 fill=%22%23C8901A%22 opacity=%220.2%22/></svg>'<div>
+      <div class="top-botanical-strip"></div><div class="topbar">
+        <div>
           <div class="topbar-title" id="topbarTitle">Dashboard</div>
           <div class="topbar-sub" id="topbarSub">Platform overview</div>
         </div>
@@ -552,7 +540,7 @@ function doLogout() {
 function showAdmin() {
   document.getElementById('loginScreen').style.display = 'none';
   document.getElementById('adminApp').style.display = 'block';
-  // sidebarUser hidden
+  document.getElementById('sidebarUser').textContent = adminUser.full_name;
   loadDashboard();
   loadPendingCount();
 }
