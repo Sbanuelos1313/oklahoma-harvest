@@ -185,6 +185,10 @@ html,body{height:100%;font-family:"DM Sans",sans-serif;background:#F5EFE6;color:
 #producerApp{background:#F5EFE6;position:relative;min-height:100vh;}
 #setupScreen{background:#F5EFE6;position:relative;min-height:100vh;}
 #app{min-height:100vh;position:relative;z-index:1;}
+
+.pw-wrap{position:relative;}
+.pw-wrap .form-inp{padding-right:40px;}
+.pw-toggle{position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--text-light);font-size:16px;padding:0;}
 </style>
 </head>
 <body>
@@ -248,7 +252,7 @@ html,body{height:100%;font-family:"DM Sans",sans-serif;background:#F5EFE6;color:
         <!-- LOGIN -->
         <div id="loginForm">
           <div class="form-grp"><label class="form-lbl">Email</label><input class="form-inp" type="email" id="loginEmail" placeholder="your@email.com"></div>
-          <div class="form-grp"><label class="form-lbl">Password</label><input class="form-inp" type="password" id="loginPw" placeholder="&#x2022;&#x2022;&#x2022;&#x2022;&#x2022;&#x2022;&#x2022;&#x2022;"></div>
+          <div class="form-grp"><label class="form-lbl">Password</label><div class="pw-wrap"><input class="form-inp" type="password" id="loginPw" placeholder="&#x2022;&#x2022;&#x2022;&#x2022;&#x2022;&#x2022;&#x2022;&#x2022;"><button type="button" class="pw-toggle" onclick="togglePw('loginPw',this)">&#x1F441;</button></div></div>
           <button class="submit-btn" onclick="doLogin()">Sign In</button>
           <p style="text-align:center;margin-top:14px;font-size:12px;color:var(--text-light)">Are you a shopper? <a href="/static/app.html?signin=1" style="color:var(--sage);font-weight:600">Shop here &#x2192;</a></p>
         </div>
@@ -449,6 +453,11 @@ html,body{height:100%;font-family:"DM Sans",sans-serif;background:#F5EFE6;color:
 
 <script>
 const API = window.location.origin;
+function togglePw(id, btn) {
+  const input = document.getElementById(id);
+  if (input.type === 'password') { input.type = 'text'; btn.textContent = '&#x1F648;'; }
+  else { input.type = 'password'; btn.innerHTML = '&#x1F441;'; }
+}
 let token = localStorage.getItem('fop_producer_token');
 let user = JSON.parse(localStorage.getItem('fop_producer_user') || 'null');
 let shop = null;
