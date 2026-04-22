@@ -511,8 +511,8 @@ function showApp() {
   document.getElementById('authScreen').style.display = 'none';
   document.getElementById('setupScreen').style.display = 'none';
   document.getElementById('producerApp').style.display = 'block';
-  document.getElementById('navShopName').textContent = shop.shop_name || '';
-  document.getElementById('profileName').textContent = user.full_name || '';
+  if(document.getElementById('navShopName')) document.getElementById('navShopName').textContent = shop.shop_name || '';
+  if(document.getElementById('profileName')) document.getElementById('profileName').textContent = user.full_name || '';
   const h = new Date().getHours();
   const g = h < 12 ? 'Good morning &#x1F305;' : h < 17 ? 'Good afternoon &#x2600;&#xFE0F;' : 'Good evening &#x1F319;';
   document.getElementById('dashGreeting').innerHTML = g;
