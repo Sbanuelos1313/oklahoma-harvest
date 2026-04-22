@@ -249,7 +249,7 @@ html,body{height:100%;font-family:"DM Sans",sans-serif;background:#F5EFE6;color:
         <!-- LOGIN -->
         <div id="loginForm">
           <div class="form-grp"><label class="form-lbl">Email</label><input class="form-inp" type="email" id="loginEmail" placeholder="your@email.com"></div>
-          <div class="form-grp"><label class="form-lbl">Password</label><input class="form-inp" type="password" id="loginPw" placeholder="&#x2022;&#x2022;&#x2022;&#x2022;&#x2022;&#x2022;&#x2022;&#x2022;"><button type="button" style="background:none;border:none;cursor:pointer;font-size:11px;color:#8C6E5A;font-weight:600;margin-top:4px;font-family:DM Sans,sans-serif;" onclick="var i=document.getElementById('loginPw');i.type=i.type==='password'?'text':'password';this.textContent=i.type==='password'?'Show':'Hide';">Show</button></div>
+          <div class="form-grp"><label class="form-lbl">Password</label><input class="form-inp" type="password" id="loginPw" placeholder="&#x2022;&#x2022;&#x2022;&#x2022;&#x2022;&#x2022;&#x2022;&#x2022;"><button id="pwToggleBtn" type="button" style="background:none;border:none;cursor:pointer;font-size:11px;color:#8C6E5A;font-weight:600;margin-top:4px;font-family:'DM Sans',sans-serif;" onclick="togglePw()">Show</button></div>
           <button class="submit-btn" onclick="doLogin()">Sign In</button>
           <p style="text-align:center;margin-top:14px;font-size:12px;color:var(--text-light)">Are you a shopper? <a href="/static/app.html?signin=1" style="color:var(--sage);font-weight:600">Shop here &#x2192;</a></p>
         </div>
@@ -530,6 +530,14 @@ function switchTab(tab) {
   document.getElementById('loginTab').className = 'atab ' + (tab === 'login' ? 'active' : 'inactive');
   document.getElementById('registerTab').className = 'atab ' + (tab === 'register' ? 'active' : 'inactive');
   document.getElementById('authErr').classList.remove('show');
+}
+
+
+function togglePw() {
+  var inp = document.getElementById('loginPw');
+  var btn = document.getElementById('pwToggleBtn');
+  if (inp.type === 'password') { inp.type = 'text'; btn.textContent = 'Hide'; }
+  else { inp.type = 'password'; btn.textContent = 'Show'; }
 }
 
 async function doLogin() {
