@@ -399,7 +399,7 @@ body:has(#view-auth.active) .bottom-nav { display:none !important; }
           <div id="authErr" class="auth-err"></div>
           <div id="loginForm">
             <div class="form-grp"><label class="form-lbl">Email</label><input class="form-inp" type="email" id="loginEmail" placeholder="your@email.com"></div>
-            <div class="form-grp"><label class="form-lbl">Password</label><input class="form-inp" type="password" id="loginPw" placeholder="&#x2022;&#x2022;&#x2022;&#x2022;&#x2022;&#x2022;&#x2022;&#x2022;"></div>
+            <div class="form-grp"><label class="form-lbl">Password</label><input class="form-inp" type="password" id="loginPw" placeholder="&#x2022;&#x2022;&#x2022;&#x2022;&#x2022;&#x2022;&#x2022;&#x2022;"><button id="showPwBtn" type="button" style="background:none;border:none;cursor:pointer;font-size:11px;color:#8C6E5A;font-weight:600;margin-top:6px;display:block;font-family:'DM Sans',sans-serif;" onclick="togglePw('loginPw','showPwBtn')">Show password</button></div>
             <button class="submit-btn" onclick="doLogin()">Sign In</button>
           <p style="text-align:center;margin-top:16px;font-size:12px;color:var(--text-light);">Are you a producer? <a href="/static/producer.html" style="color:var(--sage);font-weight:600;text-decoration:none;">Join here &#x2192;</a></p>
           </div>
@@ -546,6 +546,13 @@ function pickRole(r) {
 function showErr(msg) {
   const e = document.getElementById('authErr');
   e.textContent = msg; e.classList.add('show');
+}
+
+function togglePw(inputId, btnId) {
+  var inp = document.getElementById(inputId);
+  var btn = document.getElementById(btnId);
+  if (inp.type === 'password') { inp.type = 'text'; btn.textContent = 'Hide'; }
+  else { inp.type = 'password'; btn.textContent = 'Show'; }
 }
 
 async function doLogin() {
