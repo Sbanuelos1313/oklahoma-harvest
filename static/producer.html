@@ -420,14 +420,28 @@ html,body{height:100%;font-family:"DM Sans",sans-serif;background:#F5EFE6;color:
       <label class="form-lbl">Category *</label>
       <select class="form-select" id="pCategory">
         <option value="">Select category...</option>
-        <option value="eggs_dairy">&#x1F95A; Eggs & Dairy</option>
-        <option value="meat">&#x1F969; Meat & Poultry</option>
+        <option value="eggs_dairy">&#x1F95A; Eggs &amp; Dairy</option>
+        <option value="meat">&#x1F969; Meat &amp; Poultry</option>
         <option value="vegetables">&#x1F33D; Vegetables</option>
         <option value="fruit">&#x1F353; Fruit</option>
         <option value="baked">&#x1F35E; Baked Goods</option>
-        <option value="pantry">&#x1F36F; Pantry & Preserves</option>
-        <option value="herbs">&#x1F33F; Herbs & Plants</option>
-        <option value="other">&#x1F4E6; Other</option>
+        <option value="pantry">&#x1F36F; Pantry &amp; Preserves</option>
+        <option value="herbs">&#x1F33F; Herbs</option>
+        <option value="honey">&#x1F36F; Honey</option>
+        <option value="candy">&#x1F36C; Candy &amp; Treats</option>
+        <option value="jams">&#x1F353; Jams &amp; Preserves</option>
+        <option value="flowers">&#x1F337; Flowers</option>
+        <option value="essential_oils">&#x1F9F4; Essential Oils</option>
+        <option value="tinctures">&#x1F331; Tinctures &amp; Wellness</option>
+        <option value="candles">&#x1F56F; Candles</option>
+        <option value="jewelry">&#x1F48D; Handmade Jewelry</option>
+        <option value="soaps">&#x1F9FC; Soaps &amp; Body Care</option>
+        <option value="plants">&#x1F331; Plants &amp; Seedlings</option>
+        <option value="crafts">&#x1F3A8; Crafts &amp; Gifts</option>
+        <option value="sauces">&#x1F9C4; Sauces &amp; Condiments</option>
+        <option value="nuts">&#x1F95C; Nuts &amp; Seeds</option>
+        <option value="coffee_tea">&#x2615; Coffee &amp; Tea</option>
+        <option value="other">&#x1F6D2; Other</option>
       </select>
     </div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
@@ -455,7 +469,14 @@ let user = JSON.parse(localStorage.getItem('fop_producer_user') || 'null');
 let shop = null;
 let fulfillment = {pickup: true, delivery: false, shipping: false};
 
-const CAT_EMOJI = {eggs_dairy:'&#x1F95A;',meat:'&#x1F969;',vegetables:'&#x1F33D;',fruit:'&#x1F353;',baked:'&#x1F35E;',pantry:'&#x1F36F;',herbs:'&#x1F33F;',other:'&#x1F6D2;'};
+const CAT_EMOJI = {
+  eggs_dairy:'&#x1F95A;', meat:'&#x1F969;', vegetables:'&#x1F33D;', fruit:'&#x1F353;',
+  baked:'&#x1F35E;', pantry:'&#x1F36F;', herbs:'&#x1F33F;', honey:'&#x1F36F;',
+  candy:'&#x1F36C;', jams:'&#x1F353;', flowers:'&#x1F337;', essential_oils:'&#x1F9F4;',
+  tinctures:'&#x1F331;', candles:'&#x1F56F;', jewelry:'&#x1F48D;',
+  soaps:'&#x1F9FC;', plants:'&#x1F331;', crafts:'&#x1F3A8;',
+  sauces:'&#x1F9C4;', nuts:'&#x1F95C;', coffee_tea:'&#x2615;', other:'&#x1F6D2;'
+};
 
 // &#x2500;&#x2500; INIT &#x2500;&#x2500;
 function init() {
