@@ -284,7 +284,19 @@ html,body{height:100%;font-family:"DM Sans",sans-serif;background:#F5EFE6;color:
       <div class="form-section-title">Shop Information</div>
       <div class="form-grp"><label class="form-lbl">Shop / Farm Name *</label><input class="form-inp" type="text" id="setupName" placeholder="e.g. Sundown Creek Farm"></div>
       <div class="form-grp"><label class="form-lbl">Description</label><textarea class="form-inp textarea" id="setupDesc" placeholder="Tell shoppers about your farm, what you grow, your practices..."></textarea></div>
-
+      <div class="form-section-title">Shop Logo</div>
+      <div class="form-grp">
+        <label class="form-lbl">Upload a logo or photo (optional)</label>
+        <div id="logoUploadArea" style="border:2px dashed rgba(45,26,14,0.15);border-radius:12px;padding:20px;text-align:center;background:var(--white);cursor:pointer;" onclick="document.getElementById('logoFileInput').click()">
+          <div id="logoPreview" style="display:none;margin-bottom:10px;"><img id="logoPreviewImg" style="width:80px;height:80px;border-radius:50%;object-fit:cover;border:2px solid var(--sage-pale);" src="" alt="Logo"></div>
+          <div id="logoUploadPrompt">
+            <div style="font-size:28px;margin-bottom:6px;">&#x1F4F7;</div>
+            <div style="font-size:13px;font-weight:600;color:var(--text-mid);">Tap to upload your logo</div>
+            <div style="font-size:11px;color:var(--text-light);margin-top:4px;">JPG, PNG up to 5MB</div>
+          </div>
+        </div>
+        <input type="file" id="logoFileInput" accept="image/*" style="display:none;" onchange="previewLogo(this)">
+      </div>
       <div class="form-section-title">Location</div>
       <div class="form-grp"><label class="form-lbl">Address</label><input class="form-inp" type="text" id="setupAddress" placeholder="1234 Farm Road"></div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
@@ -315,7 +327,6 @@ html,body{height:100%;font-family:"DM Sans",sans-serif;background:#F5EFE6;color:
         <div class="form-grp"><label class="form-lbl">Delivery Fee ($)</label><input class="form-inp" type="number" id="setupDeliveryFee" value="0" step="0.50"></div>
       </div>
       <p style="font-size:11px;color:var(--text-light);margin-bottom:16px;line-height:1.5;">You are responsible for collecting and remitting sales tax. Set your applicable rate.</p>
-
       <button class="submit-btn" onclick="doSetupShop()">Submit for Approval &#x2192;</button>
       <p style="font-size:11px;color:var(--text-light);text-align:center;margin-top:10px;line-height:1.5;">Your shop will be reviewed by our team before going live.</p>
     </div>
@@ -464,6 +475,33 @@ html,body{height:100%;font-family:"DM Sans",sans-serif;background:#F5EFE6;color:
 <div class="toast" id="toast"></div>
 
 <script>
+let uploadedLogoUrl = null;
+
+function previewLogo(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    document.getElementById('logoPreviewImg').src = e.target.result;
+    document.getElementById('logoPreview').style.display = 'block';
+    document.getElementById('logoUploadPrompt').style.display = 'none';
+  };
+  reader.readAsDataURL(file);
+}
+
+async function uploadLogo() {
+  const input = document.getElementById('logoFileInput');
+  if (!input.files[0]) return null;
+  const formData = new FormData();
+  formData.append('file', input.files[0]);
+  const res = await fetch(API + '/api/producers/me/upload-logo', {
+    method: 'POST',
+    headers: {'Authorization': 'Bearer ' + token},
+    body: formData
+  });
+  const data = await res.json();
+  return data.url || null;
+}
 const API = window.location.origin;
 let token = localStorage.getItem('fop_producer_token');
 let user = JSON.parse(localStorage.getItem('fop_producer_user') || 'null');
@@ -612,6 +650,7 @@ function toggleFulfill(type) {
 }
 
 async function doSetupShop() {
+  const logoUrl = await uploadLogo();
   const name = document.getElementById('setupName').value.trim();
   const city = document.getElementById('setupCity').value.trim();
   const err = {textContent:'', classList:{add:()=>{}, remove:()=>{}}};
@@ -627,6 +666,7 @@ async function doSetupShop() {
       headers: {'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json'},
       body: JSON.stringify({
         shop_name: name,
+        profile_image_url: logoUrl,
         description: document.getElementById('setupDesc').value.trim() || null,
         address: document.getElementById('setupAddress').value.trim() || null,
         city: city,
