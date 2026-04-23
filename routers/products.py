@@ -7,7 +7,7 @@ from auth import get_current_producer, get_current_user
 router = APIRouter(prefix="/api/products", tags=["products"])
 
 PROHIBITED_KEYWORDS = ["cannabis","hemp","cbd","thc","delta","delta-8","delta-9","marijuana","weed","edible","infused","420","dispensary"]
-VALID_CATEGORIES = ["eggs_dairy","meat","vegetables","fruit","baked","pantry","herbs","other"]
+VALID_CATEGORIES = ["eggs_dairy","meat","vegetables","fruit","baked","pantry","herbs","honey","candy","jams","flowers","essential_oils","tinctures","candles","jewelry","soaps","plants","crafts","sauces","nuts","coffee_tea","other"]
 
 def check_prohibited(name, description=""):
     text = f"{name} {description}".lower()
