@@ -389,7 +389,7 @@ body:has(#view-auth.active) .bottom-nav { display:none !important; }
     </div>
 
     <!-- CART -->
-    <div class="view" id="view-cart">
+    <div class="view" id="view-cart" style="padding-bottom:80px;">
       <div class="cart-header">
         <div class="cart-title">Your Cart</div>
         <div class="cart-producer-name" id="cartProducerName"></div>
@@ -610,6 +610,17 @@ async function doRegister() {
     showToast('Welcome to From Our Place! &#x1F33E;');
     navigate(selectedRole === 'producer' ? 'account' : 'home');
   } catch { showErr('Connection error &#x2014; try again'); }
+}
+
+function updateAuthUI() {
+  const authBtn = document.getElementById('authBtn');
+  if (token && user) {
+    authBtn.textContent = user.full_name.split(' ')[0];
+    authBtn.onclick = () => navigate('profile');
+  } else {
+    authBtn.textContent = 'Sign In';
+    authBtn.onclick = () => navigate('auth');
+  }
 }
 
 function saveSession(d) {
