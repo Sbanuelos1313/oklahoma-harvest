@@ -661,7 +661,7 @@ async function loadProducers(category) {
       const fulfill = [p.fulfillment_pickup && '&#x1F697; Pickup', p.fulfillment_delivery && '&#x1F69A; Delivery', p.fulfillment_shipping && '&#x1F4E6; Ships'].filter(Boolean).join(' &#xB7; ');
       return `<div class="producer-card" onclick="openProducer(${p.id})">
         <div class="pcard-body" style="display:flex;align-items:center;gap:12px;padding:14px;">
-          <div style="width:56px;height:56px;border-radius:12px;background:var(--sage-bg);display:flex;align-items:center;justify-content:center;font-size:28px;flex-shrink:0;">&#x1F3EA;</div>
+          <div style="width:56px;height:56px;border-radius:12px;background:var(--sage-bg);display:flex;align-items:center;justify-content:center;flex-shrink:0;"><img src="/static/shop-icon.svg" style="width:52px;height:52px;object-fit:contain;"></div>
           <div style="flex:1;">
           <div class="pcard-name">${p.shop_name}</div>
           <div class="pcard-meta">&#x1F4CD; ${p.city||'Oklahoma'}, ${p.state||'OK'} &#xB7; ${dist}${rating}</div>
