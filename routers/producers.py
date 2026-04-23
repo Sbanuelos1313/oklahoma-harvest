@@ -5,6 +5,17 @@ from database import get_conn
 from auth import get_current_user, get_current_producer, get_current_admin
 import threading
 
+import cloudinary
+import cloudinary.uploader
+import os
+from fastapi import UploadFile, File
+
+cloudinary.config(
+    cloud_name=os.getenv("CLOUDINARY_CLOUD_NAME", "dekyfsnmh"),
+    api_key=os.getenv("CLOUDINARY_API_KEY", "692448999435973"),
+    api_secret=os.getenv("CLOUDINARY_API_SECRET", "SDDISfCZioH5Z5na0YkuXIN8iOc")
+)
+
 router = APIRouter(prefix="/api/producers", tags=["producers"])
 
 class CreateShopRequest(BaseModel):
@@ -184,3 +195,20 @@ def get_producer_profile(producer_id: int):
     cur.close(); conn.close()
     if not row: raise HTTPException(404, "Producer not found")
     return dict(zip(cols, row))
+
+@router.post("/me/upload-logo")
+async def upload_logo(file: UploadFile = File(...), user=Depends(get_current_producer)):
+    if not file.content_type.startswith("image/"):
+        raise HTTPException(400, "File must be an image")
+    contents = await file.read()
+    result = cloudinary.uploader.upload(
+        contents,
+        folder="from_our_place/logos",
+        transformation=[{"width": 400, "height": 400, "crop": "fill"}],
+        resource_type="image"
+    )
+    url = result["secure_url"]
+    conn = get_conn(); cur = conn.cursor()
+    cur.execute("UPDATE producers SET profile_image_url = %s WHERE user_id = %s", (url, user["id"]))
+    conn.commit(); cur.close(); conn.close()
+    return {"url": url}
