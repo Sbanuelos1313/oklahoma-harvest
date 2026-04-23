@@ -308,9 +308,9 @@ body:has(#view-auth.active) .bottom-nav { display:none !important; }
     <div class="view active" id="view-home">
       <div class="home-header">
         <div class="home-greeting" id="homeGreeting">Good morning &#x1F305;</div>
-        <div class="home-title">Find local food near you</div>
-        <div class="home-search-bar" onclick="navigate('search')">
-          <span>&#x1F50D;</span><span>eggs, sourdough, honey...</span>
+        <div class="home-title">Find local shops near you</div>
+        <div class="home-search-bar">
+          <span>&#x1F4CD;</span><input id="zipSearch" type="text" inputmode="numeric" maxlength="5" placeholder="Enter zip code to find shops..." style="border:none;background:none;font-family:'DM Sans',sans-serif;font-size:14px;color:var(--text-dark);outline:none;flex:1;" onkeydown="if(event.key==='Enter')searchByZip(this.value);"><button onclick="searchByZip(document.getElementById('zipSearch').value)" style="background:var(--sage);color:white;border:none;border-radius:10px;padding:6px 14px;font-size:12px;font-weight:700;cursor:pointer;">Go</button>
         </div>
       </div>
       <div class="cat-scroll" id="catScroll">
@@ -994,6 +994,13 @@ function showToast(msg) {
   const t = document.getElementById('toast');
   t.innerHTML = msg; t.classList.add('show');
   setTimeout(() => t.classList.remove('show'), 2400);
+}
+
+function searchByZip(zip) {
+  if (!zip || zip.length < 5) { showToast('Please enter a 5-digit zip code'); return; }
+  window._searchZip = zip;
+  navigate('search');
+  showToast('Finding shops near ' + zip + '...');
 }
 
 init();
