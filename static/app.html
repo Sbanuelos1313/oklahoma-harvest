@@ -108,7 +108,7 @@ html,body { height:100%; font-family:"DM Sans",sans-serif; background:var(--crea
 .shop-btn { background:var(--sage); color:white; border:none; padding:6px 14px; border-radius:10px; font-size:11px; font-weight:700; font-family:"DM Sans",sans-serif; cursor:pointer; }
 
 /* SEARCH */
-.search-header { background:var(--earth); padding:14px 18px 16px; }
+.search-header { background:var(--parchment); padding:14px 18px 16px; }
 .search-input-wrap { display:flex; align-items:center; gap:9px; background:rgba(255,255,255,0.11); border:1px solid rgba(255,255,255,0.18); border-radius:18px; padding:10px 14px; }
 .search-input-wrap input { flex:1; background:none; border:none; outline:none; font-size:14px; color:var(--cream); font-family:"DM Sans",sans-serif; }
 .search-input-wrap input::placeholder { color:rgba(250,245,236,0.38); }
@@ -121,10 +121,10 @@ html,body { height:100%; font-family:"DM Sans",sans-serif; background:var(--crea
 .product-result-price { font-size:13px; font-weight:700; color:var(--sage); margin-left:auto; flex-shrink:0; text-align:right; }
 
 /* PRODUCER PROFILE */
-.profile-hero { background:var(--earth); padding:18px; display:flex; align-items:center; gap:13px; }
+.profile-hero { background:var(--parchment); padding:18px; display:flex; align-items:center; gap:13px; }
 .profile-avatar { width:56px; height:56px; border-radius:12px; overflow:hidden; background:var(--sage-bg); display:flex; align-items:center; justify-content:center; flex-shrink:0; }
 .profile-name { font-family:"Playfair Display",serif; font-size:20px; font-weight:700; color:var(--text-dark); }
-.profile-meta { font-size:11px; color:rgba(250,245,236,0.58); margin-top:3px; }
+.profile-meta { font-size:11px; color:var(--text-light); margin-top:3px; }
 .profile-badges { display:flex; gap:6px; margin-top:7px; flex-wrap:wrap; }
 .pbadge { font-size:9px; font-weight:700; padding:3px 8px; border-radius:8px; }
 .pbadge-verified { background:var(--sage); color:white; }
@@ -235,7 +235,7 @@ html,body { height:100%; font-family:"DM Sans",sans-serif; background:var(--crea
 .toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
 
 /* BACK BAR */
-.back-bar { background:var(--earth); padding:11px 18px; display:flex; align-items:center; }
+.back-bar { background:var(--text-mid); padding:11px 18px; display:flex; align-items:center; }
 .back-btn { background:none; border:none; color:var(--wheat); font-size:14px; cursor:pointer; font-family:"DM Sans",sans-serif; display:flex; align-items:center; gap:5px; }
 
 #app { position:relative; z-index:1; }
@@ -245,6 +245,9 @@ html,body { height:100%; font-family:"DM Sans",sans-serif; background:var(--crea
 body:has(#view-auth.active) .top-nav,
 body:has(#view-auth.active) .bottom-nav { display:none !important; }
 .top-nav.auth-mode, .bottom-nav.auth-mode { visibility:hidden; height:0; padding:0; border:none; }
+.filter-bar{display:flex;align-items:center;padding:10px 16px;background:var(--white);border-bottom:1px solid rgba(45,26,14,0.06);}
+.filter-select-wrap{display:flex;align-items:center;gap:8px;background:var(--cream);border:1.5px solid rgba(45,26,14,0.1);border-radius:12px;padding:8px 14px;width:100%;}
+.filter-select{border:none;background:none;font-family:"DM Sans",sans-serif;font-size:13px;color:var(--text-dark);outline:none;cursor:pointer;width:100%;}
 </style>
 <script src="https://js.stripe.com/v3/"></script>
 </head>
@@ -308,7 +311,39 @@ body:has(#view-auth.active) .bottom-nav { display:none !important; }
     <div class="view active" id="view-home">
       <div class="home-header">
         <div class="home-greeting" id="homeGreeting">Good morning &#x1F305;</div>
-        <div class="home-title">Find local food near you</div>
+        <div class="home-title">Find local shops near you</div>
+        <div class="home-search-bar">
+          <span>&#x1F4CD;</span><input id="zipSearch" type="text" inputmode="numeric" maxlength="5" placeholder="Enter zip code to find shops..." style="border:none;background:none;font-family:'DM Sans',sans-serif;font-size:14px;color:var(--text-dark);outline:none;flex:1;" onkeydown="if(event.key==='Enter')searchByZip(this.value);"><button onclick="searchByZip(document.getElementById('zipSearch').value)" style="background:var(--sage);color:white;border:none;border-radius:10px;padding:6px 14px;font-size:12px;font-weight:700;cursor:pointer;">Go</button>
+        </div>
+        <div class="filter-bar">
+          <div class="filter-select-wrap">
+            <span style="font-size:14px;">&#x1F4CB;</span>
+            <select class="filter-select" id="filterCategory" onchange="filterByCat(this.value)">
+              <option value="all">All Categories</option>
+              <option value="eggs_dairy">&#x1F95A; Eggs &amp; Dairy</option>
+              <option value="meat">&#x1F969; Meat &amp; Poultry</option>
+              <option value="vegetables">&#x1F33D; Vegetables</option>
+              <option value="fruit">&#x1F353; Fruit</option>
+              <option value="baked">&#x1F35E; Baked Goods</option>
+              <option value="pantry">&#x1F36F; Pantry</option>
+              <option value="herbs">&#x1F33F; Herbs</option>
+              <option value="honey">&#x1F36F; Honey</option>
+              <option value="candy">&#x1F36C; Candy &amp; Treats</option>
+              <option value="jams">&#x1F353; Jams &amp; Preserves</option>
+              <option value="flowers">&#x1F337; Flowers</option>
+              <option value="essential_oils">&#x1F9F4; Essential Oils</option>
+              <option value="tinctures">&#x1F331; Tinctures &amp; Wellness</option>
+              <option value="candles">&#x1F56F; Candles</option>
+              <option value="jewelry">&#x1F48D; Handmade Jewelry</option>
+              <option value="soaps">&#x1F9FC; Soaps &amp; Body Care</option>
+              <option value="plants">&#x1F331; Plants &amp; Seedlings</option>
+              <option value="crafts">&#x1F3A8; Crafts &amp; Gifts</option>
+              <option value="sauces">&#x1F9C4; Sauces &amp; Condiments</option>
+              <option value="nuts">&#x1F95C; Nuts &amp; Seeds</option>
+              <option value="coffee_tea">&#x2615; Coffee &amp; Tea</option>
+            </select>
+          </div>
+        </div>
         <div class="home-search-bar" onclick="navigate('search')">
           <span>&#x1F50D;</span><span>eggs, sourdough, honey...</span>
         </div>
@@ -985,6 +1020,14 @@ function showToast(msg) {
   t.innerHTML = msg; t.classList.add('show');
   setTimeout(() => t.classList.remove('show'), 2400);
 }
+
+function searchByZip(zip) {
+  if (!zip || zip.length < 5) { showToast('Please enter a 5-digit zip code'); return; }
+  window._searchZip = zip;
+  navigate('search');
+  showToast('Finding shops near ' + zip + '...');
+}
+function filterByCat(val) {}
 
 init();
 </script>
