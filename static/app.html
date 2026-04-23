@@ -122,7 +122,7 @@ html,body { height:100%; font-family:"DM Sans",sans-serif; background:var(--crea
 
 /* PRODUCER PROFILE */
 .profile-hero { background:var(--earth); padding:18px; display:flex; align-items:center; gap:13px; }
-.profile-avatar { width:52px; height:52px; border-radius:50%; background:var(--sage); display:flex; align-items:center; justify-content:center; font-size:24px; border:2px solid var(--sage-pale); margin-bottom:12px; }
+.profile-avatar { width:56px; height:56px; border-radius:12px; overflow:hidden; background:var(--sage-bg); display:flex; align-items:center; justify-content:center; flex-shrink:0; }
 .profile-name { font-family:"Playfair Display",serif; font-size:20px; font-weight:700; color:var(--text-dark); }
 .profile-meta { font-size:11px; color:rgba(250,245,236,0.58); margin-top:3px; }
 .profile-badges { display:flex; gap:6px; margin-top:7px; flex-wrap:wrap; }
@@ -245,9 +245,6 @@ html,body { height:100%; font-family:"DM Sans",sans-serif; background:var(--crea
 body:has(#view-auth.active) .top-nav,
 body:has(#view-auth.active) .bottom-nav { display:none !important; }
 .top-nav.auth-mode, .bottom-nav.auth-mode { visibility:hidden; height:0; padding:0; border:none; }
-.filter-bar{display:flex;align-items:center;padding:10px 16px;background:var(--white);border-bottom:1px solid rgba(45,26,14,0.06);}
-.filter-select-wrap{display:flex;align-items:center;gap:8px;background:var(--cream);border:1.5px solid rgba(45,26,14,0.1);border-radius:12px;padding:8px 14px;width:100%;}
-.filter-select{border:none;background:none;font-family:"DM Sans",sans-serif;font-size:13px;color:var(--text-dark);outline:none;cursor:pointer;width:100%;}
 </style>
 <script src="https://js.stripe.com/v3/"></script>
 </head>
@@ -311,42 +308,34 @@ body:has(#view-auth.active) .bottom-nav { display:none !important; }
     <div class="view active" id="view-home">
       <div class="home-header">
         <div class="home-greeting" id="homeGreeting">Good morning &#x1F305;</div>
-        <div class="home-title">Find local shops near you</div>
-        <div class="home-search-bar">
-          <span>&#x1F4CD;</span><input id="zipSearch" type="text" inputmode="numeric" maxlength="5" placeholder="Enter zip code to find shops..." style="border:none;background:none;font-family:'DM Sans',sans-serif;font-size:14px;color:var(--text-dark);outline:none;flex:1;" onkeydown="if(event.key==='Enter')searchByZip(this.value);"><button onclick="searchByZip(document.getElementById('zipSearch').value)" style="background:var(--sage);color:white;border:none;border-radius:10px;padding:6px 14px;font-size:12px;font-weight:700;cursor:pointer;">Go</button>
+        <div class="home-title">Find local food near you</div>
+        <div class="home-search-bar" onclick="navigate('search')">
+          <span>&#x1F50D;</span><span>eggs, sourdough, honey...</span>
         </div>
       </div>
-
-      <div class="filter-bar">
-        <div class="filter-select-wrap">
-          <span style="font-size:14px;">&#x1F4CB;</span>
-          <select class="filter-select" id="filterCategory" onchange="filterByCat(this.value)">
-            <option value="all">All Categories</option>
-            <option value="eggs_dairy">&#x1F95A; Eggs &amp; Dairy</option>
-            <option value="meat">&#x1F969; Meat &amp; Poultry</option>
-            <option value="vegetables">&#x1F33D; Vegetables</option>
-            <option value="fruit">&#x1F353; Fruit</option>
-            <option value="baked">&#x1F35E; Baked Goods</option>
-            <option value="pantry">&#x1F36F; Pantry</option>
-            <option value="herbs">&#x1F33F; Herbs</option>
-            <option value="honey">&#x1F36F; Honey</option>
-            <option value="candy">&#x1F36C; Candy &amp; Treats</option>
-            <option value="jams">&#x1F353; Jams &amp; Preserves</option>
-            <option value="flowers">&#x1F337; Flowers</option>
-            <option value="essential_oils">&#x1F9F4; Essential Oils</option>
-            <option value="tinctures">&#x1F331; Tinctures &amp; Wellness</option>
-            <option value="candles">&#x1F56F; Candles</option>
-            <option value="jewelry">&#x1F48D; Handmade Jewelry</option>
-            <option value="soaps">&#x1F9FC; Soaps &amp; Body Care</option>
-            <option value="plants">&#x1F331; Plants &amp; Seedlings</option>
-            <option value="crafts">&#x1F3A8; Crafts &amp; Gifts</option>
-            <option value="sauces">&#x1F9C4; Sauces &amp; Condiments</option>
-            <option value="nuts">&#x1F95C; Nuts &amp; Seeds</option>
-            <option value="coffee_tea">&#x2615; Coffee &amp; Tea</option>
-          </select>
-        </div>
-      </div>
-      
+      <div class="cat-scroll" id="catScroll">
+        <button class="cat-chip active" onclick="filterCat(this,'all')">All</button>
+        <button class="cat-chip inactive" onclick="filterCat(this,'eggs_dairy')">&#x1F95A; Eggs &amp; Dairy</button>
+        <button class="cat-chip inactive" onclick="filterCat(this,'meat')">&#x1F969; Meat</button>
+        <button class="cat-chip inactive" onclick="filterCat(this,'vegetables')">&#x1F33D; Vegetables</button>
+        <button class="cat-chip inactive" onclick="filterCat(this,'fruit')">&#x1F353; Fruit</button>
+        <button class="cat-chip inactive" onclick="filterCat(this,'baked')">&#x1F35E; Baked</button>
+        <button class="cat-chip inactive" onclick="filterCat(this,'pantry')">&#x1F36F; Pantry</button>
+        <button class="cat-chip inactive" onclick="filterCat(this,'herbs')">&#x1F33F; Herbs</button>
+        <button class="cat-chip inactive" onclick="filterCat(this,'honey')">&#x1F36F; Honey</button>
+        <button class="cat-chip inactive" onclick="filterCat(this,'candy')">&#x1F36C; Candy</button>
+        <button class="cat-chip inactive" onclick="filterCat(this,'jams')">&#x1F353; Jams</button>
+        <button class="cat-chip inactive" onclick="filterCat(this,'flowers')">&#x1F337; Flowers</button>
+        <button class="cat-chip inactive" onclick="filterCat(this,'essential_oils')">&#x1F9F4; Essential Oils</button>
+        <button class="cat-chip inactive" onclick="filterCat(this,'tinctures')">&#x1F331; Tinctures</button>
+        <button class="cat-chip inactive" onclick="filterCat(this,'candles')">&#x1F56F; Candles</button>
+        <button class="cat-chip inactive" onclick="filterCat(this,'jewelry')">&#x1F48D; Jewelry</button>
+        <button class="cat-chip inactive" onclick="filterCat(this,'soaps')">&#x1F9FC; Soaps</button>
+        <button class="cat-chip inactive" onclick="filterCat(this,'plants')">&#x1F331; Plants</button>
+        <button class="cat-chip inactive" onclick="filterCat(this,'crafts')">&#x1F3A8; Crafts</button>
+        <button class="cat-chip inactive" onclick="filterCat(this,'sauces')">&#x1F9C4; Sauces</button>
+        <button class="cat-chip inactive" onclick="filterCat(this,'nuts')">&#x1F95C; Nuts</button>
+        <button class="cat-chip inactive" onclick="filterCat(this,'coffee_tea')">&#x2615; Coffee &amp; Tea</button></div>
       <div class="section-header">
         <span class="section-title">Producers Near You</span>
         <button class="see-all-btn" onclick="navigate('search')">See all</button>
@@ -358,12 +347,22 @@ body:has(#view-auth.active) .bottom-nav { display:none !important; }
 
     <!-- SEARCH -->
     <div class="view" id="view-search">
-      <div class="search-header" style="background:var(--parchment);border-bottom:1px solid rgba(45,26,14,0.08);">
-        <div style="font-family:'Playfair Display',serif;font-size:20px;font-weight:700;color:var(--earth);">&#x2728; New Arrivals</div>
-        <div style="font-size:12px;color:var(--text-light);margin-top:2px;">Fresh finds from local producers this month</div>
+      <div class="search-header">
+        <div class="search-input-wrap">
+          <span style="color:rgba(250,245,236,0.45);font-size:16px">&#x1F50D;</span>
+          <input type="text" id="searchInput" placeholder="Search products, farms..." oninput="doSearch(this.value)" autofocus>
+        </div>
       </div>
-      <div id="newArrivalsContent" style="padding:16px;">
-        <div class="loading"><div class="spinner"></div></div>
+      <div class="cat-scroll" id="searchCatScroll">
+        <button class="cat-chip active" onclick="filterSearchCat(this,null)">All</button>
+        <button class="cat-chip inactive" onclick="filterSearchCat(this,'eggs_dairy')">&#x1F95A; Eggs</button>
+        <button class="cat-chip inactive" onclick="filterSearchCat(this,'meat')">&#x1F969; Meat</button>
+        <button class="cat-chip inactive" onclick="filterSearchCat(this,'vegetables')">&#x1F33D; Veg</button>
+        <button class="cat-chip inactive" onclick="filterSearchCat(this,'baked')">&#x1F35E; Baked</button>
+        <button class="cat-chip inactive" onclick="filterSearchCat(this,'pantry')">&#x1F36F; Pantry</button>
+      </div>
+      <div id="searchResults" class="search-results">
+        <div style="text-align:center;padding:40px 20px;color:var(--text-light);font-size:14px;">Search for fresh local products &#x1F33E;</div>
       </div>
     </div>
 
@@ -439,7 +438,7 @@ body:has(#view-auth.active) .bottom-nav { display:none !important; }
 
   <nav class="bottom-nav">
     <button class="bnav-item active" id="bnav-home" onclick="navigate('home')"><span class="bnav-icon">&#x1F3E0;</span>Home</button>
-    <button class="bnav-item" id="bnav-search" onclick="navigate('search')"><span class="bnav-icon">&#x2728;</span>New Arrivals</button>
+    <button class="bnav-item" id="bnav-search" onclick="navigate('search')"><span class="bnav-icon">&#x1F50D;</span>Search</button>
     <button class="bnav-item" id="bnav-cart" onclick="navigate('cart')"><span class="bnav-icon">&#x1F6D2;</span>Cart</button>
     <button class="bnav-item" id="bnav-orders" onclick="navigate('orders')"><span class="bnav-icon">&#x1F4CB;</span>Orders</button>
     <button class="bnav-item" id="bnav-account" onclick="navigate('account')"><span class="bnav-icon">&#x1F464;</span>Profile</button>
@@ -504,7 +503,6 @@ function navigate(view) {
   if (view === 'orders') loadOrders();
   if (view === 'account') renderAccount();
   if (view === 'cart') renderCart();
-  if (view === 'search') loadNewArrivals();
 }
 
 // &#x2500;&#x2500; INIT &#x2500;&#x2500;
@@ -568,34 +566,6 @@ function togglePw(inputId, btnId) {
   var btn = document.getElementById(btnId);
   if (inp.type === 'password') { inp.type = 'text'; btn.textContent = 'Hide'; }
   else { inp.type = 'password'; btn.textContent = 'Show'; }
-}
-
-
-async function loadNewArrivals() {
-  const el = document.getElementById('newArrivalsContent');
-  if (!el) return;
-  el.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
-  try {
-    const tok = localStorage.getItem('fop_token'); const headers = tok ? {'Authorization':'Bearer '+tok} : {};
-    const res = await fetch(API + '/api/products/search?lat=35.65&lng=-97.48&radius_miles=100', {headers});
-    const products = await res.json();
-    if (!products.length) {
-      el.innerHTML = '<div style="text-align:center;padding:48px 20px;color:var(--text-light);"><div style="font-size:40px;margin-bottom:12px;">&#x1F331;</div><div>No products yet — check back soon!</div></div>';
-      return;
-    }
-    el.innerHTML = products.map(p => `
-      <div style="background:white;border-radius:14px;padding:16px;margin-bottom:12px;box-shadow:0 1px 4px rgba(45,26,14,0.06);display:flex;justify-content:space-between;align-items:center;">
-        <div>
-          <div style="font-weight:700;color:var(--text-dark);font-size:14px;">${p.name}</div>
-          <div style="font-size:11px;color:var(--text-light);margin-top:2px;">${p.shop_name} &bull; ${p.city}, ${p.state}</div>
-          <div style="font-size:12px;color:var(--sage);font-weight:600;margin-top:4px;">$${parseFloat(p.price).toFixed(2)} / ${p.unit}</div>
-        </div>
-        <button onclick="viewProducer(${p.producer_id})" style="background:var(--sage);color:white;border:none;border-radius:10px;padding:8px 14px;font-size:12px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;">Shop</button>
-      </div>
-    `).join('');
-  } catch(e) {
-    el.innerHTML = '<div style="text-align:center;padding:32px;color:var(--text-light);">Unable to load products</div>';
-  }
 }
 
 async function doLogin() {
@@ -678,7 +648,7 @@ async function loadProducers(category) {
       const rating = p.avg_rating > 0 ? '&#x2B50; ' + p.avg_rating.toFixed(1) + ' &#xB7; ' : '';
       const fulfill = [p.fulfillment_pickup && '&#x1F697; Pickup', p.fulfillment_delivery && '&#x1F69A; Delivery', p.fulfillment_shipping && '&#x1F4E6; Ships'].filter(Boolean).join(' &#xB7; ');
       return `<div class="producer-card" onclick="openProducer(${p.id})">
-        <div class="pcard-img ${cls}"><span>${emoji}</span><span class="verified-badge">&#x2713; Verified</span></div>
+        <div class="pcard-img ${cls}" style="display:flex;align-items:center;justify-content:center;"><img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIiB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCI+CiAgPGRlZnM+CiAgICA8cmFkaWFsR3JhZGllbnQgaWQ9ImJnIiBjeD0iNTAlIiBjeT0iNTAlIiByPSI1MCUiPgogICAgICA8c3RvcCBvZmZzZXQ9IjAlIiBzdG9wLWNvbG9yPSIjRjVGOUY0Ii8+CiAgICAgIDxzdG9wIG9mZnNldD0iMTAwJSIgc3RvcC1jb2xvcj0iI0VERjRFQyIvPgogICAgPC9yYWRpYWxHcmFkaWVudD4KICA8L2RlZnM+CiAgPGNpcmNsZSBjeD0iNTAiIGN5PSI1MCIgcj0iNDgiIGZpbGw9InVybCgjYmcpIiBzdHJva2U9IiM0QTY3NDEiIHN0cm9rZS13aWR0aD0iMS41Ii8+CiAgCiAgPCEtLSBSb29mIC0tPgogIDxwYXRoIGQ9Ik0xOCA0NiBRNTAgMjYgODIgNDYgWiIgZmlsbD0iIzRBNjc0MSIvPgogIDxwYXRoIGQ9Ik0xOCA0NiBRMjIgNTAgMjYgNDYgUTMwIDUwIDM0IDQ2IFEzOCA1MCA0MiA0NiBRNDYgNTAgNTAgNDYgUTU0IDUwIDU4IDQ2IFE2MiA1MCA2NiA0NiBRNzAgNTAgNzQgNDYgUTc4IDUwIDgyIDQ2IiBmaWxsPSIjNkI5MjY2Ii8+CgogIDwhLS0gQ2hpbW5leSAtLT4KICA8cmVjdCB4PSI2MCIgeT0iMzAiIHdpZHRoPSI3IiBoZWlnaHQ9IjE0IiByeD0iMiIgZmlsbD0iI0I4NUMyQSIvPgogIDxyZWN0IHg9IjU4IiB5PSIyOCIgd2lkdGg9IjExIiBoZWlnaHQ9IjQiIHJ4PSIxIiBmaWxsPSIjRDQ4NDNDIi8+CiAgPGNpcmNsZSBjeD0iNjMiIGN5PSIyNCIgcj0iMyIgZmlsbD0id2hpdGUiIG9wYWNpdHk9IjAuNiIvPgogIDxjaXJjbGUgY3g9IjY1IiBjeT0iMjAiIHI9IjIiIGZpbGw9IndoaXRlIiBvcGFjaXR5PSIwLjQiLz4KCiAgPCEtLSBTdG9yZSBmcm9udCAtLT4KICA8cmVjdCB4PSIyMCIgeT0iNDYiIHdpZHRoPSI2MCIgaGVpZ2h0PSIzNCIgcng9IjMiIGZpbGw9IiNGQUY1RUMiIHN0cm9rZT0iIzRBNjc0MSIgc3Ryb2tlLXdpZHRoPSIxLjUiLz4KICAKICA8IS0tIEhhbmdpbmcgc2lnbiBwb3N0IC0tPgogIDxsaW5lIHgxPSI1MCIgeTE9IjMwIiB4Mj0iNTAiIHkyPSIzOCIgc3Ryb2tlPSIjNEEyQzE3IiBzdHJva2Utd2lkdGg9IjEuNSIvPgogIDxsaW5lIHgxPSI0MiIgeTE9IjM4IiB4Mj0iNTgiIHkyPSIzOCIgc3Ryb2tlPSIjNEEyQzE3IiBzdHJva2Utd2lkdGg9IjEuNSIvPgogIDxyZWN0IHg9IjM0IiB5PSIzOCIgd2lkdGg9IjMyIiBoZWlnaHQ9IjEwIiByeD0iMyIgZmlsbD0iI0ZBRjVFQyIgc3Ryb2tlPSIjNEEyQzE3IiBzdHJva2Utd2lkdGg9IjEuNSIvPgogIDx0ZXh0IHg9IjUwIiB5PSI0NiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZm9udC1mYW1pbHk9Ikdlb3JnaWEsc2VyaWYiIGZvbnQtc2l6ZT0iNS41IiBmaWxsPSIjMkQxQTBFIiBmb250LXN0eWxlPSJpdGFsaWMiPk91ciBQbGFjZTwvdGV4dD4KCiAgPCEtLSBEb29yIChhcmNoZWQpIC0tPgogIDxwYXRoIGQ9Ik00MSA4MCBMNDEgNjUgUTUwIDU4IDU5IDY1IEw1OSA4MCBaIiBmaWxsPSIjQzhEQkM1IiBzdHJva2U9IiM0QTY3NDEiIHN0cm9rZS13aWR0aD0iMS41Ii8+CiAgPGNpcmNsZSBjeD0iNTYiIGN5PSI3MiIgcj0iMS41IiBmaWxsPSIjNEE2NzQxIi8+CiAgPHBhdGggZD0iTTQ3IDY2IFE0NyA2MyA1MCA2NSBRNTMgNjMgNTMgNjYgUTUzIDY5IDUwIDcxIFE0NyA2OSA0NyA2NiBaIiBmaWxsPSIjQjg1QzJBIiBvcGFjaXR5PSIwLjgiLz4KCiAgPCEtLSBXaW5kb3dzIC0tPgogIDxyZWN0IHg9IjIzIiB5PSI1MiIgd2lkdGg9IjE0IiBoZWlnaHQ9IjExIiByeD0iMyIgZmlsbD0iI0M4REJDNSIgc3Ryb2tlPSIjNEE2NzQxIiBzdHJva2Utd2lkdGg9IjEuNSIvPgogIDxsaW5lIHgxPSIzMCIgeTE9IjUyIiB4Mj0iMzAiIHkyPSI2MyIgc3Ryb2tlPSIjNEE2NzQxIiBzdHJva2Utd2lkdGg9IjEiLz4KICA8bGluZSB4MT0iMjMiIHkxPSI1NyIgeDI9IjM3IiB5Mj0iNTciIHN0cm9rZT0iIzRBNjc0MSIgc3Ryb2tlLXdpZHRoPSIxIi8+CgogIDxyZWN0IHg9IjYzIiB5PSI1MiIgd2lkdGg9IjE0IiBoZWlnaHQ9IjExIiByeD0iMyIgZmlsbD0iI0M4REJDNSIgc3Ryb2tlPSIjNEE2NzQxIiBzdHJva2Utd2lkdGg9IjEuNSIvPgogIDxsaW5lIHgxPSI3MCIgeTE9IjUyIiB4Mj0iNzAiIHkyPSI2MyIgc3Ryb2tlPSIjNEE2NzQxIiBzdHJva2Utd2lkdGg9IjEiLz4KICA8bGluZSB4MT0iNjMiIHkxPSI1NyIgeDI9Ijc3IiB5Mj0iNTciIHN0cm9rZT0iIzRBNjc0MSIgc3Ryb2tlLXdpZHRoPSIxIi8+CgogIDwhLS0gRmxvd2VyIGJlZHMgdW5kZXIgd2luZG93cyAtLT4KICA8IS0tIExlZnQgZmxvd2VyIGJlZCAtLT4KICA8cmVjdCB4PSIyMSIgeT0iNzQiIHdpZHRoPSIxOCIgaGVpZ2h0PSI0IiByeD0iMiIgZmlsbD0iI0I4NUMyQSIvPgogIDwhLS0gTGVmdCBmbG93ZXJzIC0tPgogIDxsaW5lIHgxPSIyNCIgeTE9Ijc0IiB4Mj0iMjQiIHkyPSI2OCIgc3Ryb2tlPSIjNEE2NzQxIiBzdHJva2Utd2lkdGg9IjEuMiIvPgogIDxjaXJjbGUgY3g9IjI0IiBjeT0iNjciIHI9IjIuNSIgZmlsbD0iI0Q0ODQzQyIvPgogIDxjaXJjbGUgY3g9IjI0IiBjeT0iNjciIHI9IjEuMiIgZmlsbD0iI0ZBRjVFQyIvPgogIDxsaW5lIHgxPSIyOCIgeTE9Ijc0IiB4Mj0iMjgiIHkyPSI2NiIgc3Ryb2tlPSIjNEE2NzQxIiBzdHJva2Utd2lkdGg9IjEuMiIvPgogIDxjaXJjbGUgY3g9IjI4IiBjeT0iNjUiIHI9IjIuNSIgZmlsbD0iI0I4NUMyQSIvPgogIDxjaXJjbGUgY3g9IjI4IiBjeT0iNjUiIHI9IjEuMiIgZmlsbD0iI0ZBRjVFQyIvPgogIDxsaW5lIHgxPSIzMiIgeTE9Ijc0IiB4Mj0iMzIiIHkyPSI2OCIgc3Ryb2tlPSIjNEE2NzQxIiBzdHJva2Utd2lkdGg9IjEuMiIvPgogIDxjaXJjbGUgY3g9IjMyIiBjeT0iNjciIHI9IjIuNSIgZmlsbD0iI0U4Qjg2RCIvPgogIDxjaXJjbGUgY3g9IjMyIiBjeT0iNjciIHI9IjEuMiIgZmlsbD0iI0ZBRjVFQyIvPgogIDwhLS0gTGVmdCBsZWF2ZXMgLS0+CiAgPGVsbGlwc2UgY3g9IjIyIiBjeT0iNzEiIHJ4PSIyIiByeT0iMSIgZmlsbD0iIzZCOTI2NiIgdHJhbnNmb3JtPSJyb3RhdGUoLTMwLDIyLDcxKSIvPgogIDxlbGxpcHNlIGN4PSIzNiIgY3k9IjcxIiByeD0iMiIgcnk9IjEiIGZpbGw9IiM2QjkyNjYiIHRyYW5zZm9ybT0icm90YXRlKDMwLDM2LDcxKSIvPgoKICA8IS0tIFJpZ2h0IGZsb3dlciBiZWQgLS0+CiAgPHJlY3QgeD0iNjEiIHk9Ijc0IiB3aWR0aD0iMTgiIGhlaWdodD0iNCIgcng9IjIiIGZpbGw9IiNCODVDMkEiLz4KICA8IS0tIFJpZ2h0IGZsb3dlcnMgLS0+CiAgPGxpbmUgeDE9IjY0IiB5MT0iNzQiIHgyPSI2NCIgeTI9IjY4IiBzdHJva2U9IiM0QTY3NDEiIHN0cm9rZS13aWR0aD0iMS4yIi8+CiAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NyIgcj0iMi41IiBmaWxsPSIjRThCODZEIi8+CiAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NyIgcj0iMS4yIiBmaWxsPSIjRkFGNUVDIi8+CiAgPGxpbmUgeDE9IjY4IiB5MT0iNzQiIHgyPSI2OCIgeTI9IjY2IiBzdHJva2U9IiM0QTY3NDEiIHN0cm9rZS13aWR0aD0iMS4yIi8+CiAgPGNpcmNsZSBjeD0iNjgiIGN5PSI2NSIgcj0iMi41IiBmaWxsPSIjRDQ4NDNDIi8+CiAgPGNpcmNsZSBjeD0iNjgiIGN5PSI2NSIgcj0iMS4yIiBmaWxsPSIjRkFGNUVDIi8+CiAgPGxpbmUgeDE9IjcyIiB5MT0iNzQiIHgyPSI3MiIgeTI9IjY4IiBzdHJva2U9IiM0QTY3NDEiIHN0cm9rZS13aWR0aD0iMS4yIi8+CiAgPGNpcmNsZSBjeD0iNzIiIGN5PSI2NyIgcj0iMi41IiBmaWxsPSIjQjg1QzJBIi8+CiAgPGNpcmNsZSBjeD0iNzIiIGN5PSI2NyIgcj0iMS4yIiBmaWxsPSIjRkFGNUVDIi8+CiAgPCEtLSBSaWdodCBsZWF2ZXMgLS0+CiAgPGVsbGlwc2UgY3g9IjYyIiBjeT0iNzEiIHJ4PSIyIiByeT0iMSIgZmlsbD0iIzZCOTI2NiIgdHJhbnNmb3JtPSJyb3RhdGUoLTMwLDYyLDcxKSIvPgogIDxlbGxpcHNlIGN4PSI3OCIgY3k9IjcxIiByeD0iMiIgcnk9IjEiIGZpbGw9IiM2QjkyNjYiIHRyYW5zZm9ybT0icm90YXRlKDMwLDc4LDcxKSIvPgoKICA8IS0tIFN0ZXBwaW5nIHN0b25lcyAtLT4KICA8ZWxsaXBzZSBjeD0iNTAiIGN5PSI4MyIgcng9IjUiIHJ5PSIyIiBmaWxsPSIjRThCODZEIiBvcGFjaXR5PSIwLjUiLz4KICA8ZWxsaXBzZSBjeD0iNTAiIGN5PSI4NyIgcng9IjQiIHJ5PSIxLjUiIGZpbGw9IiNFOEI4NkQiIG9wYWNpdHk9IjAuMyIvPgo8L3N2Zz4K" style="width:80px;height:80px;object-fit:contain;" alt="shop"><span class="verified-badge">&#x2713; Verified</span></div>
         <div class="pcard-body">
           <div class="pcard-name">${p.shop_name}</div>
           <div class="pcard-meta">&#x1F4CD; ${p.city||'Oklahoma'}, ${p.state||'OK'} &#xB7; ${dist}${rating}</div>
@@ -712,7 +682,7 @@ async function openProducer(id) {
     const fulfill = [producer.fulfillment_pickup&&'&#x1F697; Pickup', producer.fulfillment_delivery&&'&#x1F69A; Delivery', producer.fulfillment_shipping&&'&#x1F4E6; Ships'].filter(Boolean);
     el.innerHTML = `
       <div class="profile-hero">
-        <div class="profile-avatar">&#x1F331;</div>
+        <div class="profile-avatar"><img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIiB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCI+CiAgPGRlZnM+CiAgICA8cmFkaWFsR3JhZGllbnQgaWQ9ImJnIiBjeD0iNTAlIiBjeT0iNTAlIiByPSI1MCUiPgogICAgICA8c3RvcCBvZmZzZXQ9IjAlIiBzdG9wLWNvbG9yPSIjRjVGOUY0Ii8+CiAgICAgIDxzdG9wIG9mZnNldD0iMTAwJSIgc3RvcC1jb2xvcj0iI0VERjRFQyIvPgogICAgPC9yYWRpYWxHcmFkaWVudD4KICA8L2RlZnM+CiAgPGNpcmNsZSBjeD0iNTAiIGN5PSI1MCIgcj0iNDgiIGZpbGw9InVybCgjYmcpIiBzdHJva2U9IiM0QTY3NDEiIHN0cm9rZS13aWR0aD0iMS41Ii8+CiAgCiAgPCEtLSBSb29mIC0tPgogIDxwYXRoIGQ9Ik0xOCA0NiBRNTAgMjYgODIgNDYgWiIgZmlsbD0iIzRBNjc0MSIvPgogIDxwYXRoIGQ9Ik0xOCA0NiBRMjIgNTAgMjYgNDYgUTMwIDUwIDM0IDQ2IFEzOCA1MCA0MiA0NiBRNDYgNTAgNTAgNDYgUTU0IDUwIDU4IDQ2IFE2MiA1MCA2NiA0NiBRNzAgNTAgNzQgNDYgUTc4IDUwIDgyIDQ2IiBmaWxsPSIjNkI5MjY2Ii8+CgogIDwhLS0gQ2hpbW5leSAtLT4KICA8cmVjdCB4PSI2MCIgeT0iMzAiIHdpZHRoPSI3IiBoZWlnaHQ9IjE0IiByeD0iMiIgZmlsbD0iI0I4NUMyQSIvPgogIDxyZWN0IHg9IjU4IiB5PSIyOCIgd2lkdGg9IjExIiBoZWlnaHQ9IjQiIHJ4PSIxIiBmaWxsPSIjRDQ4NDNDIi8+CiAgPGNpcmNsZSBjeD0iNjMiIGN5PSIyNCIgcj0iMyIgZmlsbD0id2hpdGUiIG9wYWNpdHk9IjAuNiIvPgogIDxjaXJjbGUgY3g9IjY1IiBjeT0iMjAiIHI9IjIiIGZpbGw9IndoaXRlIiBvcGFjaXR5PSIwLjQiLz4KCiAgPCEtLSBTdG9yZSBmcm9udCAtLT4KICA8cmVjdCB4PSIyMCIgeT0iNDYiIHdpZHRoPSI2MCIgaGVpZ2h0PSIzNCIgcng9IjMiIGZpbGw9IiNGQUY1RUMiIHN0cm9rZT0iIzRBNjc0MSIgc3Ryb2tlLXdpZHRoPSIxLjUiLz4KICAKICA8IS0tIEhhbmdpbmcgc2lnbiBwb3N0IC0tPgogIDxsaW5lIHgxPSI1MCIgeTE9IjMwIiB4Mj0iNTAiIHkyPSIzOCIgc3Ryb2tlPSIjNEEyQzE3IiBzdHJva2Utd2lkdGg9IjEuNSIvPgogIDxsaW5lIHgxPSI0MiIgeTE9IjM4IiB4Mj0iNTgiIHkyPSIzOCIgc3Ryb2tlPSIjNEEyQzE3IiBzdHJva2Utd2lkdGg9IjEuNSIvPgogIDxyZWN0IHg9IjM0IiB5PSIzOCIgd2lkdGg9IjMyIiBoZWlnaHQ9IjEwIiByeD0iMyIgZmlsbD0iI0ZBRjVFQyIgc3Ryb2tlPSIjNEEyQzE3IiBzdHJva2Utd2lkdGg9IjEuNSIvPgogIDx0ZXh0IHg9IjUwIiB5PSI0NiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZm9udC1mYW1pbHk9Ikdlb3JnaWEsc2VyaWYiIGZvbnQtc2l6ZT0iNS41IiBmaWxsPSIjMkQxQTBFIiBmb250LXN0eWxlPSJpdGFsaWMiPk91ciBQbGFjZTwvdGV4dD4KCiAgPCEtLSBEb29yIChhcmNoZWQpIC0tPgogIDxwYXRoIGQ9Ik00MSA4MCBMNDEgNjUgUTUwIDU4IDU5IDY1IEw1OSA4MCBaIiBmaWxsPSIjQzhEQkM1IiBzdHJva2U9IiM0QTY3NDEiIHN0cm9rZS13aWR0aD0iMS41Ii8+CiAgPGNpcmNsZSBjeD0iNTYiIGN5PSI3MiIgcj0iMS41IiBmaWxsPSIjNEE2NzQxIi8+CiAgPHBhdGggZD0iTTQ3IDY2IFE0NyA2MyA1MCA2NSBRNTMgNjMgNTMgNjYgUTUzIDY5IDUwIDcxIFE0NyA2OSA0NyA2NiBaIiBmaWxsPSIjQjg1QzJBIiBvcGFjaXR5PSIwLjgiLz4KCiAgPCEtLSBXaW5kb3dzIC0tPgogIDxyZWN0IHg9IjIzIiB5PSI1MiIgd2lkdGg9IjE0IiBoZWlnaHQ9IjExIiByeD0iMyIgZmlsbD0iI0M4REJDNSIgc3Ryb2tlPSIjNEE2NzQxIiBzdHJva2Utd2lkdGg9IjEuNSIvPgogIDxsaW5lIHgxPSIzMCIgeTE9IjUyIiB4Mj0iMzAiIHkyPSI2MyIgc3Ryb2tlPSIjNEE2NzQxIiBzdHJva2Utd2lkdGg9IjEiLz4KICA8bGluZSB4MT0iMjMiIHkxPSI1NyIgeDI9IjM3IiB5Mj0iNTciIHN0cm9rZT0iIzRBNjc0MSIgc3Ryb2tlLXdpZHRoPSIxIi8+CgogIDxyZWN0IHg9IjYzIiB5PSI1MiIgd2lkdGg9IjE0IiBoZWlnaHQ9IjExIiByeD0iMyIgZmlsbD0iI0M4REJDNSIgc3Ryb2tlPSIjNEE2NzQxIiBzdHJva2Utd2lkdGg9IjEuNSIvPgogIDxsaW5lIHgxPSI3MCIgeTE9IjUyIiB4Mj0iNzAiIHkyPSI2MyIgc3Ryb2tlPSIjNEE2NzQxIiBzdHJva2Utd2lkdGg9IjEiLz4KICA8bGluZSB4MT0iNjMiIHkxPSI1NyIgeDI9Ijc3IiB5Mj0iNTciIHN0cm9rZT0iIzRBNjc0MSIgc3Ryb2tlLXdpZHRoPSIxIi8+CgogIDwhLS0gRmxvd2VyIGJlZHMgdW5kZXIgd2luZG93cyAtLT4KICA8IS0tIExlZnQgZmxvd2VyIGJlZCAtLT4KICA8cmVjdCB4PSIyMSIgeT0iNzQiIHdpZHRoPSIxOCIgaGVpZ2h0PSI0IiByeD0iMiIgZmlsbD0iI0I4NUMyQSIvPgogIDwhLS0gTGVmdCBmbG93ZXJzIC0tPgogIDxsaW5lIHgxPSIyNCIgeTE9Ijc0IiB4Mj0iMjQiIHkyPSI2OCIgc3Ryb2tlPSIjNEE2NzQxIiBzdHJva2Utd2lkdGg9IjEuMiIvPgogIDxjaXJjbGUgY3g9IjI0IiBjeT0iNjciIHI9IjIuNSIgZmlsbD0iI0Q0ODQzQyIvPgogIDxjaXJjbGUgY3g9IjI0IiBjeT0iNjciIHI9IjEuMiIgZmlsbD0iI0ZBRjVFQyIvPgogIDxsaW5lIHgxPSIyOCIgeTE9Ijc0IiB4Mj0iMjgiIHkyPSI2NiIgc3Ryb2tlPSIjNEE2NzQxIiBzdHJva2Utd2lkdGg9IjEuMiIvPgogIDxjaXJjbGUgY3g9IjI4IiBjeT0iNjUiIHI9IjIuNSIgZmlsbD0iI0I4NUMyQSIvPgogIDxjaXJjbGUgY3g9IjI4IiBjeT0iNjUiIHI9IjEuMiIgZmlsbD0iI0ZBRjVFQyIvPgogIDxsaW5lIHgxPSIzMiIgeTE9Ijc0IiB4Mj0iMzIiIHkyPSI2OCIgc3Ryb2tlPSIjNEE2NzQxIiBzdHJva2Utd2lkdGg9IjEuMiIvPgogIDxjaXJjbGUgY3g9IjMyIiBjeT0iNjciIHI9IjIuNSIgZmlsbD0iI0U4Qjg2RCIvPgogIDxjaXJjbGUgY3g9IjMyIiBjeT0iNjciIHI9IjEuMiIgZmlsbD0iI0ZBRjVFQyIvPgogIDwhLS0gTGVmdCBsZWF2ZXMgLS0+CiAgPGVsbGlwc2UgY3g9IjIyIiBjeT0iNzEiIHJ4PSIyIiByeT0iMSIgZmlsbD0iIzZCOTI2NiIgdHJhbnNmb3JtPSJyb3RhdGUoLTMwLDIyLDcxKSIvPgogIDxlbGxpcHNlIGN4PSIzNiIgY3k9IjcxIiByeD0iMiIgcnk9IjEiIGZpbGw9IiM2QjkyNjYiIHRyYW5zZm9ybT0icm90YXRlKDMwLDM2LDcxKSIvPgoKICA8IS0tIFJpZ2h0IGZsb3dlciBiZWQgLS0+CiAgPHJlY3QgeD0iNjEiIHk9Ijc0IiB3aWR0aD0iMTgiIGhlaWdodD0iNCIgcng9IjIiIGZpbGw9IiNCODVDMkEiLz4KICA8IS0tIFJpZ2h0IGZsb3dlcnMgLS0+CiAgPGxpbmUgeDE9IjY0IiB5MT0iNzQiIHgyPSI2NCIgeTI9IjY4IiBzdHJva2U9IiM0QTY3NDEiIHN0cm9rZS13aWR0aD0iMS4yIi8+CiAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NyIgcj0iMi41IiBmaWxsPSIjRThCODZEIi8+CiAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NyIgcj0iMS4yIiBmaWxsPSIjRkFGNUVDIi8+CiAgPGxpbmUgeDE9IjY4IiB5MT0iNzQiIHgyPSI2OCIgeTI9IjY2IiBzdHJva2U9IiM0QTY3NDEiIHN0cm9rZS13aWR0aD0iMS4yIi8+CiAgPGNpcmNsZSBjeD0iNjgiIGN5PSI2NSIgcj0iMi41IiBmaWxsPSIjRDQ4NDNDIi8+CiAgPGNpcmNsZSBjeD0iNjgiIGN5PSI2NSIgcj0iMS4yIiBmaWxsPSIjRkFGNUVDIi8+CiAgPGxpbmUgeDE9IjcyIiB5MT0iNzQiIHgyPSI3MiIgeTI9IjY4IiBzdHJva2U9IiM0QTY3NDEiIHN0cm9rZS13aWR0aD0iMS4yIi8+CiAgPGNpcmNsZSBjeD0iNzIiIGN5PSI2NyIgcj0iMi41IiBmaWxsPSIjQjg1QzJBIi8+CiAgPGNpcmNsZSBjeD0iNzIiIGN5PSI2NyIgcj0iMS4yIiBmaWxsPSIjRkFGNUVDIi8+CiAgPCEtLSBSaWdodCBsZWF2ZXMgLS0+CiAgPGVsbGlwc2UgY3g9IjYyIiBjeT0iNzEiIHJ4PSIyIiByeT0iMSIgZmlsbD0iIzZCOTI2NiIgdHJhbnNmb3JtPSJyb3RhdGUoLTMwLDYyLDcxKSIvPgogIDxlbGxpcHNlIGN4PSI3OCIgY3k9IjcxIiByeD0iMiIgcnk9IjEiIGZpbGw9IiM2QjkyNjYiIHRyYW5zZm9ybT0icm90YXRlKDMwLDc4LDcxKSIvPgoKICA8IS0tIFN0ZXBwaW5nIHN0b25lcyAtLT4KICA8ZWxsaXBzZSBjeD0iNTAiIGN5PSI4MyIgcng9IjUiIHJ5PSIyIiBmaWxsPSIjRThCODZEIiBvcGFjaXR5PSIwLjUiLz4KICA8ZWxsaXBzZSBjeD0iNTAiIGN5PSI4NyIgcng9IjQiIHJ5PSIxLjUiIGZpbGw9IiNFOEI4NkQiIG9wYWNpdHk9IjAuMyIvPgo8L3N2Zz4K" style="width:100%;height:100%;object-fit:contain;" alt="shop"></div>
         <div>
           <div class="profile-name">${producer.shop_name}</div>
           <div class="profile-meta">&#x1F4CD; ${producer.city||'Oklahoma'}, ${producer.state||'OK'}${producer.avg_rating>0?' &#xB7; &#x2B50; '+producer.avg_rating.toFixed(1)+' ('+producer.review_count+'rev)':''}</div>
@@ -1014,13 +984,6 @@ function showToast(msg) {
   const t = document.getElementById('toast');
   t.innerHTML = msg; t.classList.add('show');
   setTimeout(() => t.classList.remove('show'), 2400);
-}
-
-function searchByZip(zip) {
-  if (!zip || zip.length < 5) { showToast('Please enter a 5-digit zip code'); return; }
-  window._searchZip = zip;
-  navigate('search');
-  showToast('Finding shops near ' + zip + '...');
 }
 
 init();
