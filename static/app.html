@@ -349,7 +349,7 @@ body:has(#view-auth.active) .bottom-nav { display:none !important; }
     <div class="view" id="view-search">
       <div class="search-header" style="background:var(--parchment);border-bottom:1px solid rgba(45,26,14,0.08);">
         <div style="font-family:'Playfair Display',serif;font-size:20px;font-weight:700;color:var(--earth);">&#x2728; New Arrivals</div>
-        <div style="font-size:12px;color:var(--text-light);margin-top:2px;">Recently added from local producers</div>
+        <div style="font-size:12px;color:var(--text-light);margin-top:2px;">Fresh finds from local producers this month</div>
       </div>
       <div id="newArrivalsContent" style="padding:16px;">
         <div class="loading"><div class="spinner"></div></div>
@@ -556,7 +556,8 @@ async function loadNewArrivals() {
   if (!el) return;
   el.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
   try {
-    const res = await fetch(API + '/api/products/search?limit=20');
+    const headers = token ? {'Authorization':'Bearer '+token} : {};
+    const res = await fetch(API + '/api/products/search', {headers});
     const products = await res.json();
     if (!products.length) {
       el.innerHTML = '<div style="text-align:center;padding:48px 20px;color:var(--text-light);"><div style="font-size:40px;margin-bottom:12px;">&#x1F331;</div><div>No products yet — check back soon!</div></div>';
