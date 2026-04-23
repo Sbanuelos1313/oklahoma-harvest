@@ -400,7 +400,7 @@ html,body{height:100%;font-family:"DM Sans",sans-serif;background:#F5EFE6;color:
         </div>
         <div class="menu-list">
           <div class="menu-item" onclick="navigate('stripe')"><div class="menu-icon">&#x1F4B3;</div><span class="menu-label">Payment Setup</span><span class="menu-arrow">&#x203A;</span></div>
-          <div class="menu-item"><div class="menu-icon">&#x1F3EA;</div><span class="menu-label">Edit Shop Profile</span><span class="menu-arrow">&#x203A;</span></div>
+          <div class="menu-item" onclick="openEditProfile()"><div class="menu-icon">&#x1F3EA;</div><span class="menu-label">Edit Shop Profile</span><span class="menu-arrow">&#x203A;</span></div>
           <div class="menu-item"><div class="menu-icon">&#x1F4CD;</div><span class="menu-label">Location & Radius</span><span class="menu-arrow">&#x203A;</span></div>
           <div class="menu-item"><div class="menu-icon">&#x1F4B8;</div><span class="menu-label">Tax Rate & Fees</span><span class="menu-arrow">&#x203A;</span></div>
           <div class="menu-item" onclick="doLogout()" style="margin-top:6px"><div class="menu-icon">&#x1F6AA;</div><span class="menu-label" style="color:var(--red)">Sign Out</span></div>
@@ -417,6 +417,24 @@ html,body{height:100%;font-family:"DM Sans",sans-serif;background:#F5EFE6;color:
     </nav>
   </div>
 
+</div>
+
+<!-- EDIT PROFILE MODAL -->
+<div class="modal-overlay" id="editProfileModal">
+  <div class="modal">
+    <div class="modal-title">Edit Shop Profile <button class="modal-close" onclick="closeEditProfile()">&#x2715;</button></div>
+    <div class="form-grp">
+      <label class="form-lbl">Shop Logo</label>
+      <div id="editLogoArea" style="border:2px dashed rgba(45,26,14,0.15);border-radius:12px;padding:16px;text-align:center;background:var(--white);cursor:pointer;" onclick="document.getElementById('editLogoInput').click()">
+        <div id="editLogoPreview" style="display:none;margin-bottom:8px;"><img id="editLogoImg" style="width:70px;height:70px;border-radius:50%;object-fit:cover;border:2px solid var(--sage-pale);" src="" alt="Logo"></div>
+        <div id="editLogoPrompt"><div style="font-size:24px;">&#x1F4F7;</div><div style="font-size:12px;color:var(--text-mid);font-weight:600;margin-top:4px;">Tap to change logo</div></div>
+      </div>
+      <input type="file" id="editLogoInput" accept="image/*" style="display:none;" onchange="previewEditLogo(this)">
+    </div>
+    <div class="form-grp"><label class="form-lbl">Shop Name</label><input class="form-inp" type="text" id="editShopName"></div>
+    <div class="form-grp"><label class="form-lbl">Description</label><textarea class="form-inp textarea" id="editShopDesc" placeholder="Tell shoppers about your farm..."></textarea></div>
+    <button class="submit-btn" onclick="doUpdateProfile()">Save Changes</button>
+  </div>
 </div>
 
 <!-- ADD PRODUCT MODAL -->
@@ -487,6 +505,74 @@ function previewLogo(input) {
     document.getElementById('logoUploadPrompt').style.display = 'none';
   };
   reader.readAsDataURL(file);
+}
+
+function openEditProfile() {
+  document.getElementById('editShopName').value = shop.shop_name || '';
+  document.getElementById('editShopDesc').value = shop.description || '';
+  if (shop.profile_image_url) {
+    document.getElementById('editLogoImg').src = shop.profile_image_url;
+    document.getElementById('editLogoPreview').style.display = 'block';
+    document.getElementById('editLogoPrompt').style.display = 'none';
+  }
+  document.getElementById('editProfileModal').classList.add('show');
+}
+
+function closeEditProfile() {
+  document.getElementById('editProfileModal').classList.remove('show');
+}
+
+function previewEditLogo(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    document.getElementById('editLogoImg').src = e.target.result;
+    document.getElementById('editLogoPreview').style.display = 'block';
+    document.getElementById('editLogoPrompt').style.display = 'none';
+  };
+  reader.readAsDataURL(file);
+}
+
+async function doUpdateProfile() {
+  const btn = document.querySelector('#editProfileModal .submit-btn');
+  btn.disabled = true; btn.textContent = 'Saving...';
+  try {
+    // Upload logo if new one selected
+    const input = document.getElementById('editLogoInput');
+    let logoUrl = shop.profile_image_url || null;
+    if (input.files[0]) {
+      const formData = new FormData();
+      formData.append('file', input.files[0]);
+      const r = await fetch(API + '/api/producers/me/upload-logo', {
+        method: 'POST',
+        headers: {'Authorization': 'Bearer ' + token},
+        body: formData
+      });
+      const d = await r.json();
+      if (d.url) logoUrl = d.url;
+    }
+    // Update shop
+    const res = await fetch(API + '/api/producers/me', {
+      method: 'PATCH',
+      headers: {'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json'},
+      body: JSON.stringify({
+        shop_name: document.getElementById('editShopName').value.trim(),
+        description: document.getElementById('editShopDesc').value.trim() || null,
+        profile_image_url: logoUrl
+      })
+    });
+    if (res.ok) {
+      shop.shop_name = document.getElementById('editShopName').value.trim();
+      shop.description = document.getElementById('editShopDesc').value.trim();
+      shop.profile_image_url = logoUrl;
+      closeEditProfile();
+      showToast('Shop profile updated! &#x1F33E;');
+    } else {
+      showToast('Update failed — try again');
+    }
+  } catch { showToast('Connection error'); }
+  btn.disabled = false; btn.textContent = 'Save Changes';
 }
 
 async function uploadLogo() {
