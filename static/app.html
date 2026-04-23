@@ -556,7 +556,7 @@ async function loadNewArrivals() {
   if (!el) return;
   el.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
   try {
-    const headers = token ? {'Authorization':'Bearer '+token} : {};
+    const tok = localStorage.getItem('fop_token'); const headers = tok ? {'Authorization':'Bearer '+tok} : {};
     const res = await fetch(API + '/api/products/search', {headers});
     const products = await res.json();
     if (!products.length) {
