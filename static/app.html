@@ -837,7 +837,7 @@ async function doCheckout() {
   const res = await fetch(location.origin + '/api/stripe/create-payment-intent', {
     method: 'POST',
     headers: {'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json'},
-    body: JSON.stringify({amount: cartTotal, producer_id: cart.producer_id})
+    body: JSON.stringify({amount: Math.round(cartTotal * 100), producer_id: cart.producer_id})
   });
   const data = await res.json();
   if (!res.ok) { showToast(data.detail || 'Payment setup failed'); closeCheckoutModal(); return; }
