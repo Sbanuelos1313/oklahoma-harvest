@@ -248,6 +248,8 @@ body:has(#view-auth.active) .bottom-nav { display:none !important; }
 .filter-bar{display:flex;align-items:center;padding:10px 16px;background:var(--white);border-bottom:1px solid rgba(45,26,14,0.06);}
 .filter-select-wrap{display:flex;align-items:center;gap:8px;background:var(--cream);border:1.5px solid rgba(45,26,14,0.1);border-radius:12px;padding:8px 14px;width:100%;}
 .filter-select{border:none;background:none;font-family:"DM Sans",sans-serif;font-size:13px;color:var(--text-dark);outline:none;cursor:pointer;width:100%;}
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:200;display:none;align-items:center;justify-content:center;}
+.modal-overlay.show{display:flex;}
 </style>
 <script src="https://js.stripe.com/v3/"></script>
 </head>
