@@ -245,6 +245,9 @@ html,body { height:100%; font-family:"DM Sans",sans-serif; background:var(--crea
 body:has(#view-auth.active) .top-nav,
 body:has(#view-auth.active) .bottom-nav { display:none !important; }
 .top-nav.auth-mode, .bottom-nav.auth-mode { visibility:hidden; height:0; padding:0; border:none; }
+.filter-bar{display:flex;align-items:center;padding:10px 16px;background:var(--white);border-bottom:1px solid rgba(45,26,14,0.06);}
+.filter-select-wrap{display:flex;align-items:center;gap:8px;background:var(--cream);border:1.5px solid rgba(45,26,14,0.1);border-radius:12px;padding:8px 14px;width:100%;}
+.filter-select{border:none;background:none;font-family:"DM Sans",sans-serif;font-size:13px;color:var(--text-dark);outline:none;cursor:pointer;width:100%;}
 </style>
 <script src="https://js.stripe.com/v3/"></script>
 </head>
@@ -313,29 +316,37 @@ body:has(#view-auth.active) .bottom-nav { display:none !important; }
           <span>&#x1F4CD;</span><input id="zipSearch" type="text" inputmode="numeric" maxlength="5" placeholder="Enter zip code to find shops..." style="border:none;background:none;font-family:'DM Sans',sans-serif;font-size:14px;color:var(--text-dark);outline:none;flex:1;" onkeydown="if(event.key==='Enter')searchByZip(this.value);"><button onclick="searchByZip(document.getElementById('zipSearch').value)" style="background:var(--sage);color:white;border:none;border-radius:10px;padding:6px 14px;font-size:12px;font-weight:700;cursor:pointer;">Go</button>
         </div>
       </div>
-      <div class="cat-scroll" id="catScroll">
-        <button class="cat-chip active" onclick="filterCat(this,'all')">All</button>
-        <button class="cat-chip inactive" onclick="filterCat(this,'eggs_dairy')">&#x1F95A; Eggs &amp; Dairy</button>
-        <button class="cat-chip inactive" onclick="filterCat(this,'meat')">&#x1F969; Meat</button>
-        <button class="cat-chip inactive" onclick="filterCat(this,'vegetables')">&#x1F33D; Vegetables</button>
-        <button class="cat-chip inactive" onclick="filterCat(this,'fruit')">&#x1F353; Fruit</button>
-        <button class="cat-chip inactive" onclick="filterCat(this,'baked')">&#x1F35E; Baked</button>
-        <button class="cat-chip inactive" onclick="filterCat(this,'pantry')">&#x1F36F; Pantry</button>
-        <button class="cat-chip inactive" onclick="filterCat(this,'herbs')">&#x1F33F; Herbs</button>
-        <button class="cat-chip inactive" onclick="filterCat(this,'honey')">&#x1F36F; Honey</button>
-        <button class="cat-chip inactive" onclick="filterCat(this,'candy')">&#x1F36C; Candy</button>
-        <button class="cat-chip inactive" onclick="filterCat(this,'jams')">&#x1F353; Jams</button>
-        <button class="cat-chip inactive" onclick="filterCat(this,'flowers')">&#x1F337; Flowers</button>
-        <button class="cat-chip inactive" onclick="filterCat(this,'essential_oils')">&#x1F9F4; Essential Oils</button>
-        <button class="cat-chip inactive" onclick="filterCat(this,'tinctures')">&#x1F331; Tinctures</button>
-        <button class="cat-chip inactive" onclick="filterCat(this,'candles')">&#x1F56F; Candles</button>
-        <button class="cat-chip inactive" onclick="filterCat(this,'jewelry')">&#x1F48D; Jewelry</button>
-        <button class="cat-chip inactive" onclick="filterCat(this,'soaps')">&#x1F9FC; Soaps</button>
-        <button class="cat-chip inactive" onclick="filterCat(this,'plants')">&#x1F331; Plants</button>
-        <button class="cat-chip inactive" onclick="filterCat(this,'crafts')">&#x1F3A8; Crafts</button>
-        <button class="cat-chip inactive" onclick="filterCat(this,'sauces')">&#x1F9C4; Sauces</button>
-        <button class="cat-chip inactive" onclick="filterCat(this,'nuts')">&#x1F95C; Nuts</button>
-        <button class="cat-chip inactive" onclick="filterCat(this,'coffee_tea')">&#x2615; Coffee &amp; Tea</button></div>
+
+      <div class="filter-bar">
+        <div class="filter-select-wrap">
+          <span style="font-size:14px;">&#x1F4CB;</span>
+          <select class="filter-select" id="filterCategory" onchange="filterByCat(this.value)">
+            <option value="all">All Categories</option>
+            <option value="eggs_dairy">&#x1F95A; Eggs &amp; Dairy</option>
+            <option value="meat">&#x1F969; Meat &amp; Poultry</option>
+            <option value="vegetables">&#x1F33D; Vegetables</option>
+            <option value="fruit">&#x1F353; Fruit</option>
+            <option value="baked">&#x1F35E; Baked Goods</option>
+            <option value="pantry">&#x1F36F; Pantry</option>
+            <option value="herbs">&#x1F33F; Herbs</option>
+            <option value="honey">&#x1F36F; Honey</option>
+            <option value="candy">&#x1F36C; Candy &amp; Treats</option>
+            <option value="jams">&#x1F353; Jams &amp; Preserves</option>
+            <option value="flowers">&#x1F337; Flowers</option>
+            <option value="essential_oils">&#x1F9F4; Essential Oils</option>
+            <option value="tinctures">&#x1F331; Tinctures &amp; Wellness</option>
+            <option value="candles">&#x1F56F; Candles</option>
+            <option value="jewelry">&#x1F48D; Handmade Jewelry</option>
+            <option value="soaps">&#x1F9FC; Soaps &amp; Body Care</option>
+            <option value="plants">&#x1F331; Plants &amp; Seedlings</option>
+            <option value="crafts">&#x1F3A8; Crafts &amp; Gifts</option>
+            <option value="sauces">&#x1F9C4; Sauces &amp; Condiments</option>
+            <option value="nuts">&#x1F95C; Nuts &amp; Seeds</option>
+            <option value="coffee_tea">&#x2615; Coffee &amp; Tea</option>
+          </select>
+        </div>
+      </div>
+      
       <div class="section-header">
         <span class="section-title">Producers Near You</span>
         <button class="see-all-btn" onclick="navigate('search')">See all</button>
@@ -557,7 +568,7 @@ async function loadNewArrivals() {
   el.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
   try {
     const tok = localStorage.getItem('fop_token'); const headers = tok ? {'Authorization':'Bearer '+tok} : {};
-    const res = await fetch(API + '/api/products/search', {headers});
+    const res = await fetch(API + '/api/products/search?lat=35.65&lng=-97.48&radius_miles=100', {headers});
     const products = await res.json();
     if (!products.length) {
       el.innerHTML = '<div style="text-align:center;padding:48px 20px;color:var(--text-light);"><div style="font-size:40px;margin-bottom:12px;">&#x1F331;</div><div>No products yet — check back soon!</div></div>';
