@@ -1,0 +1,29 @@
+{
+  "name": "oklahoma-harvest",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Sbanuelos1313/oklahoma-harvest.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/Sbanuelos1313/oklahoma-harvest/issues"
+  },
+  "homepage": "https://github.com/Sbanuelos1313/oklahoma-harvest#readme",
+  "dependencies": {
+    "@capacitor/android": "^8.3.1",
+    "@capacitor/cli": "^8.3.1",
+    "@capacitor/core": "^8.3.1",
+    "@capacitor/ios": "^8.3.1",
+    "expo": "^55.0.17",
+    "expo-build-properties": "~55.0.13"
+  }
+}

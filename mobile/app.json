@@ -1,0 +1,48 @@
+{
+  "expo": {
+    "name": "From Our Place",
+    "slug": "mobile",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#F0E6D3"
+    },
+    "ios": {
+      "bundleIdentifier": "com.chronosai.fromourplace",
+      "buildNumber": "1",
+      "supportsTablet": false,
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "From Our Place uses your location to find local producers near you.",
+        "NSCameraUsageDescription": "From Our Place uses your camera to upload profile photos.",
+        "NSPhotoLibraryUsageDescription": "From Our Place accesses your photo library to upload profile photos."
+      }
+    },
+    "android": {
+      "package": "com.chronosai.fromourplace",
+      "versionCode": 1,
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#F0E6D3"
+      }
+    },
+    "plugins": [
+      "expo-build-properties",
+      [
+        "@stripe/stripe-react-native",
+        {
+          "merchantIdentifier": "merchant.com.chronosai.fromourplace"
+          "enableGooglePay": false
+        }
+      ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "8b6ab2d1-cb5e-4073-964a-cf81814c92cd"
+      }
+    }
+  }
+}
