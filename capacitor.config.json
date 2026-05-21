@@ -1,0 +1,9 @@
+{
+  "appId": "com.chronosai.fromourplace",
+  "appName": "From Our Place",
+  "webDir": "static",
+  "server": {
+    "url": "https://from-our-place.chronos-ai.net",
+    "cleartext": false
+  }
+}
