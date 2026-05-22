@@ -34,7 +34,7 @@
       [
         "@stripe/stripe-react-native",
         {
-          "merchantIdentifier": "merchant.com.chronosai.fromourplace"
+          "merchantIdentifier": "merchant.com.chronosai.fromourplace",
           "enableGooglePay": false
         }
       ]

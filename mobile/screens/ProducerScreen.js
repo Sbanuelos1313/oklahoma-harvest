@@ -92,14 +92,21 @@ export default function ProducerScreen({ route, navigation, API, token, cart, se
           keyExtractor={item => String(item.id)}
           ListHeaderComponent={
             <View style={styles.header}>
+
+              {/* Back button */}
+              <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()}>
+                <Text style={styles.backText}>‹ Back</Text>
+              </TouchableOpacity>
+
               <View style={styles.avatar}>
-                <Text style={styles.avatarText}>🏪</Text>
+                <Text style={styles.avatarText}>🌾</Text>
               </View>
               <Text style={styles.shopName}>{producer.shop_name}</Text>
-              <Text style={styles.location}>{producer.city}, {producer.state}</Text>
+              <Text style={styles.location}>📍 {producer.city}, {producer.state}</Text>
               <View style={styles.badges}>
                 {producer.fulfillment_pickup && <View style={styles.badge}><Text style={styles.badgeText}>🚗 Pickup</Text></View>}
                 {producer.fulfillment_delivery && <View style={styles.badge}><Text style={styles.badgeText}>🚚 Delivery</Text></View>}
+                {producer.avg_rating > 0 && <View style={styles.badge}><Text style={styles.badgeText}>⭐ {parseFloat(producer.avg_rating).toFixed(1)}</Text></View>}
               </View>
               <Text style={styles.sectionTitle}>Available Products</Text>
             </View>
@@ -134,6 +141,8 @@ const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: C.rootBg },
   safeArea: { flex: 1 },
   header: { alignItems: 'center', marginBottom: 16, paddingTop: 8 },
+  backBtn: { alignSelf: 'flex-start', paddingVertical: 8, paddingHorizontal: 4, marginBottom: 12 },
+  backText: { fontFamily: 'DMSans_400Regular', fontSize: 16, color: C.darkBrown, fontWeight: '600' },
   avatar: { width: 80, height: 80, borderRadius: 40, backgroundColor: C.cardBg, borderWidth: 3, borderColor: C.gold2, alignItems: 'center', justifyContent: 'center', marginBottom: 12, shadowColor: C.gold2, shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.5, shadowRadius: 10, elevation: 8 },
   avatarText: { fontSize: 36 },
   shopName: { fontFamily: 'PlayfairDisplay_700Bold', fontSize: 22, color: C.darkBrown, marginBottom: 4, textAlign: 'center' },

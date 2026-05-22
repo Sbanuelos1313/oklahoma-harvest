@@ -32,25 +32,6 @@ export default function HomeScreen({ API, token, user, cart, setCart, navigation
     setLoading(false);
   }
 
-// In HomeScreen.tsx or wherever voice log lives
-const { consentStatus, showConsentModal, requestConsent, handleAccept, handleDecline } = useAIConsent();
-
-// Before triggering any AI feature:
-const handleVoiceLog = () => {
-  if (consentStatus !== 'granted') {
-    requestConsent();
-    return;
-  }
-  // proceed with AI call
-};
-
-// In your JSX:
-<AIConsentModal
-  visible={showConsentModal}
-  onAccept={handleAccept}
-  onDecline={handleDecline}
-/>
-
   const h = new Date().getHours();
   const greeting = h < 12 ? 'Good morning 🌅' : h < 17 ? 'Good afternoon ☀️' : 'Good evening 🌙';
   const name = user ? `, ${user.full_name.split(' ')[0]}!` : '!';
@@ -70,7 +51,6 @@ const handleVoiceLog = () => {
               <Text style={styles.greeting}>{greeting}{name}</Text>
               <Text style={styles.title}>Find local shops near you</Text>
 
-              {/* Zip search */}
               <View style={styles.searchBar}>
                 <Text>📍</Text>
                 <TextInput
@@ -87,14 +67,12 @@ const handleVoiceLog = () => {
                 </TouchableOpacity>
               </View>
 
-              {/* Category row */}
               <TouchableOpacity style={styles.categoryRow}>
                 <Text style={styles.categoryIcon}>📋</Text>
                 <Text style={styles.categoryText}>All Categories</Text>
                 <Text style={styles.categoryChevron}>›</Text>
               </TouchableOpacity>
 
-              {/* Section header */}
               <View style={styles.sectionRow}>
                 <Text style={styles.sectionTitle}>Producers Near You</Text>
                 <TouchableOpacity>
@@ -152,25 +130,20 @@ const handleVoiceLog = () => {
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: C.rootBg },
   safeArea: { flex: 1 },
-
   subHeader: { backgroundColor: C.cream, padding: 16, paddingBottom: 12 },
   greeting: { fontFamily: 'DMSans_400Regular', fontSize: 13, color: C.textLight, marginBottom: 4 },
   title: { fontFamily: 'PlayfairDisplay_700Bold', fontSize: 22, color: C.darkBrown, marginBottom: 14 },
-
   searchBar: { flexDirection: 'row', alignItems: 'center', backgroundColor: 'white', borderRadius: 12, padding: 10, gap: 8, marginBottom: 10, borderWidth: 1.5, borderColor: 'rgba(90,50,10,0.1)' },
   searchInput: { flex: 1, fontFamily: 'DMSans_400Regular', fontSize: 14, color: C.darkBrown },
   goBtn: { backgroundColor: C.sage, borderRadius: 8, paddingHorizontal: 14, paddingVertical: 7 },
   goBtnText: { color: 'white', fontFamily: 'DMSans_400Regular', fontWeight: '700', fontSize: 12 },
-
   categoryRow: { flexDirection: 'row', alignItems: 'center', backgroundColor: 'white', borderRadius: 12, padding: 12, marginBottom: 4, borderWidth: 1.5, borderColor: 'rgba(90,50,10,0.1)', gap: 8 },
   categoryIcon: { fontSize: 16 },
   categoryText: { flex: 1, fontFamily: 'DMSans_400Regular', fontSize: 14, color: C.darkBrown },
   categoryChevron: { fontSize: 20, color: C.textLight },
-
   sectionRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingTop: 16, paddingBottom: 8 },
   sectionTitle: { fontFamily: 'PlayfairDisplay_700Bold', fontSize: 16, color: C.darkBrown },
   seeAll: { fontFamily: 'DMSans_400Regular', fontSize: 13, color: C.sage, fontWeight: '600' },
-
   producerCard: { flexDirection: 'row', alignItems: 'center', backgroundColor: 'white', marginHorizontal: 16, marginBottom: 10, borderRadius: 16, padding: 14, shadowColor: '#5A320A', shadowOpacity: 0.08, shadowRadius: 8, elevation: 3 },
   cardIcon: { width: 52, height: 52, borderRadius: 26, backgroundColor: C.cream, borderWidth: 2, borderColor: '#8C6A30', alignItems: 'center', justifyContent: 'center', marginRight: 12 },
   cardIconText: { fontSize: 26 },
@@ -182,9 +155,7 @@ const styles = StyleSheet.create({
   badgeText: { fontFamily: 'DMSans_400Regular', fontSize: 11, color: C.sage, fontWeight: '600' },
   shopBtn: { backgroundColor: C.sage, borderRadius: 10, paddingHorizontal: 12, paddingVertical: 7, marginLeft: 8 },
   shopBtnText: { fontFamily: 'DMSans_400Regular', color: 'white', fontWeight: '700', fontSize: 12 },
-
   empty: { fontFamily: 'DMSans_400Regular', textAlign: 'center', color: C.textLight, marginTop: 40 },
-
   feedbackButton: { position: 'absolute', bottom: Platform.OS === 'ios' ? 80 : 70, right: 18, zIndex: 999, backgroundColor: C.feedbackBg, paddingVertical: 10, paddingHorizontal: 16, borderRadius: 20, shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.2, shadowRadius: 8, elevation: 10 },
   feedbackText: { fontFamily: 'DMSans_400Regular', fontSize: 12, color: '#FFFFFF', fontWeight: '600' },
 });
