@@ -1,55 +1,74 @@
-import { useState, useEffect } from 'react';
-import { View, Text, FlatList, StyleSheet, ActivityIndicator, TouchableOpacity, StatusBar, SafeAreaView, Platform, Linking } from 'react-native';
-import { useFonts } from '@expo-google-fonts/satisfy';
-import { PlayfairDisplay_700Bold } from '@expo-google-fonts/playfair-display';
-import { DMSans_400Regular } from '@expo-google-fonts/dm-sans';
-import { LinearGradient } from 'expo-linear-gradient';
+import React, { useEffect, useState } from 'react';
+import {
+  View, Text, Image, FlatList, StyleSheet,
+  ActivityIndicator, StatusBar, SafeAreaView, RefreshControl
+} from 'react-native';
+
 import AppHeader from '../components/AppHeader';
+import AppButton from '../components/AppButton';
+import EmptyState from '../components/EmptyState';
+import StatusBadge from '../components/StatusBadge';
 
-const C = {
-  rust: '#B85C2A', gold: '#C9A84C', sage: '#4A6741',
-  darkBrown: '#2A1A08', cardBg: '#FAF5ED', rootBg: '#EDE8DC',
-  textMid: '#5C3818', textLight: '#9C7A50', feedbackBg: '#4A6741',
+import { COLORS, FONTS, LAYOUT, RADIUS, SHADOWS } from '../constants/theme';
+import { IMAGE_ASSETS } from '../constants/assets';
+
+const STATUS_LABELS = {
+  pending: 'Pending vendor confirmation',
+  confirmed: 'Confirmed',
+  ready_for_pickup: 'Ready for pickup',
+  out_for_delivery: 'Out for delivery',
+  fulfilled: 'Completed',
+  cancelled: 'Cancelled',
+  auto_cancelled: 'Auto-cancelled',
 };
-
-const CARD_GRADIENT = [C.rust, C.gold, C.sage, C.gold, C.rust];
-
-const STATUS_COLOR = { pending: '#C8901A', confirmed: '#4A6741', ready_for_pickup: '#2E7D32', out_for_delivery: '#2E7D32', fulfilled: '#666', cancelled: '#B43C1E', auto_cancelled: '#B43C1E' };
-const STATUS_LABEL = { pending: '⏳ Pending', confirmed: '✅ Confirmed', ready_for_pickup: '📦 Ready', out_for_delivery: '🚚 On the way', fulfilled: '✔ Completed', cancelled: '✗ Cancelled', auto_cancelled: '✗ Auto-cancelled' };
 
 export default function OrdersScreen({ API, token, user, cart, navigation }) {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [fontsLoaded] = useFonts({ PlayfairDisplay_700Bold, DMSans_400Regular });
+  const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
-    if (token) loadOrders();
+    const unsubscribe = navigation.addListener('focus', () => {
+      if (token && token !== 'guest') loadOrders();
+      else setLoading(false);
+    });
+    if (token && token !== 'guest') loadOrders();
     else setLoading(false);
-  }, [token]);
+    return unsubscribe;
+  }, [token, navigation]);
 
-  async function loadOrders() {
-    setLoading(true);
+  async function loadOrders(isRefresh = false) {
+    if (isRefresh) setRefreshing(true);
+    else setLoading(true);
+
     try {
-      const res = await fetch(`${API}/api/orders/my`, { headers: { 'Authorization': 'Bearer ' + token } });
+      const res = await fetch(`${API}/api/orders/my`, {
+        headers: { Authorization: 'Bearer ' + token }
+      });
       const data = await res.json();
       setOrders(Array.isArray(data) ? data : []);
-    } catch { setOrders([]); }
-    setLoading(false);
+    } catch {
+      setOrders([]);
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
   }
 
-  if (!fontsLoaded) return null;
-
-  if (!token) {
+  if (!token || token === 'guest') {
     return (
       <View style={styles.root}>
-        <StatusBar barStyle="dark-content" backgroundColor={C.rootBg} />
-        <SafeAreaView style={styles.safeArea}>
+        <StatusBar barStyle="dark-content" backgroundColor={COLORS.cream} />
+        <SafeAreaView style={styles.safe}>
           <AppHeader user={user} cart={cart} navigation={navigation} />
-          <View style={styles.centered}>
-            <Text style={styles.emptyTitle}>Sign in to view your orders</Text>
-            <TouchableOpacity style={styles.btn} onPress={() => navigation.getParent().navigate('Auth')}>
-              <Text style={styles.btnText}>Sign In</Text>
-            </TouchableOpacity>
+          <View style={styles.emptyWrap}>
+            <EmptyState
+              image={IMAGE_ASSETS.hero.checkout}
+              title="Sign in to view orders"
+              message="Create an account or sign in to see order history, confirmations, pickup updates, and receipts."
+              buttonTitle="Sign In"
+              onPress={() => navigation.getParent()?.navigate('Auth') || navigation.navigate('Auth')}
+            />
           </View>
         </SafeAreaView>
       </View>
@@ -59,26 +78,12 @@ export default function OrdersScreen({ API, token, user, cart, navigation }) {
   if (loading) {
     return (
       <View style={styles.root}>
-        <StatusBar barStyle="dark-content" backgroundColor={C.rootBg} />
-        <SafeAreaView style={styles.safeArea}>
+        <StatusBar barStyle="dark-content" backgroundColor={COLORS.cream} />
+        <SafeAreaView style={styles.safe}>
           <AppHeader user={user} cart={cart} navigation={navigation} />
-          <View style={styles.centered}>
-            <ActivityIndicator color={C.sage} size="large" />
-          </View>
-        </SafeAreaView>
-      </View>
-    );
-  }
-
-  if (!orders.length) {
-    return (
-      <View style={styles.root}>
-        <StatusBar barStyle="dark-content" backgroundColor={C.rootBg} />
-        <SafeAreaView style={styles.safeArea}>
-          <AppHeader user={user} cart={cart} navigation={navigation} />
-          <View style={styles.centered}>
-            <Text style={styles.emptyTitle}>No orders yet 🌾</Text>
-            <Text style={styles.emptySub}>Start shopping!</Text>
+          <View style={styles.center}>
+            <ActivityIndicator color={COLORS.forest} />
+            <Text style={styles.loadingText}>Loading your orders...</Text>
           </View>
         </SafeAreaView>
       </View>
@@ -87,57 +92,93 @@ export default function OrdersScreen({ API, token, user, cart, navigation }) {
 
   return (
     <View style={styles.root}>
-      <StatusBar barStyle="dark-content" backgroundColor={C.rootBg} />
-      <SafeAreaView style={styles.safeArea}>
+      <StatusBar barStyle="dark-content" backgroundColor={COLORS.cream} />
+      <SafeAreaView style={styles.safe}>
         <AppHeader user={user} cart={cart} navigation={navigation} />
+
         <FlatList
           data={orders}
-          keyExtractor={item => String(item.id)}
-          ListHeaderComponent={<Text style={styles.pageTitle}>My Orders</Text>}
+          keyExtractor={(item) => String(item.id)}
+          contentContainerStyle={styles.list}
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => loadOrders(true)} tintColor={COLORS.forest} />}
+          ListHeaderComponent={
+            <View style={styles.headerBlock}>
+              <Text style={styles.eyebrow}>Purchases</Text>
+              <Text style={styles.title}>My orders</Text>
+              <Text style={styles.subtitle}>Track confirmations, pickup status, delivery updates, and completed local purchases.</Text>
+            </View>
+          }
+          ListEmptyComponent={
+            <EmptyState
+              image={IMAGE_ASSETS.vendor.default}
+              title="No orders yet"
+              message="Start shopping local vendors and your orders will appear here."
+              buttonTitle="Shop Local"
+              onPress={() => navigation.navigate('Home')}
+            />
+          }
           renderItem={({ item }) => (
             <View style={styles.orderCard}>
-              <LinearGradient colors={CARD_GRADIENT} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={styles.orderBar} />
-              <View style={styles.orderInner}>
-                <View style={styles.orderTop}>
-                  <Text style={styles.producerName}>{item.shop_name || 'Producer'}</Text>
-                  <Text style={[styles.status, { color: STATUS_COLOR[item.status] || '#666' }]}>
-                    {STATUS_LABEL[item.status] || item.status}
-                  </Text>
+              <View style={styles.orderTop}>
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.orderNumber}>Order #{item.id}</Text>
+                  <Text style={styles.shopName}>{item.shop_name || 'Local Vendor'}</Text>
                 </View>
-                <Text style={styles.orderDate}>{new Date(item.created_at).toLocaleDateString()}</Text>
-                <Text style={styles.orderItems}>{item.fulfillment_type}</Text>
-                <Text style={styles.orderTotal}>${parseFloat(item.total || 0).toFixed(2)}</Text>
+                <Text style={styles.total}>${Number(item.total || 0).toFixed(2)}</Text>
+              </View>
+
+              <StatusBadge status={item.status} label={STATUS_LABELS[item.status] || item.status} />
+
+              <View style={styles.orderMeta}>
+                <View style={styles.metaItem}>
+                  <Image source={IMAGE_ASSETS.icons.location} style={styles.metaIcon} />
+                  <Text style={styles.metaText}>{item.city || 'Local vendor'}</Text>
+                </View>
+                <View style={styles.metaItem}>
+                  <Image
+                    source={item.fulfillment_type === 'delivery' ? IMAGE_ASSETS.icons.delivery : item.fulfillment_type === 'shipping' ? IMAGE_ASSETS.icons.shipping : IMAGE_ASSETS.icons.pickup}
+                    style={styles.metaIcon}
+                  />
+                  <Text style={styles.metaText}>{item.fulfillment_type}</Text>
+                </View>
+              </View>
+
+              <View style={styles.actionRow}>
+                <AppButton title="View Details" variant="outline" style={styles.actionBtn} onPress={() => navigation.getParent()?.navigate('OrderDetail', { order: item })} />
+                {item.status === 'fulfilled' ? (
+                  <AppButton title="Leave Review" variant="secondary" style={styles.actionBtn} onPress={() => navigation.getParent()?.navigate('LeaveReview', { order: item })} />
+                ) : (
+                  <AppButton title="Shop Again" variant="secondary" style={styles.actionBtn} onPress={() => navigation.navigate('Home')} />
+                )}
               </View>
             </View>
           )}
-          contentContainerStyle={{ padding: 16, paddingBottom: 100 }}
         />
       </SafeAreaView>
-      <TouchableOpacity style={styles.feedbackButton} onPress={() => Linking.openURL('https://forms.gle/bUWcVYSsHYb8RQuE6')} activeOpacity={0.85}>
-        <Text style={styles.feedbackText}>💬 Feedback</Text>
-      </TouchableOpacity>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: C.rootBg },
-  safeArea: { flex: 1 },
-  centered: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 24 },
-  emptyTitle: { fontFamily: 'PlayfairDisplay_700Bold', fontSize: 20, color: '#9C7A50', marginBottom: 8, textAlign: 'center' },
-  emptySub: { fontFamily: 'DMSans_400Regular', fontSize: 13, color: '#9C7A50', textAlign: 'center' },
-  btn: { backgroundColor: C.sage, borderRadius: 14, paddingHorizontal: 32, paddingVertical: 14, marginTop: 16 },
-  btnText: { fontFamily: 'DMSans_400Regular', color: 'white', fontWeight: '700', fontSize: 15 },
-  pageTitle: { fontFamily: 'PlayfairDisplay_700Bold', fontSize: 22, color: C.darkBrown, marginBottom: 16 },
-  orderCard: { backgroundColor: C.cardBg, borderRadius: 20, overflow: 'hidden', marginBottom: 12, shadowColor: '#5A320A', shadowOpacity: 0.08, shadowRadius: 10, elevation: 3 },
-  orderBar: { height: 4, width: '100%' },
-  orderInner: { padding: 16 },
-  orderTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 },
-  producerName: { fontFamily: 'PlayfairDisplay_700Bold', fontSize: 15, color: C.darkBrown },
-  status: { fontFamily: 'DMSans_400Regular', fontSize: 12, fontWeight: '700' },
-  orderDate: { fontFamily: 'DMSans_400Regular', fontSize: 12, color: C.textLight, marginBottom: 4 },
-  orderItems: { fontFamily: 'DMSans_400Regular', fontSize: 13, color: C.textMid, marginBottom: 8 },
-  orderTotal: { fontFamily: 'PlayfairDisplay_700Bold', fontSize: 16, color: C.sage },
-  feedbackButton: { position: 'absolute', bottom: Platform.OS === 'ios' ? 80 : 70, right: 18, zIndex: 999, backgroundColor: C.feedbackBg, paddingVertical: 10, paddingHorizontal: 16, borderRadius: 20, shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.2, shadowRadius: 8, elevation: 10 },
-  feedbackText: { fontFamily: 'DMSans_400Regular', fontSize: 12, color: '#FFFFFF', fontWeight: '600' },
+  root: { flex: 1, backgroundColor: COLORS.cream },
+  safe: { flex: 1 },
+  emptyWrap: { flex: 1, padding: LAYOUT.screenPadding, justifyContent: 'center' },
+  center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
+  loadingText: { fontFamily: FONTS.body, color: COLORS.brownSoft, marginTop: 10 },
+  list: { paddingHorizontal: LAYOUT.screenPadding, paddingBottom: 118 },
+  headerBlock: { marginTop: 8, marginBottom: 18 },
+  eyebrow: { fontFamily: FONTS.bodyBold, fontSize: 12, letterSpacing: 1.2, textTransform: 'uppercase', color: COLORS.sage },
+  title: { fontFamily: FONTS.display, fontSize: 34, color: COLORS.forestDark, marginTop: 4 },
+  subtitle: { fontFamily: FONTS.body, fontSize: 14, lineHeight: 21, color: COLORS.brownSoft, marginTop: 6 },
+  orderCard: { backgroundColor: COLORS.warmWhite, borderRadius: RADIUS.xl, borderWidth: 1, borderColor: COLORS.border, padding: 16, marginBottom: 16, ...SHADOWS.soft },
+  orderTop: { flexDirection: 'row', justifyContent: 'space-between', gap: 12, marginBottom: 14 },
+  orderNumber: { fontFamily: FONTS.bodyBold, fontSize: 13, color: COLORS.sage },
+  shopName: { fontFamily: FONTS.display, fontSize: 23, color: COLORS.forestDark, marginTop: 3 },
+  total: { fontFamily: FONTS.display, fontSize: 24, color: COLORS.forest },
+  orderMeta: { flexDirection: 'row', gap: 12, marginTop: 14 },
+  metaItem: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  metaIcon: { width: 20, height: 20 },
+  metaText: { fontFamily: FONTS.bodyBold, color: COLORS.brownSoft, fontSize: 12, textTransform: 'capitalize' },
+  actionRow: { flexDirection: 'row', gap: 10, marginTop: 16 },
+  actionBtn: { flex: 1, minHeight: 44 },
 });
