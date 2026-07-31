@@ -11,7 +11,6 @@ import {
 
 import HeroBanner from '../components/home/HeroBanner';
 import SearchBar from '../components/home/SearchBar';
-import CategoryCarousel from '../components/home/CategoryCarousel';
 import FeaturedProducers from '../components/home/FeaturedProducers';
 import SeasonalProducts from '../components/home/SeasonalProducts';
 import CommunitySpotlight from '../components/home/CommunitySpotlight';
@@ -47,11 +46,6 @@ export default function HomeScreen({
     });
   }
 
-  function handleCategoryPress(category) {
-    navigation.navigate('Search', {
-      category: category?.key || category?.title,
-    });
-  }
 
   function handleRefresh() {
     setRefreshing(true);
@@ -99,10 +93,6 @@ export default function HomeScreen({
               onFilterPress={() => navigation.navigate('Search')}
             />
 
-            <CategoryCarousel
-              onCategoryPress={handleCategoryPress}
-              onViewAllPress={() => navigation.navigate('Search')}
-            />
 
             <FeaturedProducers navigation={navigation} />
 
@@ -130,12 +120,12 @@ const styles = StyleSheet.create({
   },
 
   backgroundImage: {
-    opacity: 0.28,
+    opacity: 0.24,
   },
 
   overlay: {
     flex: 1,
-    backgroundColor: 'rgba(247,242,232,0.91)',
+    backgroundColor: 'rgba(247,242,232,0.92)',
   },
 
   safeArea: {
@@ -144,7 +134,7 @@ const styles = StyleSheet.create({
   },
 
   content: {
-    paddingBottom: 135,
+    paddingBottom: 150,
   },
 
   bottomSpacer: {

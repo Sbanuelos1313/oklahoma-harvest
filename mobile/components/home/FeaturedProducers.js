@@ -1,31 +1,36 @@
 import React from 'react';
+
 import {
-  View,
-  Text,
-  StyleSheet,
-  FlatList,
-  TouchableOpacity,
+  Dimensions,
   ImageBackground,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 
 import { Ionicons } from '@expo/vector-icons';
 
+import { IMAGE_ASSETS } from '../../constants/assets';
+
 import {
   COLORS,
   FONTS,
-  SPACING,
   RADIUS,
   SHADOWS,
 } from '../../constants/theme';
+
+const { width } = Dimensions.get('window');
+const CARD_WIDTH = (width - 52) / 2;
 
 const PRODUCERS = [
   {
     id: 1,
     name: 'Willow & Wick',
-    type: 'Candles • Home Decor',
+    type: 'Candles',
     location: '2.4 mi',
     rating: '4.9',
-    image: require('../../assets/backgrounds/bg_vendor_store.jpg'),
+    image: IMAGE_ASSETS.backgrounds.vendorOrders,
   },
   {
     id: 2,
@@ -33,93 +38,111 @@ const PRODUCERS = [
     type: 'Bakery',
     location: '5.1 mi',
     rating: '4.8',
-    image: require('../../assets/categories/cat_bakery.jpg'),
-  },
-  {
-    id: 3,
-    name: 'Prairie Acres',
-    type: 'Farm Fresh Produce',
-    location: '8.3 mi',
-    rating: '5.0',
-    image: require('../../assets/categories/cat_produce.jpg'),
+    image: IMAGE_ASSETS.categories.bakery,
   },
 ];
 
-export default function FeaturedProducers({ navigation, onViewAllPress }) {
-  const renderProducer = ({ item }) => (
-    <TouchableOpacity
-      activeOpacity={0.9}
-      style={styles.card}
-      onPress={() =>
-        navigation?.navigate?.('Producer', {
-          producer: item,
-        })
-      }
-    >
-      <ImageBackground
-        source={item.image}
-        style={styles.image}
-        imageStyle={styles.imageStyle}
-      >
-        <View style={styles.overlay} />
-
-        <View style={styles.content}>
-          <View style={styles.badge}>
-            <Ionicons name="star" size={13} color={COLORS.brown} />
-            <Text style={styles.badgeText}>{item.rating}</Text>
-          </View>
-
-          <View style={styles.bottomContent}>
-            <Text numberOfLines={1} style={styles.name}>
-              {item.name}
-            </Text>
-
-            <Text numberOfLines={1} style={styles.type}>
-              {item.type}
-            </Text>
-
-            <View style={styles.locationRow}>
-              <Ionicons name="location" size={13} color={COLORS.gold} />
-              <Text style={styles.location}>{item.location}</Text>
-            </View>
-          </View>
-        </View>
-      </ImageBackground>
-    </TouchableOpacity>
-  );
-
+export default function FeaturedProducers({
+  navigation,
+  onViewAllPress,
+}) {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.heading}>Featured Near You</Text>
+        <Text style={styles.heading}>
+          Featured Near You
+        </Text>
 
-        <TouchableOpacity activeOpacity={0.8} onPress={onViewAllPress}>
-          <Text style={styles.viewAll}>View All</Text>
+        <TouchableOpacity
+          activeOpacity={0.8}
+          onPress={onViewAllPress}
+        >
+          <Text style={styles.viewAll}>
+            View All
+          </Text>
         </TouchableOpacity>
       </View>
 
-      <FlatList
-        horizontal
-        data={PRODUCERS}
-        renderItem={renderProducer}
-        keyExtractor={(item) => String(item.id)}
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.list}
-        snapToInterval={318}
-        decelerationRate="fast"
-      />
+      <View style={styles.grid}>
+        {PRODUCERS.map((item) => (
+          <TouchableOpacity
+            key={String(item.id)}
+            activeOpacity={0.9}
+            style={styles.card}
+            onPress={() =>
+              navigation?.navigate?.(
+                'Producer',
+                {
+                  producer: item,
+                }
+              )
+            }
+          >
+            <ImageBackground
+              source={item.image}
+              resizeMode="cover"
+              style={styles.image}
+              imageStyle={styles.imageStyle}
+            >
+              <View style={styles.overlay} />
+
+              <View style={styles.content}>
+                <View style={styles.badge}>
+                  <Ionicons
+                    name="star"
+                    size={10}
+                    color={COLORS.brown}
+                  />
+
+                  <Text style={styles.badgeText}>
+                    {item.rating}
+                  </Text>
+                </View>
+
+                <View>
+                  <Text
+                    numberOfLines={1}
+                    style={styles.name}
+                  >
+                    {item.name}
+                  </Text>
+
+                  <Text
+                    numberOfLines={1}
+                    style={styles.type}
+                  >
+                    {item.type}
+                  </Text>
+
+                  <View style={styles.locationRow}>
+                    <Ionicons
+                      name="location"
+                      size={10}
+                      color={COLORS.gold}
+                    />
+
+                    <Text style={styles.location}>
+                      {item.location}
+                    </Text>
+                  </View>
+                </View>
+              </View>
+            </ImageBackground>
+          </TouchableOpacity>
+        ))}
+      </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    marginBottom: SPACING.xxl,
+    marginBottom: 26,
   },
 
   header: {
     paddingHorizontal: 20,
-    marginBottom: 16,
+    marginBottom: 12,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
@@ -127,29 +150,30 @@ const styles = StyleSheet.create({
 
   heading: {
     fontFamily: FONTS.display,
-    fontSize: 31,
-    lineHeight: 37,
+    fontSize: 27,
+    lineHeight: 32,
     color: COLORS.brown,
   },
 
   viewAll: {
     fontFamily: FONTS.bodyBold,
+    fontSize: 14,
     color: COLORS.forest,
-    fontSize: 15,
   },
 
-  list: {
+  grid: {
     paddingHorizontal: 20,
-    paddingRight: 34,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
   },
 
   card: {
-    width: 300,
-    height: 214,
-    marginRight: 18,
-    borderRadius: 32,
+    width: CARD_WIDTH,
+    height: 150,
+    borderRadius: 22,
     overflow: 'hidden',
-    ...SHADOWS.medium,
+    backgroundColor: COLORS.beige,
+    ...SHADOWS.soft,
   },
 
   image: {
@@ -157,55 +181,51 @@ const styles = StyleSheet.create({
   },
 
   imageStyle: {
-    borderRadius: 32,
+    borderRadius: 22,
   },
 
   overlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0,0,0,0.32)',
+    backgroundColor: 'rgba(0,0,0,0.30)',
   },
 
   content: {
     flex: 1,
+    padding: 12,
     justifyContent: 'space-between',
-    padding: 18,
   },
 
   badge: {
     alignSelf: 'flex-start',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: RADIUS.pill,
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: COLORS.gold,
-    paddingHorizontal: 12,
-    paddingVertical: 7,
-    borderRadius: RADIUS.pill,
   },
 
   badgeText: {
-    marginLeft: 5,
-    color: COLORS.brown,
+    marginLeft: 4,
     fontFamily: FONTS.bodyBold,
-    fontSize: 13,
-  },
-
-  bottomContent: {
-    paddingBottom: 2,
+    fontSize: 10,
+    color: COLORS.brown,
   },
 
   name: {
-    color: COLORS.white,
+    marginBottom: 2,
     fontFamily: FONTS.bodyBold,
-    fontSize: 24,
-    lineHeight: 29,
-    marginBottom: 5,
+    fontSize: 16,
+    lineHeight: 20,
+    color: COLORS.white,
   },
 
   type: {
-    color: COLORS.cream,
+    marginBottom: 2,
     fontFamily: FONTS.body,
-    fontSize: 15,
-    lineHeight: 20,
-    marginBottom: 5,
+    fontSize: 12,
+    lineHeight: 16,
+    color: COLORS.cream,
   },
 
   locationRow: {
@@ -215,8 +235,8 @@ const styles = StyleSheet.create({
 
   location: {
     marginLeft: 4,
-    color: COLORS.cream,
     fontFamily: FONTS.body,
-    fontSize: 13,
+    fontSize: 10,
+    color: COLORS.cream,
   },
 });

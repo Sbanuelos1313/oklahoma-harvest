@@ -1,199 +1,585 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react';
+
 import {
-  View, Text, Image, ScrollView, StyleSheet, SafeAreaView,
-  StatusBar, ActivityIndicator, TouchableOpacity, RefreshControl
+  ActivityIndicator,
+  Alert,
+  Image,
+  Linking,
+  RefreshControl,
+  ScrollView,
+  StatusBar,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from 'react-native';
+
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { Ionicons } from '@expo/vector-icons';
 
 import AppButton from '../../components/AppButton';
 import EmptyState from '../../components/EmptyState';
-import InsightCard from '../../components/InsightCard';
-import StatusBadge from '../../components/StatusBadge';
-import { COLORS, FONTS, LAYOUT, RADIUS, SHADOWS } from '../../constants/theme';
+
+import {
+  COLORS,
+  FONTS,
+  LAYOUT,
+  RADIUS,
+  SHADOWS,
+} from '../../constants/theme';
+
 import { IMAGE_ASSETS } from '../../constants/assets';
 
-export default function VendorDashboardScreen({ API, token, user, navigation }) {
+export default function VendorDashboardScreen({
+  API,
+  token,
+  user,
+  navigation,
+}) {
   const [shop, setShop] = useState(null);
   const [products, setProducts] = useState([]);
   const [orders, setOrders] = useState([]);
-  const [stripeStatus, setStripeStatus] = useState(null);
+  const [stripe, setStripe] = useState(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [startingStripe, setStartingStripe] =
+    useState(false);
+
+  const loadDashboard = useCallback(
+    async ({ showLoading = true } = {}) => {
+      if (showLoading) {
+        setLoading(true);
+      }
+
+      try {
+        const headers = {
+          Authorization: `Bearer ${token}`,
+        };
+
+        const [
+          shopResponse,
+          productsResponse,
+          ordersResponse,
+          stripeResponse,
+        ] = await Promise.all([
+          fetch(`${API}/api/producers/me`, {
+            headers,
+          }),
+          fetch(`${API}/api/products/my`, {
+            headers,
+          }),
+          fetch(
+            `${API}/api/orders/producer/incoming`,
+            {
+              headers,
+            }
+          ),
+          fetch(
+            `${API}/api/stripe/connect/status`,
+            {
+              headers,
+            }
+          ),
+        ]);
+
+        const shopData = shopResponse.ok
+          ? await shopResponse.json()
+          : null;
+
+        const productsData = productsResponse.ok
+          ? await productsResponse.json()
+          : [];
+
+        const ordersData = ordersResponse.ok
+          ? await ordersResponse.json()
+          : [];
+
+        const stripeData = stripeResponse.ok
+          ? await stripeResponse.json()
+          : null;
+
+        setShop(shopData);
+
+        setProducts(
+          Array.isArray(productsData)
+            ? productsData
+            : []
+        );
+
+        setOrders(
+          Array.isArray(ordersData)
+            ? ordersData
+            : []
+        );
+
+        setStripe(stripeData);
+      } catch (error) {
+        console.error(
+          'Unable to load vendor dashboard:',
+          error
+        );
+
+        setShop(null);
+        setProducts([]);
+        setOrders([]);
+        setStripe(null);
+      } finally {
+        setLoading(false);
+        setRefreshing(false);
+      }
+    },
+    [API, token]
+  );
 
   useEffect(() => {
-    const unsubscribe = navigation.addListener('focus', () => loadDashboard());
     loadDashboard();
-    return unsubscribe;
-  }, [navigation]);
+  }, [loadDashboard]);
 
-  async function loadDashboard(isRefresh = false) {
-    if (isRefresh) setRefreshing(true);
-    else setLoading(true);
+  async function handleRefresh() {
+    setRefreshing(true);
+
+    await loadDashboard({
+      showLoading: false,
+    });
+  }
+
+  async function startStripe() {
+    if (startingStripe) {
+      return;
+    }
+
+    setStartingStripe(true);
 
     try {
-      const headers = { Authorization: 'Bearer ' + token };
-      const [shopRes, productRes, orderRes, stripeRes] = await Promise.all([
-        fetch(`${API}/api/producers/me`, { headers }),
-        fetch(`${API}/api/products/my`, { headers }),
-        fetch(`${API}/api/orders/producer/incoming`, { headers }),
-        fetch(`${API}/api/stripe/connect/status`, { headers }),
-      ]);
+      const response = await fetch(
+        `${API}/api/stripe/connect/onboard`,
+        {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
 
-      const shopData = await shopRes.json();
-      const productData = await productRes.json();
-      const orderData = await orderRes.json();
-      const stripeData = await stripeRes.json();
+      const data = await response.json();
 
-      setShop(shopRes.ok ? shopData : null);
-      setProducts(Array.isArray(productData) ? productData : []);
-      setOrders(Array.isArray(orderData) ? orderData : []);
-      setStripeStatus(stripeData || null);
-    } catch {
-      setShop(null);
-      setProducts([]);
-      setOrders([]);
-      setStripeStatus(null);
+      if (!response.ok) {
+        throw new Error(
+          data?.detail ||
+            data?.message ||
+            'Unable to start Stripe onboarding.'
+        );
+      }
+
+      if (data?.onboarding_url) {
+        await Linking.openURL(
+          data.onboarding_url
+        );
+
+        return;
+      }
+
+      Alert.alert(
+        'Stripe',
+        data?.message ||
+          'Stripe is already set up.'
+      );
+    } catch (error) {
+      console.error(
+        'Unable to start Stripe onboarding:',
+        error
+      );
+
+      Alert.alert(
+        'Stripe setup',
+        error?.message ||
+          'Unable to start onboarding.'
+      );
     } finally {
-      setLoading(false);
-      setRefreshing(false);
+      setStartingStripe(false);
     }
   }
 
-  async function startStripeOnboarding() {
-    try {
-      const res = await fetch(`${API}/api/stripe/connect/onboard`, {
-        method: 'POST',
-        headers: { Authorization: 'Bearer ' + token }
-      });
-      const data = await res.json();
-      if (data?.onboarding_url) alert('Open this Stripe onboarding link:\\n\\n' + data.onboarding_url);
-      else alert(data?.message || 'Stripe is already set up.');
-    } catch {
-      alert('Unable to start Stripe onboarding.');
-    }
-  }
+  const dashboardData = useMemo(() => {
+    const pendingOrders = orders.filter(
+      (order) => order.status === 'pending'
+    );
 
-  const stats = useMemo(() => {
-    const activeProducts = products.filter(p => p.is_active).length;
-    const lowInventory = products.filter(p => Number(p.quantity_available || 0) <= 3).length;
-    const pendingOrders = orders.filter(o => o.status === 'pending').length;
-    const totalOpenValue = orders.reduce((sum, o) => sum + Number(o.total || 0), 0);
-    const fulfilledValue = orders.filter(o => o.status === 'fulfilled').reduce((sum, o) => sum + Number(o.total || 0), 0);
-    return { activeProducts, lowInventory, pendingOrders, totalOpenValue, fulfilledValue };
-  }, [products, orders]);
+    const activeProducts = products.filter(
+      (product) => product.is_active
+    );
+
+    const lowStockProducts = products.filter(
+      (product) =>
+        product.is_active &&
+        Number(product.quantity_available || 0) <= 5
+    );
+
+    const openOrderValue = orders
+      .filter((order) =>
+        [
+          'pending',
+          'confirmed',
+          'processing',
+          'ready',
+          'ready_for_pickup',
+          'out_for_delivery',
+        ].includes(order.status)
+      )
+      .reduce(
+        (sum, order) =>
+          sum + Number(order.total || 0),
+        0
+      );
+
+    return {
+      pendingCount: pendingOrders.length,
+      activeCount: activeProducts.length,
+      lowStockCount: lowStockProducts.length,
+      openOrderValue,
+    };
+  }, [orders, products]);
+
+  const firstName =
+    user?.full_name?.split(' ')?.[0] ||
+    user?.name?.split(' ')?.[0] ||
+    'there';
 
   if (loading) {
     return (
       <View style={styles.root}>
-        <SafeAreaView style={styles.safe}>
-          <View style={styles.center}>
-            <ActivityIndicator color={COLORS.forest} />
-            <Text style={styles.loadingText}>Loading vendor dashboard...</Text>
-          </View>
-        </SafeAreaView>
-      </View>
-    );
-  }
+        <StatusBar
+          barStyle="dark-content"
+          backgroundColor={COLORS.cream}
+        />
 
-  if (!shop) {
-    return (
-      <View style={styles.root}>
-        <StatusBar barStyle="dark-content" backgroundColor={COLORS.cream} />
-        <SafeAreaView style={styles.safe}>
-          <View style={styles.emptyWrap}>
-            <EmptyState
-              image={IMAGE_ASSETS.vendor.storefront}
-              title="Set up your vendor store"
-              message="Create your storefront so customers can discover your products, place orders, and support your local business."
-              buttonTitle="Create Store"
-              onPress={() => navigation.getParent()?.navigate('VendorStoreSetup')}
+        <SafeAreaView style={styles.loadingState}>
+          <View style={styles.loadingIcon}>
+            <Ionicons
+              name="storefront-outline"
+              size={30}
+              color={COLORS.forest}
             />
           </View>
+
+          <ActivityIndicator
+            size="small"
+            color={COLORS.forest}
+            style={styles.loadingIndicator}
+          />
+
+          <Text style={styles.loadingTitle}>
+            Loading your dashboard
+          </Text>
+
+          <Text style={styles.loadingMessage}>
+            Gathering your store, products, and
+            incoming orders.
+          </Text>
         </SafeAreaView>
       </View>
     );
   }
 
-  const heroImage = shop.profile_image_url ? { uri: shop.profile_image_url } : IMAGE_ASSETS.vendor.storefront;
-
+if (!shop) {
   return (
     <View style={styles.root}>
-      <StatusBar barStyle="light-content" backgroundColor={COLORS.forestDark} />
-      <SafeAreaView style={styles.safe}>
+      <StatusBar
+        barStyle="dark-content"
+        backgroundColor={COLORS.cream}
+      />
+
+      <SafeAreaView style={styles.emptyState}>
+        <EmptyState
+          image={IMAGE_ASSETS.backgrounds.vendorEmpty}
+          title="Set up your vendor store"
+          message="Create your storefront so customers can discover your products and place orders."
+          buttonTitle="Set Up Store"
+          onPress={() =>
+            navigation.navigate('VendorStoreSetup')
+          }
+        />
+      </SafeAreaView>
+    </View>
+  );
+}
+  const heroImage =
+    IMAGE_ASSETS.backgrounds.vendorDashboard;
+    return (
+
+    <View style={styles.root}>
+      <StatusBar
+        barStyle="light-content"
+        backgroundColor={COLORS.forestDark}
+      />
+
+      <SafeAreaView
+        edges={['left', 'right']}
+        style={styles.root}
+      >
         <ScrollView
-          contentContainerStyle={styles.scroll}
-          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => loadDashboard(true)} tintColor={COLORS.forest} />}
           showsVerticalScrollIndicator={false}
+          contentContainerStyle={styles.scrollContent}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={handleRefresh}
+              tintColor={COLORS.forest}
+              colors={[COLORS.forest]}
+            />
+          }
         >
           <View style={styles.hero}>
-            <Image source={heroImage} style={styles.heroImage} />
-            <View style={styles.overlay} />
-            <View style={styles.heroContent}>
-              <Text style={styles.eyebrow}>Vendor dashboard</Text>
-              <Text style={styles.title}>{shop.shop_name}</Text>
-              <Text style={styles.subtitle}>{shop.admin_approved ? 'Live on From Our Place' : 'Pending admin approval'}</Text>
-            </View>
-          </View>
+            <Image
+              source={heroImage}
+              resizeMode="cover"
+              style={styles.heroImage}
+            />
 
-          <View style={styles.insightGrid}>
-            <InsightCard label="Pending" value={stats.pendingOrders} sub="Orders" tone="dark" />
-            <InsightCard label="Active" value={stats.activeProducts} sub="Products" />
-          </View>
+            <View style={styles.heroOverlay} />
 
-          <View style={styles.insightGrid}>
-            <InsightCard label="Open value" value={`$${stats.totalOpenValue.toFixed(0)}`} sub="Current orders" />
-            <InsightCard label="Alerts" value={stats.lowInventory} sub="Low inventory" />
-          </View>
+            <SafeAreaView
+              edges={['top']}
+              style={styles.heroSafeArea}
+            >
+              <View style={styles.heroTopRow}>
+                <View style={styles.vendorBadge}>
+                  <Ionicons
+                    name="storefront-outline"
+                    size={15}
+                    color={COLORS.forest}
+                  />
 
-          <View style={styles.sectionCard}>
-            <Text style={styles.sectionTitle}>Store health</Text>
-            <Health ok={shop.admin_approved} title="Admin approval" sub={shop.admin_approved ? 'Your store is visible to customers.' : 'Your store is waiting for platform approval.'} />
-            <Health ok={stripeStatus?.onboarding_complete} title="Stripe payouts" sub={stripeStatus?.onboarding_complete ? 'Payouts are enabled.' : 'Complete Stripe onboarding to receive payments.'} />
-            {!stripeStatus?.onboarding_complete && <AppButton title="Set Up Stripe" onPress={startStripeOnboarding} style={{ marginTop: 14 }} />}
-          </View>
-
-          <View style={styles.sectionCard}>
-            <View style={styles.sectionHead}>
-              <Text style={styles.sectionTitle}>Recent orders</Text>
-              <TouchableOpacity onPress={() => navigation.navigate('VendorOrders')}>
-                <Text style={styles.linkText}>View all</Text>
-              </TouchableOpacity>
-            </View>
-
-            {orders.slice(0, 5).map(order => (
-              <View key={order.id} style={styles.orderRow}>
-                <View style={{ flex: 1 }}>
-                  <Text style={styles.orderTitle}>Order #{order.id}</Text>
-                  <Text style={styles.orderSub}>{order.shopper_name} · {order.fulfillment_type}</Text>
+                  <Text
+                    style={styles.vendorBadgeText}
+                  >
+                    Vendor Dashboard
+                  </Text>
                 </View>
-                <View style={{ alignItems: 'flex-end', gap: 6 }}>
-                  <Text style={styles.orderTotal}>${Number(order.total || 0).toFixed(2)}</Text>
-                  <StatusBadge status={order.status} />
+
+                <TouchableOpacity
+                  activeOpacity={0.8}
+                  style={styles.profileButton}
+                  onPress={() =>
+                    navigation.navigate(
+                      'VendorProfile'
+                    )
+                  }
+                >
+                  <Ionicons
+                    name="person-outline"
+                    size={21}
+                    color={COLORS.brown}
+                  />
+                </TouchableOpacity>
+              </View>
+
+              <View style={styles.heroCopy}>
+                <Text style={styles.greeting}>
+                  Welcome back, {firstName}
+                </Text>
+
+                <Text
+                  numberOfLines={2}
+                  style={styles.shopName}
+                >
+                  {shop.shop_name}
+                </Text>
+
+                <View style={styles.storeStatusRow}>
+                  <View
+                    style={[
+                      styles.statusDot,
+                      shop.admin_approved
+                        ? styles.statusDotLive
+                        : styles.statusDotPending,
+                    ]}
+                  />
+
+                  <Text style={styles.storeStatus}>
+                    {shop.admin_approved
+                      ? 'Your store is live'
+                      : 'Your store is pending approval'}
+                  </Text>
                 </View>
               </View>
-            ))}
-
-            {!orders.length && <Text style={styles.emptyText}>Orders will appear here when customers purchase from your store.</Text>}
+            </SafeAreaView>
           </View>
 
-          <View style={styles.sectionCard}>
-            <View style={styles.sectionHead}>
-              <Text style={styles.sectionTitle}>Inventory alerts</Text>
-              <TouchableOpacity onPress={() => navigation.navigate('VendorProducts')}>
-                <Text style={styles.linkText}>Manage</Text>
-              </TouchableOpacity>
+          <View style={styles.statsRow}>
+            <StatCard
+              icon="receipt-outline"
+              value={dashboardData.pendingCount}
+              label="Pending Orders"
+            />
+
+            <StatCard
+              icon="cube-outline"
+              value={dashboardData.activeCount}
+              label="Active Products"
+            />
+
+            <StatCard
+              icon="cash-outline"
+              value={`$${dashboardData.openOrderValue.toFixed(
+                0
+              )}`}
+              label="Open Value"
+            />
+          </View>
+
+          <View style={styles.content}>
+            <View style={styles.sectionHeader}>
+              <View>
+                <Text style={styles.sectionEyebrow}>
+                  Manage your business
+                </Text>
+
+                <Text style={styles.sectionTitle}>
+                  Quick Actions
+                </Text>
+              </View>
             </View>
 
-            {products.filter(p => Number(p.quantity_available || 0) <= 3).slice(0, 5).map(product => (
-              <View key={product.id} style={styles.productRow}>
-                <Image source={product.image_url ? { uri: product.image_url } : IMAGE_ASSETS.products.default} style={styles.productThumb} />
-                <View style={{ flex: 1 }}>
-                  <Text style={styles.productName}>{product.name}</Text>
-                  <Text style={styles.productSub}>{product.quantity_available} available · ${Number(product.price || 0).toFixed(2)}</Text>
-                </View>
-              </View>
-            ))}
+            <View style={styles.quickActions}>
+              <QuickAction
+                icon="add-circle-outline"
+                title="Add Product"
+                subtitle="Create a new listing"
+                onPress={() =>
+                  navigation.navigate(
+                    'VendorAddProduct'
+                  )
+                }
+            />
+              <QuickAction
+                icon="receipt-outline"
+                title="View Orders"
+                subtitle="Manage customer orders"
+                onPress={() =>
+                  navigation.navigate(
+                    'VendorOrders'
+                  )
+                }
+              />
+            </View>
 
-            {!products.filter(p => Number(p.quantity_available || 0) <= 3).length && <Text style={styles.emptyText}>No low-inventory alerts right now.</Text>}
+            <DashboardCard
+              icon="pulse-outline"
+              title="Store Health"
+            >
+              <HealthRow
+                ok={Boolean(shop.admin_approved)}
+                title="Platform approval"
+                subtitle={
+                  shop.admin_approved
+                    ? 'Your store is visible to customers.'
+                    : 'Your storefront is waiting for approval.'
+                }
+              />
+
+              <HealthRow
+                ok={Boolean(
+                  stripe?.onboarding_complete
+                )}
+                title="Stripe payouts"
+                subtitle={
+                  stripe?.onboarding_complete
+                    ? 'Your account is ready to receive payouts.'
+                    : 'Complete Stripe setup to receive payments.'
+                }
+              />
+
+              <HealthRow
+                ok={
+                  dashboardData.lowStockCount === 0
+                }
+                warning={
+                  dashboardData.lowStockCount > 0
+                }
+                title="Inventory levels"
+                subtitle={
+                  dashboardData.lowStockCount > 0
+                    ? `${dashboardData.lowStockCount} product${
+                        dashboardData.lowStockCount ===
+                        1
+                          ? ''
+                          : 's'
+                      } running low.`
+                    : 'No active products are running low.'
+                }
+              />
+
+              {!stripe?.onboarding_complete && (
+                <AppButton
+                  title={
+                    startingStripe
+                      ? 'Opening Stripe...'
+                      : 'Set Up Stripe'
+                  }
+                  disabled={startingStripe}
+                  onPress={startStripe}
+                  style={styles.stripeButton}
+                />
+              )}
+            </DashboardCard>
+
+            <DashboardCard
+              icon="receipt-outline"
+              title="Recent Orders"
+              action="View All"
+              onAction={() =>
+                navigation.navigate('VendorOrders')
+              }
+            >
+              {orders.length ? (
+                orders
+                  .slice(0, 4)
+                  .map((order) => (
+                    <OrderRow
+                      key={order.id}
+                      order={order}
+                    />
+                  ))
+              ) : (
+                <CardEmptyState
+                  icon="receipt-outline"
+                  message="Incoming orders will appear here after customers make a purchase."
+                />
+              )}
+            </DashboardCard>
+
+            <DashboardCard
+              icon="cube-outline"
+              title="Inventory"
+              action="Manage"
+              onAction={() =>
+                navigation.navigate(
+                  'VendorProducts'
+                )
+              }
+            >
+              {products.length ? (
+                products
+                  .slice(0, 5)
+                  .map((product) => (
+                    <ProductRow
+                      key={product.id}
+                      product={product}
+                    />
+                  ))
+              ) : (
+                <CardEmptyState
+                  icon="basket-outline"
+                  message="Add your first product to begin selling through the marketplace."
+                />
+              )}
+            </DashboardCard>
           </View>
         </ScrollView>
       </SafeAreaView>
@@ -201,49 +587,742 @@ export default function VendorDashboardScreen({ API, token, user, navigation }) 
   );
 }
 
-function Health({ ok, title, sub }) {
+function StatCard({
+  icon,
+  value,
+  label,
+}) {
   return (
-    <View style={styles.healthRow}>
-      <View style={[styles.healthDot, ok && styles.healthGood]} />
-      <View style={{ flex: 1 }}>
-        <Text style={styles.healthTitle}>{title}</Text>
-        <Text style={styles.healthSub}>{sub}</Text>
+    <View style={styles.statCard}>
+      <View style={styles.statIcon}>
+        <Ionicons
+          name={icon}
+          size={19}
+          color={COLORS.forest}
+        />
+      </View>
+
+      <Text
+        numberOfLines={1}
+        adjustsFontSizeToFit
+        style={styles.statValue}
+      >
+        {value}
+      </Text>
+
+      <Text style={styles.statLabel}>
+        {label}
+      </Text>
+    </View>
+  );
+}
+
+function QuickAction({
+  icon,
+  title,
+  subtitle,
+  onPress,
+}) {
+  return (
+    <TouchableOpacity
+      activeOpacity={0.84}
+      style={styles.quickAction}
+      onPress={onPress}
+    >
+      <View style={styles.quickActionIcon}>
+        <Ionicons
+          name={icon}
+          size={25}
+          color={COLORS.forest}
+        />
+      </View>
+
+      <View style={styles.quickActionCopy}>
+        <Text style={styles.quickActionTitle}>
+          {title}
+        </Text>
+
+        <Text style={styles.quickActionSubtitle}>
+          {subtitle}
+        </Text>
+      </View>
+
+      <Ionicons
+        name="chevron-forward"
+        size={19}
+        color={COLORS.forest}
+      />
+    </TouchableOpacity>
+  );
+}
+
+function DashboardCard({
+  icon,
+  title,
+  action,
+  onAction,
+  children,
+}) {
+  return (
+    <View style={styles.card}>
+      <View style={styles.cardHeader}>
+        <View style={styles.cardTitleRow}>
+          <View style={styles.cardIcon}>
+            <Ionicons
+              name={icon}
+              size={19}
+              color={COLORS.forest}
+            />
+          </View>
+
+          <Text style={styles.cardTitle}>
+            {title}
+          </Text>
+        </View>
+
+        {action && (
+          <TouchableOpacity
+            activeOpacity={0.75}
+            onPress={onAction}
+          >
+            <Text style={styles.cardAction}>
+              {action}
+            </Text>
+          </TouchableOpacity>
+        )}
+      </View>
+
+      <View style={styles.cardBody}>
+        {children}
       </View>
     </View>
   );
 }
 
+function HealthRow({
+  ok,
+  warning = false,
+  title,
+  subtitle,
+}) {
+  return (
+    <View style={styles.healthRow}>
+      <View
+        style={[
+          styles.healthIcon,
+          ok && styles.healthIconComplete,
+          warning && styles.healthIconWarning,
+        ]}
+      >
+        <Ionicons
+          name={
+            ok
+              ? 'checkmark'
+              : warning
+                ? 'alert-outline'
+                : 'time-outline'
+          }
+          size={17}
+          color={
+            ok
+              ? COLORS.white
+              : warning
+                ? COLORS.brown
+                : COLORS.forest
+          }
+        />
+      </View>
+
+      <View style={styles.healthCopy}>
+        <Text style={styles.rowTitle}>
+          {title}
+        </Text>
+
+        <Text style={styles.rowSubtitle}>
+          {subtitle}
+        </Text>
+      </View>
+    </View>
+  );
+}
+
+function OrderRow({ order }) {
+  const customerName =
+    order.shopper_name ||
+    order.customer_name ||
+    'Customer';
+
+  const fulfillmentType =
+    order.fulfillment_type || 'pickup';
+
+  return (
+    <View style={styles.dataRow}>
+      <View style={styles.rowIcon}>
+        <Ionicons
+          name="bag-handle-outline"
+          size={19}
+          color={COLORS.forest}
+        />
+      </View>
+
+      <View style={styles.dataRowCopy}>
+        <Text
+          numberOfLines={1}
+          style={styles.rowTitle}
+        >
+          Order #{order.id}
+        </Text>
+
+        <Text
+          numberOfLines={1}
+          style={styles.rowSubtitle}
+        >
+          {customerName} · {fulfillmentType}
+        </Text>
+      </View>
+
+      <View style={styles.rowRight}>
+        <Text style={styles.rowAmount}>
+          ${Number(order.total || 0).toFixed(2)}
+        </Text>
+
+        <Text style={styles.rowStatus}>
+          {order.status || 'pending'}
+        </Text>
+      </View>
+    </View>
+  );
+}
+
+function ProductRow({ product }) {
+  const quantity = Number(
+    product.quantity_available || 0
+  );
+
+  const lowStock =
+    product.is_active && quantity <= 5;
+
+  return (
+    <View style={styles.dataRow}>
+      <View style={styles.rowIcon}>
+        <Ionicons
+          name="cube-outline"
+          size={19}
+          color={COLORS.forest}
+        />
+      </View>
+
+      <View style={styles.dataRowCopy}>
+        <Text
+          numberOfLines={1}
+          style={styles.rowTitle}
+        >
+          {product.name}
+        </Text>
+
+        <Text
+          numberOfLines={1}
+          style={styles.rowSubtitle}
+        >
+          {quantity} available · $
+          {Number(product.price || 0).toFixed(2)}
+        </Text>
+      </View>
+
+      <View style={styles.rowRight}>
+        <Text
+          style={[
+            styles.productStatus,
+            !product.is_active &&
+              styles.productStatusHidden,
+            lowStock &&
+              styles.productStatusWarning,
+          ]}
+        >
+          {!product.is_active
+            ? 'Hidden'
+            : lowStock
+              ? 'Low stock'
+              : 'Active'}
+        </Text>
+      </View>
+    </View>
+  );
+}
+
+function CardEmptyState({
+  icon,
+  message,
+}) {
+  return (
+    <View style={styles.cardEmptyState}>
+      <View style={styles.cardEmptyIcon}>
+        <Ionicons
+          name={icon}
+          size={23}
+          color={COLORS.forest}
+        />
+      </View>
+
+      <Text style={styles.cardEmptyText}>
+        {message}
+      </Text>
+    </View>
+  );
+}
+
 const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: COLORS.cream },
-  safe: { flex: 1 },
-  center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
-  loadingText: { fontFamily: FONTS.body, color: COLORS.brownSoft, marginTop: 10 },
-  emptyWrap: { flex: 1, padding: LAYOUT.screenPadding, justifyContent: 'center' },
-  scroll: { paddingBottom: 118 },
-  hero: { height: 310, backgroundColor: COLORS.forestDark },
-  heroImage: { width: '100%', height: '100%' },
-  overlay: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(23, 50, 31, 0.42)' },
-  heroContent: { position: 'absolute', left: 22, right: 22, bottom: 28 },
-  eyebrow: { fontFamily: FONTS.bodyBold, fontSize: 12, color: COLORS.cream, letterSpacing: 1.2, textTransform: 'uppercase' },
-  title: { fontFamily: FONTS.display, fontSize: 39, lineHeight: 45, color: COLORS.warmWhite, marginTop: 6 },
-  subtitle: { fontFamily: FONTS.bodyBold, fontSize: 14, color: COLORS.cream, marginTop: 8 },
-  insightGrid: { flexDirection: 'row', gap: 12, paddingHorizontal: LAYOUT.screenPadding, marginTop: 14 },
-  sectionCard: { marginHorizontal: LAYOUT.screenPadding, marginTop: 18, backgroundColor: COLORS.warmWhite, borderRadius: RADIUS.xl, borderWidth: 1, borderColor: COLORS.border, padding: 16, ...SHADOWS.soft },
-  sectionHead: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  sectionTitle: { fontFamily: FONTS.display, fontSize: 24, color: COLORS.forestDark },
-  linkText: { fontFamily: FONTS.bodyBold, color: COLORS.sage, fontSize: 13 },
-  healthRow: { flexDirection: 'row', gap: 12, alignItems: 'center', marginTop: 14 },
-  healthDot: { width: 14, height: 14, borderRadius: 7, backgroundColor: COLORS.gold },
-  healthGood: { backgroundColor: COLORS.success },
-  healthTitle: { fontFamily: FONTS.bodyBold, fontSize: 14, color: COLORS.forestDark },
-  healthSub: { fontFamily: FONTS.body, fontSize: 12, color: COLORS.brownSoft, marginTop: 2, lineHeight: 17 },
-  orderRow: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 13, borderBottomWidth: 1, borderBottomColor: COLORS.border, gap: 12 },
-  orderTitle: { fontFamily: FONTS.bodyBold, fontSize: 14, color: COLORS.forestDark },
-  orderSub: { fontFamily: FONTS.body, fontSize: 12, color: COLORS.brownSoft, marginTop: 3, textTransform: 'capitalize' },
-  orderTotal: { fontFamily: FONTS.bodyBold, fontSize: 14, color: COLORS.forest },
-  productRow: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: COLORS.border },
-  productThumb: { width: 52, height: 52, borderRadius: RADIUS.md },
-  productName: { fontFamily: FONTS.bodyBold, fontSize: 14, color: COLORS.forestDark },
-  productSub: { fontFamily: FONTS.body, fontSize: 12, color: COLORS.brownSoft, marginTop: 3 },
-  emptyText: { fontFamily: FONTS.body, fontSize: 14, lineHeight: 21, color: COLORS.brownSoft, marginTop: 14 },
+  root: {
+    flex: 1,
+    backgroundColor: COLORS.cream,
+  },
+
+  scrollContent: {
+    paddingBottom: 130,
+  },
+
+  loadingState: {
+    flex: 1,
+    paddingHorizontal: 36,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+
+  loadingIcon: {
+    width: 68,
+    height: 68,
+    borderRadius: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(74,103,65,0.11)',
+  },
+
+  loadingIndicator: {
+    marginTop: 22,
+  },
+
+  loadingTitle: {
+    marginTop: 15,
+    fontFamily: FONTS.display,
+    fontSize: 25,
+    color: COLORS.forestDark,
+  },
+
+  loadingMessage: {
+    marginTop: 7,
+    fontFamily: FONTS.body,
+    fontSize: 13,
+    lineHeight: 20,
+    textAlign: 'center',
+    color: COLORS.brownSoft,
+  },
+
+  emptyState: {
+    flex: 1,
+    padding: LAYOUT.screenPadding,
+    justifyContent: 'center',
+  },
+
+  hero: {
+    height: 330,
+    overflow: 'hidden',
+    backgroundColor: COLORS.forestDark,
+  },
+
+  heroImage: {
+    width: '100%',
+    height: '100%',
+  },
+
+  heroOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(16,30,20,0.28)',
+  },
+
+  heroSafeArea: {
+    ...StyleSheet.absoluteFillObject,
+    paddingHorizontal: 20,
+  },
+
+  heroTopRow: {
+    paddingTop: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+
+  vendorBadge: {
+    minHeight: 35,
+    paddingHorizontal: 13,
+    borderRadius: 18,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 7,
+    backgroundColor: 'rgba(252,250,247,0.94)',
+    ...SHADOWS.soft,
+  },
+
+  vendorBadgeText: {
+    fontFamily: FONTS.bodyBold,
+    fontSize: 11,
+    letterSpacing: 0.4,
+    color: COLORS.forest,
+  },
+
+  profileButton: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(252,250,247,0.94)',
+    ...SHADOWS.soft,
+  },
+
+  heroCopy: {
+    position: 'absolute',
+    left: 20,
+    right: 20,
+    bottom: 45,
+  },
+
+  greeting: {
+    fontFamily: FONTS.bodyBold,
+    fontSize: 13,
+    color: COLORS.cream,
+  },
+
+  shopName: {
+    marginTop: 6,
+    fontFamily: FONTS.display,
+    fontSize: 39,
+    lineHeight: 45,
+    color: COLORS.warmWhite,
+  },
+
+  storeStatusRow: {
+    marginTop: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+
+  statusDot: {
+    width: 9,
+    height: 9,
+    borderRadius: 5,
+    marginRight: 8,
+  },
+
+  statusDotLive: {
+    backgroundColor: COLORS.success,
+  },
+
+  statusDotPending: {
+    backgroundColor: COLORS.gold,
+  },
+
+  storeStatus: {
+    fontFamily: FONTS.bodyBold,
+    fontSize: 13,
+    color: COLORS.cream,
+  },
+
+  statsRow: {
+    marginTop: -31,
+    paddingHorizontal: LAYOUT.screenPadding,
+    flexDirection: 'row',
+    gap: 9,
+  },
+
+  statCard: {
+    flex: 1,
+    minHeight: 122,
+    paddingHorizontal: 8,
+    paddingVertical: 13,
+    borderRadius: RADIUS.xl,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: COLORS.warmWhite,
+    ...SHADOWS.card,
+  },
+
+  statIcon: {
+    width: 35,
+    height: 35,
+    borderRadius: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(74,103,65,0.10)',
+  },
+
+  statValue: {
+    marginTop: 7,
+    fontFamily: FONTS.display,
+    fontSize: 25,
+    color: COLORS.forest,
+  },
+
+  statLabel: {
+    marginTop: 2,
+    fontFamily: FONTS.bodyBold,
+    fontSize: 9,
+    lineHeight: 13,
+    textAlign: 'center',
+    color: COLORS.brownSoft,
+  },
+
+  content: {
+    paddingHorizontal: LAYOUT.screenPadding,
+    paddingTop: 27,
+  },
+
+  sectionHeader: {
+    marginBottom: 13,
+  },
+
+  sectionEyebrow: {
+    fontFamily: FONTS.bodyBold,
+    fontSize: 10,
+    letterSpacing: 1.1,
+    textTransform: 'uppercase',
+    color: COLORS.sage,
+  },
+
+  sectionTitle: {
+    marginTop: 3,
+    fontFamily: FONTS.display,
+    fontSize: 27,
+    color: COLORS.forestDark,
+  },
+
+  quickActions: {
+    gap: 11,
+  },
+
+  quickAction: {
+    minHeight: 72,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    borderRadius: 22,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: COLORS.warmWhite,
+    ...SHADOWS.soft,
+  },
+
+  quickActionIcon: {
+    width: 46,
+    height: 46,
+    borderRadius: 17,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(74,103,65,0.10)',
+  },
+
+  quickActionCopy: {
+    flex: 1,
+    marginHorizontal: 13,
+  },
+
+  quickActionTitle: {
+    fontFamily: FONTS.bodyBold,
+    fontSize: 14,
+    color: COLORS.forestDark,
+  },
+
+  quickActionSubtitle: {
+    marginTop: 3,
+    fontFamily: FONTS.body,
+    fontSize: 11,
+    color: COLORS.brownSoft,
+  },
+
+  card: {
+    marginTop: 18,
+    padding: 17,
+    borderRadius: RADIUS.xl,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    backgroundColor: 'rgba(252,250,247,0.96)',
+    ...SHADOWS.soft,
+  },
+
+  cardHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+
+  cardTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+
+  cardIcon: {
+    width: 37,
+    height: 37,
+    marginRight: 10,
+    borderRadius: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(74,103,65,0.10)',
+  },
+
+  cardTitle: {
+    fontFamily: FONTS.display,
+    fontSize: 23,
+    color: COLORS.forestDark,
+  },
+
+  cardAction: {
+    paddingVertical: 7,
+    fontFamily: FONTS.bodyBold,
+    fontSize: 12,
+    color: COLORS.sage,
+  },
+
+  cardBody: {
+    marginTop: 5,
+  },
+
+  healthRow: {
+    paddingVertical: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.border,
+  },
+
+  healthIcon: {
+    width: 35,
+    height: 35,
+    marginRight: 12,
+    borderRadius: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(74,103,65,0.11)',
+  },
+
+  healthIconComplete: {
+    backgroundColor: COLORS.success,
+  },
+
+  healthIconWarning: {
+    backgroundColor: COLORS.gold,
+  },
+
+  healthCopy: {
+    flex: 1,
+  },
+
+  stripeButton: {
+    marginTop: 16,
+  },
+
+  dataRow: {
+    minHeight: 70,
+    paddingVertical: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.border,
+  },
+
+  rowIcon: {
+    width: 38,
+    height: 38,
+    marginRight: 11,
+    borderRadius: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: COLORS.cream,
+  },
+
+  dataRowCopy: {
+    flex: 1,
+    paddingRight: 8,
+  },
+
+  rowTitle: {
+    fontFamily: FONTS.bodyBold,
+    fontSize: 13,
+    color: COLORS.forestDark,
+  },
+
+  rowSubtitle: {
+    marginTop: 3,
+    fontFamily: FONTS.body,
+    fontSize: 11,
+    lineHeight: 16,
+    textTransform: 'capitalize',
+    color: COLORS.brownSoft,
+  },
+
+  rowRight: {
+    alignItems: 'flex-end',
+  },
+
+  rowAmount: {
+    fontFamily: FONTS.bodyBold,
+    fontSize: 13,
+    color: COLORS.forest,
+  },
+
+  rowStatus: {
+    marginTop: 4,
+    fontFamily: FONTS.body,
+    fontSize: 10,
+    textTransform: 'capitalize',
+    color: COLORS.brownSoft,
+  },
+
+  productStatus: {
+    paddingHorizontal: 9,
+    paddingVertical: 5,
+    borderRadius: 12,
+    overflow: 'hidden',
+    fontFamily: FONTS.bodyBold,
+    fontSize: 9,
+    color: COLORS.forest,
+    backgroundColor: 'rgba(74,103,65,0.10)',
+  },
+
+  productStatusHidden: {
+    color: COLORS.brownSoft,
+    backgroundColor: COLORS.cream,
+  },
+
+  productStatusWarning: {
+    color: COLORS.brown,
+    backgroundColor: 'rgba(212,160,23,0.18)',
+  },
+
+  cardEmptyState: {
+    paddingHorizontal: 13,
+    paddingVertical: 25,
+    alignItems: 'center',
+  },
+
+  cardEmptyIcon: {
+    width: 50,
+    height: 50,
+    borderRadius: 19,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(74,103,65,0.10)',
+  },
+
+  cardEmptyText: {
+    marginTop: 11,
+    maxWidth: 260,
+    fontFamily: FONTS.body,
+    fontSize: 12,
+    lineHeight: 18,
+    textAlign: 'center',
+    color: COLORS.brownSoft,
+  },
 });

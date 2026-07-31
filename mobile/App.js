@@ -54,7 +54,7 @@ function TabIcon({ source, focused }) {
       borderRadius: 19,
       alignItems: 'center',
       justifyContent: 'center',
-      backgroundColor: focused ? COLORS.sageSoft : 'transparent',
+      backgroundColor: focused  ? 'rgba(74,103,65,0.14)'  : 'transparent',
     }}>
       <Image source={source} style={{ width: 24, height: 24, opacity: focused ? 1 : 0.62 }} resizeMode="contain" />
     </View>
@@ -63,6 +63,7 @@ function TabIcon({ source, focused }) {
 
 const tabScreenOptions = {
   headerShown: false,
+
   tabBarStyle: {
     position: 'absolute',
     left: 14,
@@ -70,14 +71,16 @@ const tabScreenOptions = {
     bottom: 12,
     height: 72,
     borderRadius: 28,
-    backgroundColor: COLORS.warmWhite,
+    backgroundColor: 'rgba(252,250,247,0.97)',
     borderTopWidth: 0,
     paddingBottom: 10,
     paddingTop: 8,
-    ...SHADOWS.card,
+    ...SHADOWS.medium,
   },
+
   tabBarActiveTintColor: COLORS.forest,
   tabBarInactiveTintColor: COLORS.brownSoft,
+
   tabBarLabelStyle: {
     fontFamily: FONTS.bodyBold,
     fontSize: 11,
@@ -133,12 +136,8 @@ function VendorTabs({ token, setToken, user, setUser }) {
 }
 
 export default function App() {
-  const [token, setToken] = useState('dev-token');
-  const [user, setUser] = useState({
-    id: 1,
-    role: 'shopper',
-    full_name: 'Samantha Banuelos',
-  });
+  const [token, setToken] = useState(null);
+  const [user, setUser] = useState(null);
   const [cart, setCart] = useState(null);
 
   const [fontsLoaded] = useFonts({
@@ -163,72 +162,180 @@ export default function App() {
     <SafeAreaProvider>
       <StripeProvider publishableKey={STRIPE_KEY}>
         <StatusBar style="dark" backgroundColor={COLORS.cream} />
-        <NavigationContainer>
-          <Stack.Navigator screenOptions={{ headerShown: false }}>
-            {!token ? (
-              <>
-                <Stack.Screen name="Welcome">{props => <WelcomeScreen {...props} />}</Stack.Screen>
-                <Stack.Screen name="Auth">{props => <AuthScreen {...props} API={API} setToken={setToken} setUser={setUser} />}</Stack.Screen>
-              </>
-            ) : isVendor ? (
-              <>
-                <Stack.Screen name="VendorMain">
-                  {props => <VendorTabs {...props} token={token} setToken={setToken} user={user} setUser={setUser} />}
-                </Stack.Screen>
-                <Stack.Screen name="VendorStoreSetup">
-                  {props => <VendorStoreSetupScreen {...props} API={API} token={token} />}
-                </Stack.Screen>
-                <Stack.Screen name="VendorAddProduct">
-                  {props => <VendorAddProductScreen {...props} API={API} token={token} />}
-                </Stack.Screen>
-                <Stack.Screen name="VendorEditProduct">
-                  {props => <VendorEditProductScreen {...props} API={API} token={token} />}
-                </Stack.Screen>
-                <Stack.Screen name="VendorEditStore">
-                  {props => <VendorEditStoreScreen {...props} API={API} token={token} />}
-                </Stack.Screen>
-              </>
-            ) : (
-              <>
-                <Stack.Screen name="Main">
-                  {props => (
-                    <CustomerTabs
-                      {...props}
-                      token={token}
-                      setToken={setToken}
-                      user={user}
-                      setUser={setUser}
-                      cart={cart}
-                      setCart={setCart}
-                    />
-                  )}
-                </Stack.Screen>
-                <Stack.Screen name="Producer">
-                  {props => <ProducerScreen {...props} API={API} token={token} cart={cart} setCart={setCart} />}
-                </Stack.Screen>
-                <Stack.Screen name="ProductDetail">
-                  {props => <ProductDetailScreen {...props} cart={cart} setCart={setCart} />}
-                </Stack.Screen>
-                <Stack.Screen name="OrderConfirmation">
-                  {props => <OrderConfirmationScreen {...props} />}
-                </Stack.Screen>
-                <Stack.Screen name="OrderDetail">
-                  {props => <OrderDetailScreen {...props} />}
-                </Stack.Screen>
-                <Stack.Screen name="LeaveReview">
-                  {props => <LeaveReviewScreen {...props} API={API} token={token} />}
-                </Stack.Screen>
-                <Stack.Screen name="Favorites">
-                  {props => <FavoritesScreen {...props} API={API} token={token} user={user} cart={cart} />}
-                </Stack.Screen>
-                <Stack.Screen name="Settings">
-                  {props => <SettingsScreen {...props} API={API} token={token} user={user} setUser={setUser} cart={cart} />}
-                </Stack.Screen>
-              </>
-            )}
-          </Stack.Navigator>
-        </NavigationContainer>
-      </StripeProvider>
+<NavigationContainer>
+  <Stack.Navigator
+    screenOptions={{
+      headerShown: false,
+    }}
+  >
+    <Stack.Screen name="Welcome">
+      {props => (
+        <WelcomeScreen
+          {...props}
+        />
+      )}
+    </Stack.Screen>
+
+    <Stack.Screen name="Auth">
+      {props => (
+        <AuthScreen
+          {...props}
+          API={API}
+          setToken={setToken}
+          setUser={setUser}
+        />
+      )}
+    </Stack.Screen>
+
+    {token && isVendor && (
+      <>
+        <Stack.Screen name="VendorMain">
+          {props => (
+            <VendorTabs
+              {...props}
+              token={token}
+              setToken={setToken}
+              user={user}
+              setUser={setUser}
+            />
+          )}
+        </Stack.Screen>
+
+        <Stack.Screen name="VendorStoreSetup">
+          {props => (
+            <VendorStoreSetupScreen
+              {...props}
+              API={API}
+              token={token}
+            />
+          )}
+        </Stack.Screen>
+
+        <Stack.Screen name="VendorAddProduct">
+          {props => (
+            <VendorAddProductScreen
+              {...props}
+              API={API}
+              token={token}
+            />
+          )}
+        </Stack.Screen>
+
+        <Stack.Screen name="VendorEditProduct">
+          {props => (
+            <VendorEditProductScreen
+              {...props}
+              API={API}
+              token={token}
+            />
+          )}
+        </Stack.Screen>
+
+        <Stack.Screen name="VendorEditStore">
+          {props => (
+            <VendorEditStoreScreen
+              {...props}
+              API={API}
+              token={token}
+            />
+          )}
+        </Stack.Screen>
+      </>
+    )}
+
+    {token && !isVendor && (
+      <>
+        <Stack.Screen name="Main">
+          {props => (
+            <CustomerTabs
+              {...props}
+              token={token}
+              setToken={setToken}
+              user={user}
+              setUser={setUser}
+              cart={cart}
+              setCart={setCart}
+            />
+          )}
+        </Stack.Screen>
+
+        <Stack.Screen name="Producer">
+          {props => (
+            <ProducerScreen
+              {...props}
+              API={API}
+              token={token}
+              cart={cart}
+              setCart={setCart}
+            />
+          )}
+        </Stack.Screen>
+
+        <Stack.Screen name="ProductDetail">
+          {props => (
+            <ProductDetailScreen
+              {...props}
+              cart={cart}
+              setCart={setCart}
+            />
+          )}
+        </Stack.Screen>
+
+        <Stack.Screen name="OrderConfirmation">
+          {props => (
+            <OrderConfirmationScreen
+              {...props}
+            />
+          )}
+        </Stack.Screen>
+
+        <Stack.Screen name="OrderDetail">
+          {props => (
+            <OrderDetailScreen
+              {...props}
+            />
+          )}
+        </Stack.Screen>
+
+        <Stack.Screen name="LeaveReview">
+          {props => (
+            <LeaveReviewScreen
+              {...props}
+              API={API}
+              token={token}
+            />
+          )}
+        </Stack.Screen>
+
+        <Stack.Screen name="Favorites">
+          {props => (
+            <FavoritesScreen
+              {...props}
+              API={API}
+              token={token}
+              user={user}
+              cart={cart}
+            />
+          )}
+        </Stack.Screen>
+
+        <Stack.Screen name="Settings">
+          {props => (
+            <SettingsScreen
+              {...props}
+              API={API}
+              token={token}
+              user={user}
+              setUser={setUser}
+              cart={cart}
+            />
+          )}
+        </Stack.Screen>
+      </>
+    )}
+  </Stack.Navigator>
+</NavigationContainer>
+    </StripeProvider>
     </SafeAreaProvider>
   );
 }

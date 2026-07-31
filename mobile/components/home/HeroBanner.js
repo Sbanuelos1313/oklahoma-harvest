@@ -6,7 +6,8 @@ import {
   ImageBackground,
   TouchableOpacity,
 } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+
+import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { COLORS, FONTS, RADIUS, SHADOWS } from '../../constants/theme';
 
 export default function HeroBanner({
@@ -21,9 +22,15 @@ export default function HeroBanner({
       <View style={styles.topRow}>
         <View style={styles.greetingBlock}>
           <Text style={styles.goodMorning}>Good Morning,</Text>
+
           <View style={styles.nameRow}>
             <Text style={styles.name}>{firstName}</Text>
-            <Text style={styles.wave}>👋</Text>
+            <MaterialCommunityIcons
+              name="hand-wave-outline"
+              size={27}
+              color={COLORS.gold}
+              style={styles.waveIcon}
+            />
           </View>
         </View>
 
@@ -34,12 +41,24 @@ export default function HeroBanner({
           </Text>
         </View>
 
-        <TouchableOpacity activeOpacity={0.85} style={styles.bellButton} onPress={onNotificationPress}>
-          <Ionicons name="notifications-outline" size={21} color={COLORS.brown} />
+        <TouchableOpacity
+          activeOpacity={0.85}
+          style={styles.bellButton}
+          onPress={onNotificationPress}
+        >
+          <Ionicons
+            name="notifications-outline"
+            size={21}
+            color={COLORS.brown}
+          />
         </TouchableOpacity>
       </View>
 
-      <TouchableOpacity activeOpacity={0.9} style={styles.promoCard} onPress={onPromoPress}>
+      <TouchableOpacity
+        activeOpacity={0.9}
+        style={styles.promoCard}
+        onPress={onPromoPress}
+      >
         <ImageBackground
           source={require('../../assets/backgrounds/bg_login.jpg')}
           style={styles.promoImage}
@@ -47,7 +66,9 @@ export default function HeroBanner({
         >
           <View style={styles.promoOverlay}>
             <Text style={styles.promoTitle}>Support Local.</Text>
-            <Text style={styles.promoSubtitle}>Every purchase makes a difference.</Text>
+            <Text style={styles.promoSubtitle}>
+              Every purchase makes a difference.
+            </Text>
 
             <View style={styles.promoButton}>
               <Text style={styles.promoButtonText}>Shop Now</Text>
@@ -63,7 +84,7 @@ const styles = StyleSheet.create({
   container: {
     paddingTop: 18,
     paddingHorizontal: 20,
-    paddingBottom: 10,
+    paddingBottom: 8,
   },
 
   topRow: {
@@ -97,9 +118,8 @@ const styles = StyleSheet.create({
     marginTop: -2,
   },
 
-  wave: {
-    fontSize: 25,
-    marginLeft: 6,
+  waveIcon: {
+    marginLeft: 7,
     marginBottom: 5,
   },
 
@@ -142,7 +162,7 @@ const styles = StyleSheet.create({
   },
 
   promoImage: {
-    height: 150,
+    height: 148,
     width: '100%',
     justifyContent: 'center',
   },

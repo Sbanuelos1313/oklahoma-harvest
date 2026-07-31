@@ -1,37 +1,49 @@
 import React from 'react';
+
 import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
   ImageBackground,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from 'react-native';
+
+import { IMAGE_ASSETS } from '../../constants/assets';
 
 import {
   COLORS,
-  SPACING,
-  RADIUS,
+  FONTS,
   SHADOWS,
 } from '../../constants/theme';
 
-export default function BecomeProducerCard({ onPress }) {
+export default function BecomeProducerCard({
+  onPress,
+}) {
   return (
     <View style={styles.wrapper}>
       <ImageBackground
-        source={require('../../assets/backgrounds/bg_vendor_store.jpg')}
+        source={
+          IMAGE_ASSETS.backgrounds.vendorOrders
+        }
+        resizeMode="cover"
         style={styles.card}
         imageStyle={styles.image}
       >
         <View style={styles.overlay}>
-          <Text style={styles.kicker}>For Local Sellers</Text>
+          <View style={styles.textBlock}>
+            <Text style={styles.kicker}>
+              For Local Sellers
+            </Text>
 
-          <Text style={styles.title}>
-            Bring your products to more people.
-          </Text>
+            <Text style={styles.title}>
+              Bring your products to more people.
+            </Text>
 
-          <Text style={styles.body}>
-            From Our Place helps farms, makers, bakers, ranchers, and local brands reach nearby customers.
-          </Text>
+            <Text style={styles.body}>
+              Reach nearby customers through a warm
+              local marketplace.
+            </Text>
+          </View>
 
           <TouchableOpacity
             activeOpacity={0.85}
@@ -55,58 +67,71 @@ const styles = StyleSheet.create({
   },
 
   card: {
-    height: 245,
-    borderRadius: RADIUS.xl,
+    height: 250,
+    borderRadius: 24,
     overflow: 'hidden',
-    ...SHADOWS.medium,
+    backgroundColor: COLORS.brown,
+    ...SHADOWS.soft,
   },
 
   image: {
-    borderRadius: RADIUS.xl,
+    borderRadius: 24,
   },
 
   overlay: {
     flex: 1,
-    justifyContent: 'flex-end',
-    padding: 22,
-    backgroundColor: 'rgba(0,0,0,0.40)',
+    paddingHorizontal: 22,
+    paddingTop: 22,
+    paddingBottom: 22,
+    justifyContent: 'space-between',
+    backgroundColor: 'rgba(0,0,0,0.38)',
+  },
+
+  textBlock: {
+    flexShrink: 1,
   },
 
   kicker: {
-    color: COLORS.gold,
-    fontSize: 12,
-    fontWeight: '800',
-    letterSpacing: 1,
+    marginBottom: 7,
+    fontFamily: FONTS.bodyBold,
+    fontSize: 10,
+    lineHeight: 14,
+    letterSpacing: 1.1,
     textTransform: 'uppercase',
-    marginBottom: 8,
+    color: COLORS.cream,
   },
 
   title: {
+    maxWidth: '92%',
+    marginBottom: 9,
+    fontFamily: FONTS.bodyBold,
+    fontSize: 23,
+    lineHeight: 28,
     color: COLORS.white,
-    fontSize: 27,
-    fontWeight: '800',
-    lineHeight: 33,
-    marginBottom: 10,
   },
 
   body: {
-    color: COLORS.cream,
+    maxWidth: '92%',
+    fontFamily: FONTS.body,
     fontSize: 14,
-    lineHeight: 22,
-    marginBottom: 18,
+    lineHeight: 20,
+    color: COLORS.cream,
   },
 
   button: {
     alignSelf: 'flex-start',
+    height: 56,
+    paddingHorizontal: 30,
+    borderRadius: 28,
+    alignItems: 'center',
+    justifyContent: 'center',
     backgroundColor: COLORS.gold,
-    borderRadius: RADIUS.pill,
-    paddingHorizontal: 18,
-    paddingVertical: 12,
+    ...SHADOWS.soft,
   },
 
   buttonText: {
+    fontFamily: FONTS.bodyBold,
+    fontSize: 15,
     color: COLORS.brown,
-    fontSize: 14,
-    fontWeight: '800',
   },
 });

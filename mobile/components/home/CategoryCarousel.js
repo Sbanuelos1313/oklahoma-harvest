@@ -8,7 +8,7 @@ import {
 } from 'react-native';
 
 import { CATEGORIES } from '../../constants/categories';
-import { COLORS, FONTS, RADIUS, SHADOWS } from '../../constants/theme';
+import { COLORS, FONTS, SHADOWS } from '../../constants/theme';
 
 export default function CategoryCarousel({ onCategoryPress, onViewAllPress }) {
   const visibleCategories = CATEGORIES.slice(0, 11);
@@ -45,10 +45,15 @@ export default function CategoryCarousel({ onCategoryPress, onViewAllPress }) {
           </TouchableOpacity>
         ))}
 
-        <TouchableOpacity activeOpacity={0.88} style={styles.tile} onPress={onViewAllPress}>
+        <TouchableOpacity
+          activeOpacity={0.88}
+          style={styles.tile}
+          onPress={onViewAllPress}
+        >
           <View style={styles.moreTile}>
             <Text style={styles.moreDots}>•••</Text>
           </View>
+
           <Text style={styles.label}>More</Text>
         </TouchableOpacity>
       </View>
@@ -60,7 +65,7 @@ const styles = StyleSheet.create({
   container: {
     paddingHorizontal: 20,
     marginTop: 10,
-    marginBottom: 28,
+    marginBottom: 30,
   },
 
   header: {

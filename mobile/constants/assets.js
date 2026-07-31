@@ -15,6 +15,26 @@ export const IMAGE_ASSETS = {
     checkout: require('../assets/hero/checkout_hero.jpg'),
   },
 
+  backgrounds: {
+    login: require('../assets/backgrounds/bg_app_login.jpg'),
+
+    vendorDashboard: require(
+      '../assets/backgrounds/bg_vendor_dashboard.jpg'
+    ),
+
+    vendorOrders: require(
+      '../assets/backgrounds/bg_vendor_orders.jpg'
+    ),
+
+    vendorProfile: require(
+      '../assets/backgrounds/bg_vendor_profile.jpg'
+    ),
+
+    vendorEmpty: require(
+      '../assets/backgrounds/bg_vendor_empty.jpg'
+    ),
+  },
+  
   categories: {
     produce: require('../assets/categories/cat_produce.jpg'),
     meat: require('../assets/categories/cat_meat.jpg'),
