@@ -54,7 +54,7 @@ export default function VendorEditProductScreen({ API, token, route, navigation 
             <FormField label="Description" value={description} onChangeText={setDescription} placeholder="Description" multiline />
             <Text style={styles.label}>Category</Text>
             <View style={styles.pills}>
-              {CATEGORY_ASSETS.filter(c => c.key).slice(0, 22).map(c => (
+              {CATEGORY_ASSETS.filter(c => c.key).map(c => (
                 <FilterPill key={c.key} label={c.label} active={category === c.key} onPress={() => setCategory(c.key)} />
               ))}
             </View>

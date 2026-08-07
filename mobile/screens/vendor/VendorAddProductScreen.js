@@ -15,37 +15,114 @@ export default function VendorAddProductScreen({ API, token, navigation }) {
   const [quantity, setQuantity] = useState('');
   const [loading, setLoading] = useState(false);
 
-  async function save() {
-    if (!name || !price) {
-      Alert.alert('Missing information', 'Please enter a product name and price.');
-      return;
-    }
-
-    setLoading(true);
-    try {
-      const res = await fetch(`${API}/api/products`, {
-        method: 'POST',
-        headers: { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name,
-          description,
-          category,
-          price: Number(price),
-          unit,
-          quantity_available: Number(quantity || 0),
-          is_active: true,
-        })
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.detail || 'Unable to create product.');
-      Alert.alert('Product added', 'Your product was added to your storefront.');
-      navigation.goBack();
-    } catch (e) {
-      Alert.alert('Unable to add product', e.message || 'Please try again.');
-    }
-    setLoading(false);
+async function save() {
+  if (!name?.trim() || !price?.trim()) {
+    Alert.alert(
+      'Missing information',
+      'Please enter a product name and price.'
+    );
+    return;
   }
 
+  if (!token) {
+    Alert.alert(
+      'Session expired',
+      'Your vendor login session is missing. Please sign out and sign back in.'
+    );
+    return;
+  }
+
+  const controller = new AbortController();
+
+  const timeoutId = setTimeout(() => {
+    controller.abort();
+  }, 15000);
+
+  setLoading(true);
+
+  try {
+    const payload = {
+      name: name.trim(),
+      description: description?.trim() || '',
+      category: category || 'other',
+      price: Number(price),
+      unit: unit?.trim() || 'each',
+      quantity_available: Number(quantity || 0),
+      image_url: '',
+      tags: [],
+    };
+
+    console.log('ADD PRODUCT API:', `${API}/api/products/`);
+    console.log('TOKEN PRESENT:', Boolean(token));
+    console.log('PRODUCT PAYLOAD:', payload);
+
+    const res = await fetch(
+      `${API}/api/products/`,
+      {
+        method: 'POST',
+
+        headers: {
+          Accept: 'application/json',
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+
+        body: JSON.stringify(payload),
+
+        signal: controller.signal,
+      }
+    );
+
+    const data = await res
+      .json()
+      .catch(() => null);
+
+    console.log(
+      'ADD PRODUCT RESPONSE:',
+      res.status,
+      data
+    );
+
+    if (!res.ok) {
+      throw new Error(
+        data?.detail ||
+        data?.message ||
+        `Unable to create product (${res.status}).`
+      );
+    }
+
+    Alert.alert(
+      'Product added',
+      'Your product was added to your storefront.',
+      [
+        {
+          text: 'Done',
+          onPress: () => navigation.goBack(),
+        },
+      ]
+    );
+  } catch (error) {
+    console.error(
+      'ADD PRODUCT ERROR:',
+      error
+    );
+
+    if (error?.name === 'AbortError') {
+      Alert.alert(
+        'Request timed out',
+        'The product request did not receive a response within 15 seconds.'
+      );
+    } else {
+      Alert.alert(
+        'Unable to add product',
+        error?.message || 'Please try again.'
+      );
+    }
+  } finally {
+    clearTimeout(timeoutId);
+    setLoading(false);
+  }
+}
   return (
     <View style={styles.root}>
       <StatusBar barStyle="dark-content" backgroundColor={COLORS.cream} />
@@ -60,7 +137,7 @@ export default function VendorAddProductScreen({ API, token, navigation }) {
             <FormField label="Description" value={description} onChangeText={setDescription} placeholder="Describe the item, materials, ingredients, or story." multiline />
             <Text style={styles.label}>Category</Text>
             <View style={styles.pills}>
-              {CATEGORY_ASSETS.filter(c => c.key).slice(0, 22).map(c => (
+              {CATEGORY_ASSETS.filter(c => c.key).map(c => (
                 <FilterPill key={c.key} label={c.label} active={category === c.key} onPress={() => setCategory(c.key)} />
               ))}
             </View>

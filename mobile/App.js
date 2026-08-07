@@ -41,9 +41,11 @@ import { COLORS, FONTS, SHADOWS } from './constants/theme';
 import { IMAGE_ASSETS } from './constants/assets';
 
 const Tab = createBottomTabNavigator();
+
 const Stack = createNativeStackNavigator();
 
-const API = 'https://from-our-place-api.onrender.com';
+const API = 'https://from-our-place.chronos-ai.net';
+
 const STRIPE_KEY = 'pk_live_your_key_here';
 
 function TabIcon({ source, focused }) {
