@@ -1,13 +1,61 @@
-﻿from fastapi import APIRouter, HTTPException, Depends
-from pydantic import BaseModel
+﻿from fastapi import APIRouter, HTTPException, Depends, UploadFile, File
+from pydantic import BaseModel, Field
 from typing import List, Optional
 from database import get_conn
 from auth import get_current_producer, get_current_user
 
-router = APIRouter(prefix="/api/products", tags=["products"])
+import cloudinary
+import cloudinary.uploader
+import os
+
+cloudinary.config(
+    cloud_name=os.environ["CLOUDINARY_CLOUD_NAME"],
+    api_key=os.environ["CLOUDINARY_API_KEY"],
+    api_secret=os.environ["CLOUDINARY_API_SECRET"],
+)
+router = APIRouter(
+    prefix="/api/products",
+    tags=["products"]
+)
+
 
 PROHIBITED_KEYWORDS = ["cannabis","hemp","cbd","thc","delta","delta-8","delta-9","marijuana","weed","edible","infused","420","dispensary"]
-VALID_CATEGORIES = ["eggs_dairy","meat","vegetables","fruit","baked","pantry","herbs","honey","candy","jams","flowers","essential_oils","tinctures","candles","jewelry","soaps","plants","crafts","sauces","nuts","coffee_tea","other"]
+VALID_CATEGORIES = [
+    "produce",
+    "meat",
+    "baked",
+    "eggs_dairy",
+    "eggs",
+    "herbs",
+    "candles",
+    "jewelry",
+    "clothing",
+    "coffee_tea",
+    "crafts",
+    "honey",
+    "jams",
+    "flowers",
+    "microgreens",
+    "fruit",
+    "soaps",
+    "home_living",
+    "pantry",
+    "pet_products",
+    "nuts",
+    "sauces",
+    "spices",
+    "essential_oils",
+    "farm_garden",
+    "plants",
+    "plants_flowers",
+    "local_makers",
+    "gifts",
+    "tinctures_remedies",
+    "wellness",
+    "seasonal",
+    "other",
+    "candy",
+]
 
 def check_prohibited(name, description=""):
     text = f"{name} {description}".lower()
@@ -21,8 +69,8 @@ class CreateProductRequest(BaseModel):
     unit: str
     quantity_available: int = 0
     image_url: Optional[str] = None
-    tags: List[str] = []
-
+    tags: List[str] = Field(default_factory=list)
+    
 class UpdateProductRequest(BaseModel):
     name: Optional[str] = None
     description: Optional[str] = None
@@ -56,20 +104,106 @@ def create_product(req: CreateProductRequest, user=Depends(get_current_producer)
     conn.commit(); cur.close(); conn.close()
     return {"product_id": product_id, "message": "Product created"}
 
+@router.post("/upload-image")
+async def upload_product_image(
+    file: UploadFile = File(...),
+    user=Depends(get_current_producer),
+):
+    if not file.content_type or not file.content_type.startswith("image/"):
+        raise HTTPException(
+            status_code=400,
+            detail="File must be an image",
+        )
+
+    contents = await file.read()
+
+    if not contents:
+        raise HTTPException(
+            status_code=400,
+            detail="Image file is empty",
+        )
+
+    try:
+        result = cloudinary.uploader.upload(
+            contents,
+            folder="from_our_place/products",
+            transformation=[
+                {
+                    "width": 1200,
+                    "height": 1200,
+                    "crop": "limit",
+                    "quality": "auto",
+                    "fetch_format": "auto",
+                }
+            ],
+            resource_type="image",
+        )
+
+        return {
+            "url": result["secure_url"],
+        }
+
+    except Exception as exc:
+        print(
+            "Product image upload error:",
+            str(exc),
+        )
+
+        raise HTTPException(
+            status_code=500,
+            detail="Unable to upload product image",
+        )
+
 @router.get("/my")
-def get_my_products(user=Depends(get_current_producer)):
-    conn = get_conn(); cur = conn.cursor()
-    cur.execute("SELECT id FROM producers WHERE user_id = %s", (user["id"],))
+def get_my_products(
+    user=Depends(get_current_producer)
+):
+    conn = get_conn()
+    cur = conn.cursor()
+
+    cur.execute(
+        "SELECT id FROM producers WHERE user_id = %s",
+        (user["id"],)
+    )
+
     producer = cur.fetchone()
-    if not producer: cur.close(); conn.close(); raise HTTPException(404, "No shop found")
+
+    if not producer:
+        cur.close()
+        conn.close()
+        raise HTTPException(
+            404,
+            "No shop found"
+        )
+
     cur.execute("""
-        SELECT id, name, description, category, price, unit,
-               quantity_available, is_active, tags, created_at
-        FROM products WHERE producer_id = %s ORDER BY is_active DESC, name ASC
+        SELECT
+            id,
+            name,
+            description,
+            category,
+            price,
+            unit,
+            quantity_available,
+            image_url,
+            is_active,
+            tags,
+            created_at
+        FROM products
+        WHERE producer_id = %s
+        ORDER BY is_active DESC, name ASC
     """, (producer[0],))
-    rows = cur.fetchall(); cols = [d[0] for d in cur.description]
-    cur.close(); conn.close()
-    return [dict(zip(cols, r)) for r in rows]
+
+    rows = cur.fetchall()
+    cols = [d[0] for d in cur.description]
+
+    cur.close()
+    conn.close()
+
+    return [
+        dict(zip(cols, row))
+        for row in rows
+    ]
 
 @router.patch("/{product_id}")
 def update_product(product_id: int, req: UpdateProductRequest, user=Depends(get_current_producer)):
