@@ -1,25 +1,42 @@
-﻿from fastapi import APIRouter, HTTPException, Depends, UploadFile, File, params
+﻿from fastapi import APIRouter, HTTPException, Depends, UploadFile, File
 from pydantic import BaseModel, Field
 from typing import List, Optional
 from database import get_conn
-from auth import get_current_producer, get_current_user
+from auth import get_current_producer
 
 import cloudinary
 import cloudinary.uploader
 import os
+
 
 cloudinary.config(
     cloud_name=os.environ["CLOUDINARY_CLOUD_NAME"],
     api_key=os.environ["CLOUDINARY_API_KEY"],
     api_secret=os.environ["CLOUDINARY_API_SECRET"],
 )
+
 router = APIRouter(
     prefix="/api/products",
-    tags=["products"]
+    tags=["products"],
 )
 
 
-PROHIBITED_KEYWORDS = ["cannabis","hemp","cbd","thc","delta","delta-8","delta-9","marijuana","weed","edible","infused","420","dispensary"]
+PROHIBITED_KEYWORDS = [
+    "cannabis",
+    "hemp",
+    "cbd",
+    "thc",
+    "delta",
+    "delta-8",
+    "delta-9",
+    "marijuana",
+    "weed",
+    "edible",
+    "infused",
+    "420",
+    "dispensary",
+]
+
 VALID_CATEGORIES = [
     "produce",
     "meat",
@@ -57,9 +74,20 @@ VALID_CATEGORIES = [
     "candy",
 ]
 
-def check_prohibited(name, description=""):
-    text = f"{name} {description}".lower()
-    return any(k in text for k in PROHIBITED_KEYWORDS)
+VALID_SORTS = {
+    "rating",
+    "price_low",
+    "price_high",
+    "newest",
+    "alphabetical",
+    "distance",
+}
+
+
+def check_prohibited(name: str, description: str = "") -> bool:
+    text = f"{name or ''} {description or ''}".lower()
+    return any(keyword in text for keyword in PROHIBITED_KEYWORDS)
+
 
 class CreateProductRequest(BaseModel):
     name: str
@@ -70,7 +98,8 @@ class CreateProductRequest(BaseModel):
     quantity_available: int = 0
     image_url: Optional[str] = None
     tags: List[str] = Field(default_factory=list)
-    
+
+
 class UpdateProductRequest(BaseModel):
     name: Optional[str] = None
     description: Optional[str] = None
@@ -82,27 +111,105 @@ class UpdateProductRequest(BaseModel):
     tags: Optional[List[str]] = None
     is_active: Optional[bool] = None
 
+
 @router.post("/")
-def create_product(req: CreateProductRequest, user=Depends(get_current_producer)):
+def create_product(
+    req: CreateProductRequest,
+    user=Depends(get_current_producer),
+):
     if req.category not in VALID_CATEGORIES:
-        raise HTTPException(400, f"Invalid category. Must be one of: {', '.join(VALID_CATEGORIES)}")
+        raise HTTPException(
+            status_code=400,
+            detail=(
+                "Invalid category. Must be one of: "
+                + ", ".join(VALID_CATEGORIES)
+            ),
+        )
+
     if check_prohibited(req.name, req.description or ""):
-        raise HTTPException(400, "Prohibited item keywords detected (cannabis/hemp/CBD/THC/Delta not allowed)")
+        raise HTTPException(
+            status_code=400,
+            detail=(
+                "Prohibited item keywords detected "
+                "(cannabis/hemp/CBD/THC/Delta not allowed)"
+            ),
+        )
+
     if req.price <= 0:
-        raise HTTPException(400, "Price must be greater than 0")
-    conn = get_conn(); cur = conn.cursor()
-    cur.execute("SELECT id FROM producers WHERE user_id = %s", (user["id"],))
-    producer = cur.fetchone()
-    if not producer: cur.close(); conn.close(); raise HTTPException(403, "Complete shop setup first")
-    cur.execute("""
-        INSERT INTO products (producer_id, name, description, category, price, unit,
-                              quantity_available, image_url, tags)
-        VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s) RETURNING id
-    """, (producer[0], req.name, req.description, req.category, req.price, req.unit,
-          req.quantity_available, req.image_url, req.tags))
-    product_id = cur.fetchone()[0]
-    conn.commit(); cur.close(); conn.close()
-    return {"product_id": product_id, "message": "Product created"}
+        raise HTTPException(
+            status_code=400,
+            detail="Price must be greater than 0",
+        )
+
+    if req.quantity_available < 0:
+        raise HTTPException(
+            status_code=400,
+            detail="Quantity cannot be negative",
+        )
+
+    conn = get_conn()
+    cur = conn.cursor()
+
+    try:
+        cur.execute(
+            "SELECT id FROM producers WHERE user_id = %s",
+            (user["id"],),
+        )
+        producer = cur.fetchone()
+
+        if not producer:
+            raise HTTPException(
+                status_code=403,
+                detail="Complete shop setup first",
+            )
+
+        cur.execute(
+            """
+            INSERT INTO products (
+                producer_id,
+                name,
+                description,
+                category,
+                price,
+                unit,
+                quantity_available,
+                image_url,
+                tags
+            )
+            VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s)
+            RETURNING id
+            """,
+            (
+                producer[0],
+                req.name.strip(),
+                req.description,
+                req.category,
+                req.price,
+                req.unit,
+                req.quantity_available,
+                req.image_url,
+                req.tags,
+            ),
+        )
+
+        product_id = cur.fetchone()[0]
+        conn.commit()
+
+        return {
+            "product_id": product_id,
+            "message": "Product created",
+        }
+
+    except HTTPException:
+        conn.rollback()
+        raise
+    except Exception:
+        conn.rollback()
+        raise
+    finally:
+        cur.close()
+        conn.close()
+
 
 @router.post("/upload-image")
 async def upload_product_image(
@@ -144,214 +251,469 @@ async def upload_product_image(
         }
 
     except Exception as exc:
-        print(
-            "Product image upload error:",
-            str(exc),
-        )
-
+        print("Product image upload error:", str(exc))
         raise HTTPException(
             status_code=500,
             detail="Unable to upload product image",
         )
 
+
 @router.get("/my")
 def get_my_products(
-    user=Depends(get_current_producer)
+    user=Depends(get_current_producer),
 ):
     conn = get_conn()
     cur = conn.cursor()
 
-    cur.execute(
-        "SELECT id FROM producers WHERE user_id = %s",
-        (user["id"],)
-    )
+    try:
+        cur.execute(
+            "SELECT id FROM producers WHERE user_id = %s",
+            (user["id"],),
+        )
+        producer = cur.fetchone()
 
-    producer = cur.fetchone()
+        if not producer:
+            raise HTTPException(
+                status_code=404,
+                detail="No shop found",
+            )
 
-    if not producer:
-        cur.close()
-        conn.close()
-        raise HTTPException(
-            404,
-            "No shop found"
+        cur.execute(
+            """
+            SELECT
+                id,
+                name,
+                description,
+                category,
+                price,
+                unit,
+                quantity_available,
+                image_url,
+                is_active,
+                tags,
+                created_at
+            FROM products
+            WHERE producer_id = %s
+            ORDER BY is_active DESC, name ASC
+            """,
+            (producer[0],),
         )
 
-    cur.execute("""
-        SELECT
-            id,
-            name,
-            description,
-            category,
-            price,
-            unit,
-            quantity_available,
-            image_url,
-            is_active,
-            tags,
-            created_at
-        FROM products
-        WHERE producer_id = %s
-        ORDER BY is_active DESC, name ASC
-    """, (producer[0],))
+        rows = cur.fetchall()
+        cols = [description[0] for description in cur.description]
 
-    rows = cur.fetchall()
-    cols = [d[0] for d in cur.description]
+        return [dict(zip(cols, row)) for row in rows]
 
-    cur.close()
-    conn.close()
+    finally:
+        cur.close()
+        conn.close()
 
-    return [
-        dict(zip(cols, row))
-        for row in rows
-    ]
 
 @router.patch("/{product_id}")
-def update_product(product_id: int, req: UpdateProductRequest, user=Depends(get_current_producer)):
-    conn = get_conn(); cur = conn.cursor()
-    cur.execute("""
-        SELECT pr.id FROM products pr JOIN producers p ON pr.producer_id = p.id
-        WHERE pr.id = %s AND p.user_id = %s
-    """, (product_id, user["id"]))
-    if not cur.fetchone(): cur.close(); conn.close(); raise HTTPException(403, "Product not found or not yours")
-    if req.name or req.description:
+def update_product(
+    product_id: int,
+    req: UpdateProductRequest,
+    user=Depends(get_current_producer),
+):
+    if req.category is not None and req.category not in VALID_CATEGORIES:
+        raise HTTPException(
+            status_code=400,
+            detail=(
+                "Invalid category. Must be one of: "
+                + ", ".join(VALID_CATEGORIES)
+            ),
+        )
+
+    if req.price is not None and req.price <= 0:
+        raise HTTPException(
+            status_code=400,
+            detail="Price must be greater than 0",
+        )
+
+    if req.quantity_available is not None and req.quantity_available < 0:
+        raise HTTPException(
+            status_code=400,
+            detail="Quantity cannot be negative",
+        )
+
+    if req.name is not None or req.description is not None:
         if check_prohibited(req.name or "", req.description or ""):
-            cur.close(); conn.close(); raise HTTPException(400, "Prohibited item keywords detected")
-    fields = {k: v for k, v in req.dict().items() if v is not None}
-    if not fields: cur.close(); conn.close(); raise HTTPException(400, "No fields to update")
-    set_clause = ", ".join(f"{k} = %s" for k in fields)
-    values = list(fields.values()) + [product_id]
-    cur.execute(f"UPDATE products SET {set_clause}, updated_at = NOW() WHERE id = %s", values)
-    conn.commit(); cur.close(); conn.close()
-    return {"message": "Product updated"}
+            raise HTTPException(
+                status_code=400,
+                detail="Prohibited item keywords detected",
+            )
+
+    fields = {
+        key: value
+        for key, value in req.model_dump().items()
+        if value is not None
+    }
+
+    if not fields:
+        raise HTTPException(
+            status_code=400,
+            detail="No fields to update",
+        )
+
+    conn = get_conn()
+    cur = conn.cursor()
+
+    try:
+        cur.execute(
+            """
+            SELECT pr.id
+            FROM products pr
+            JOIN producers p ON pr.producer_id = p.id
+            WHERE pr.id = %s AND p.user_id = %s
+            """,
+            (product_id, user["id"]),
+        )
+
+        if not cur.fetchone():
+            raise HTTPException(
+                status_code=403,
+                detail="Product not found or not yours",
+            )
+
+        set_clause = ", ".join(
+            f"{key} = %s"
+            for key in fields
+        )
+        values = list(fields.values()) + [product_id]
+
+        cur.execute(
+            f"""
+            UPDATE products
+            SET {set_clause}, updated_at = NOW()
+            WHERE id = %s
+            """,
+            values,
+        )
+
+        conn.commit()
+        return {"message": "Product updated"}
+
+    except HTTPException:
+        conn.rollback()
+        raise
+    except Exception:
+        conn.rollback()
+        raise
+    finally:
+        cur.close()
+        conn.close()
+
 
 @router.delete("/{product_id}")
-def delete_product(product_id: int, user=Depends(get_current_producer)):
-    conn = get_conn(); cur = conn.cursor()
-    cur.execute("""
-        DELETE FROM products USING producers
-        WHERE products.id = %s AND products.producer_id = producers.id
-        AND producers.user_id = %s RETURNING products.id
-    """, (product_id, user["id"]))
-    if not cur.fetchone(): conn.rollback(); cur.close(); conn.close(); raise HTTPException(403, "Not found or not yours")
-    conn.commit(); cur.close(); conn.close()
-    return {"message": "Product deleted"}
+def delete_product(
+    product_id: int,
+    user=Depends(get_current_producer),
+):
+    conn = get_conn()
+    cur = conn.cursor()
+
+    try:
+        cur.execute(
+            """
+            DELETE FROM products
+            USING producers
+            WHERE products.id = %s
+              AND products.producer_id = producers.id
+              AND producers.user_id = %s
+            RETURNING products.id
+            """,
+            (product_id, user["id"]),
+        )
+
+        if not cur.fetchone():
+            conn.rollback()
+            raise HTTPException(
+                status_code=403,
+                detail="Not found or not yours",
+            )
+
+        conn.commit()
+        return {"message": "Product deleted"}
+
+    finally:
+        cur.close()
+        conn.close()
+
 
 @router.get("/producer/{producer_id}")
-def get_producer_products(producer_id: int, category: str = None):
-    conn = get_conn(); cur = conn.cursor()
-    query = """
-        SELECT id, name, description, category, price, unit, quantity_available, image_url, tags
-        FROM products WHERE producer_id = %s AND is_active = TRUE AND quantity_available > 0
-    """
-    params = [producer_id]
-    if category:
-        query += " AND category = %s"
-        params.append(category)
-    query += " ORDER BY category, name"
-    cur.execute(query, params)
-    rows = cur.fetchall(); cols = [d[0] for d in cur.description]
-    cur.close(); conn.close()
-    return [dict(zip(cols, r)) for r in rows]
+def get_producer_products(
+    producer_id: int,
+    category: str = None,
+):
+    conn = get_conn()
+    cur = conn.cursor()
+
+    try:
+        query = """
+            SELECT
+                id,
+                name,
+                description,
+                category,
+                price,
+                unit,
+                quantity_available,
+                image_url,
+                tags
+            FROM products
+            WHERE producer_id = %s
+              AND is_active = TRUE
+              AND quantity_available > 0
+        """
+        params = [producer_id]
+
+        if category:
+            query += " AND category = %s"
+            params.append(category)
+
+        query += " ORDER BY category, name"
+
+        cur.execute(query, params)
+        rows = cur.fetchall()
+        cols = [description[0] for description in cur.description]
+
+        return [dict(zip(cols, row)) for row in rows]
+
+    finally:
+        cur.close()
+        conn.close()
+
 
 @router.get("/search")
 def search_products(
-    q: str = None, 
-    category: str = None, 
-
-    lat: float = None, 
-    lng: float = None, 
+    q: str = None,
+    category: str = None,
+    lat: float = None,
+    lng: float = None,
     radius_miles: float = 25,
-
     pickup: bool = None,
     delivery: bool = None,
     shipping: bool = None,
-
     min_price: float = None,
     max_price: float = None,
-
     sort_by: str = "rating",
-
     limit: int = 25,
-    offset: int = 0
+    offset: int = 0,
 ):
-    conn = get_conn(); cur = conn.cursor()
-    query = """
-        SELECT pr.id, pr.name, pr.description, pr.category, pr.price, pr.unit,
-               pr.quantity_available, pr.image_url, pr.tags,
-               p.id as producer_id, p.shop_name, p.city, p.state,
-               p.fulfillment_pickup, p.fulfillment_delivery, p.fulfillment_shipping, p.avg_rating
-        FROM products pr JOIN producers p ON pr.producer_id = p.id
-        WHERE pr.is_active = TRUE AND pr.quantity_available > 0
-          AND pr.is_prohibited = FALSE AND p.admin_approved = TRUE AND p.is_active = TRUE
-    """
-    params = []
-    if q:
-        query += " AND (pr.name ILIKE %s OR pr.description ILIKE %s OR pr.tags::text ILIKE %s)"
-        params.extend([f"%{q}%", f"%{q}%", f"%{q}%"])
-    if category:
-        query += " AND pr.category = %s"
-        params.append(category)
-    if min_price is not None:
-    query += " AND pr.price >= %s"
-    params.append(min_price)
+    if radius_miles <= 0:
+        raise HTTPException(
+            status_code=400,
+            detail="radius_miles must be greater than 0",
+        )
 
-    if max_price is not None:
-    query += " AND pr.price <= %s"
-    params.append(max_price)
+    if min_price is not None and min_price < 0:
+        raise HTTPException(
+            status_code=400,
+            detail="min_price cannot be negative",
+        )
 
-    if pickup:
-    query += " AND p.fulfillment_pickup = TRUE"
+    if max_price is not None and max_price < 0:
+        raise HTTPException(
+            status_code=400,
+            detail="max_price cannot be negative",
+        )
 
-    if delivery:
-    query += " AND p.fulfillment_delivery = TRUE"
+    if (
+        min_price is not None
+        and max_price is not None
+        and min_price > max_price
+    ):
+        raise HTTPException(
+            status_code=400,
+            detail="min_price cannot be greater than max_price",
+        )
 
-    if shipping:
-    query += " AND p.fulfillment_shipping = TRUE"
+    if sort_by not in VALID_SORTS:
+        raise HTTPException(
+            status_code=400,
+            detail=(
+                "sort_by must be one of: "
+                + ", ".join(sorted(VALID_SORTS))
+            ),
+        )
 
-    if lat and lng:
-        query += """
-            AND (3959 * acos(
-                cos(radians(%s)) * cos(radians(p.latitude)) *
-                cos(radians(p.longitude) - radians(%s)) +
-                sin(radians(%s)) * sin(radians(p.latitude))
-            )) <= %s
+    if limit < 1:
+        raise HTTPException(
+            status_code=400,
+            detail="limit must be at least 1",
+        )
+
+    if limit > 100:
+        limit = 100
+
+    if offset < 0:
+        raise HTTPException(
+            status_code=400,
+            detail="offset cannot be negative",
+        )
+
+    has_location = lat is not None and lng is not None
+
+    if sort_by == "distance" and not has_location:
+        raise HTTPException(
+            status_code=400,
+            detail="lat and lng are required when sort_by=distance",
+        )
+
+    conn = get_conn()
+    cur = conn.cursor()
+
+    try:
+        query = """
+            SELECT
+                pr.id,
+                pr.name,
+                pr.description,
+                pr.category,
+                pr.price,
+                pr.unit,
+                pr.quantity_available,
+                pr.image_url,
+                pr.tags,
+                p.id AS producer_id,
+                p.shop_name,
+                p.city,
+                p.state,
+                p.fulfillment_pickup,
+                p.fulfillment_delivery,
+                p.fulfillment_shipping,
+                p.avg_rating
+            FROM products pr
+            JOIN producers p ON pr.producer_id = p.id
+            WHERE pr.is_active = TRUE
+              AND pr.quantity_available > 0
+              AND COALESCE(pr.is_prohibited, FALSE) = FALSE
+              AND p.admin_approved = TRUE
+              AND p.is_active = TRUE
         """
-        params.extend([lat, lng, lat, radius_miles])
-    if sort == "price_low":
-        query += " ORDER BY pr.price ASC"
 
-    elif sort == "price_high":
-        query += " ORDER BY pr.price DESC"
+        params = []
 
-    elif sort == "newest":
-        query += " ORDER BY pr.created_at DESC"
+        if q:
+            search_term = f"%{q.strip()}%"
+            query += """
+                AND (
+                    pr.name ILIKE %s
+                    OR pr.description ILIKE %s
+                    OR pr.tags::text ILIKE %s
+                    OR p.shop_name ILIKE %s
+                )
+            """
+            params.extend(
+                [
+                    search_term,
+                    search_term,
+                    search_term,
+                    search_term,
+                ]
+            )
 
-    elif sort == "alphabetical":
-        query += " ORDER BY pr.name ASC"
+        if category:
+            query += " AND pr.category = %s"
+            params.append(category)
 
-    elif sort == "distance" and lat and lng:
-        query += """
-            ORDER BY
-            (3959 * acos(
-                cos(radians(%s)) *
-                cos(radians(p.latitude)) *
-                cos(radians(p.longitude) - radians(%s))
-                +
-                sin(radians(%s)) *
-                sin(radians(p.latitude))
-            )) ASC
-        """
+        if min_price is not None:
+            query += " AND pr.price >= %s"
+            params.append(min_price)
 
-        params.extend([lat, lng, lat])
+        if max_price is not None:
+            query += " AND pr.price <= %s"
+            params.append(max_price)
 
-    else:
-        query += " ORDER BY p.avg_rating DESC, pr.name ASC"
+        if pickup is True:
+            query += " AND p.fulfillment_pickup = TRUE"
 
-    query += " LIMIT %s OFFSET %s"
-    params.extend([limit, offset])
-    
-    cur.execute(query, params)
-    rows = cur.fetchall(); cols = [d[0] for d in cur.description]
-    cur.close(); conn.close()
-    return [dict(zip(cols, r)) for r in rows]
+        if delivery is True:
+            query += " AND p.fulfillment_delivery = TRUE"
 
+        if shipping is True:
+            query += " AND p.fulfillment_shipping = TRUE"
+
+        if has_location:
+            # Producers without coordinates are excluded only when the shopper
+            # explicitly performs a location-based search.
+            query += """
+                AND p.latitude IS NOT NULL
+                AND p.longitude IS NOT NULL
+                AND (
+                    3959 * acos(
+                        LEAST(
+                            1.0,
+                            GREATEST(
+                                -1.0,
+                                cos(radians(%s)) *
+                                cos(radians(p.latitude)) *
+                                cos(radians(p.longitude) - radians(%s)) +
+                                sin(radians(%s)) *
+                                sin(radians(p.latitude))
+                            )
+                        )
+                    )
+                ) <= %s
+            """
+            params.extend(
+                [
+                    lat,
+                    lng,
+                    lat,
+                    radius_miles,
+                ]
+            )
+
+        if sort_by == "price_low":
+            query += " ORDER BY pr.price ASC, pr.name ASC"
+
+        elif sort_by == "price_high":
+            query += " ORDER BY pr.price DESC, pr.name ASC"
+
+        elif sort_by == "newest":
+            query += " ORDER BY pr.created_at DESC, pr.name ASC"
+
+        elif sort_by == "alphabetical":
+            query += " ORDER BY pr.name ASC"
+
+        elif sort_by == "distance":
+            query += """
+                ORDER BY (
+                    3959 * acos(
+                        LEAST(
+                            1.0,
+                            GREATEST(
+                                -1.0,
+                                cos(radians(%s)) *
+                                cos(radians(p.latitude)) *
+                                cos(radians(p.longitude) - radians(%s)) +
+                                sin(radians(%s)) *
+                                sin(radians(p.latitude))
+                            )
+                        )
+                    )
+                ) ASC,
+                pr.name ASC
+            """
+            params.extend([lat, lng, lat])
+
+        else:
+            query += """
+                ORDER BY
+                    p.avg_rating DESC NULLS LAST,
+                    pr.name ASC
+            """
+
+        query += " LIMIT %s OFFSET %s"
+        params.extend([limit, offset])
+
+        cur.execute(query, params)
+        rows = cur.fetchall()
+        cols = [description[0] for description in cur.description]
+
+        return [dict(zip(cols, row)) for row in rows]
+
+    finally:
+        cur.close()
+        conn.close()
