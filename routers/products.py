@@ -1,4 +1,4 @@
-﻿from fastapi import APIRouter, HTTPException, Depends, UploadFile, File
+﻿from fastapi import APIRouter, HTTPException, Depends, UploadFile, File, params
 from pydantic import BaseModel, Field
 from typing import List, Optional
 from database import get_conn
@@ -254,7 +254,26 @@ def get_producer_products(producer_id: int, category: str = None):
     return [dict(zip(cols, r)) for r in rows]
 
 @router.get("/search")
-def search_products(q: str = None, category: str = None, lat: float = None, lng: float = None, radius_miles: float = 25):
+def search_products(
+    q: str = None, 
+    category: str = None, 
+
+    lat: float = None, 
+    lng: float = None, 
+    radius_miles: float = 25,
+
+    pickup: bool = None,
+    delivery: bool = None,
+    shipping: bool = None,
+
+    min_price: float = None,
+    max_price: float = None,
+
+    sort_by: str = "rating",
+
+    limit: int = 25,
+    offset: int = 0
+):
     conn = get_conn(); cur = conn.cursor()
     query = """
         SELECT pr.id, pr.name, pr.description, pr.category, pr.price, pr.unit,
@@ -272,6 +291,23 @@ def search_products(q: str = None, category: str = None, lat: float = None, lng:
     if category:
         query += " AND pr.category = %s"
         params.append(category)
+    if min_price is not None:
+    query += " AND pr.price >= %s"
+    params.append(min_price)
+
+    if max_price is not None:
+    query += " AND pr.price <= %s"
+    params.append(max_price)
+
+    if pickup:
+    query += " AND p.fulfillment_pickup = TRUE"
+
+    if delivery:
+    query += " AND p.fulfillment_delivery = TRUE"
+
+    if shipping:
+    query += " AND p.fulfillment_shipping = TRUE"
+
     if lat and lng:
         query += """
             AND (3959 * acos(
@@ -281,7 +317,39 @@ def search_products(q: str = None, category: str = None, lat: float = None, lng:
             )) <= %s
         """
         params.extend([lat, lng, lat, radius_miles])
-    query += " ORDER BY p.avg_rating DESC, pr.name ASC LIMIT 100"
+    if sort == "price_low":
+        query += " ORDER BY pr.price ASC"
+
+    elif sort == "price_high":
+        query += " ORDER BY pr.price DESC"
+
+    elif sort == "newest":
+        query += " ORDER BY pr.created_at DESC"
+
+    elif sort == "alphabetical":
+        query += " ORDER BY pr.name ASC"
+
+    elif sort == "distance" and lat and lng:
+        query += """
+            ORDER BY
+            (3959 * acos(
+                cos(radians(%s)) *
+                cos(radians(p.latitude)) *
+                cos(radians(p.longitude) - radians(%s))
+                +
+                sin(radians(%s)) *
+                sin(radians(p.latitude))
+            )) ASC
+        """
+
+        params.extend([lat, lng, lat])
+
+    else:
+        query += " ORDER BY p.avg_rating DESC, pr.name ASC"
+
+    query += " LIMIT %s OFFSET %s"
+    params.extend([limit, offset])
+    
     cur.execute(query, params)
     rows = cur.fetchall(); cols = [d[0] for d in cur.description]
     cur.close(); conn.close()
