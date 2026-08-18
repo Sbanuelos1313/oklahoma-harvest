@@ -113,41 +113,137 @@ export default function ProducerScreen({
     : IMAGE_ASSETS.backgrounds.vendorOrders;
 
   function createOrUpdateCart(product) {
-    const producerId =
-      producer?.id ||
-      product?.producer_id;
+  const producerId =
+    producer?.id ||
+    product?.producer_id;
 
-    const nextCart = cart
-      ? {
-          ...cart,
-          items: Array.isArray(cart.items)
-            ? cart.items.map((item) => ({ ...item }))
+  const nextCart = cart
+    ? {
+        ...cart,
+
+        fulfillment_pickup:
+          producer?.fulfillment_pickup === true,
+
+        fulfillment_delivery:
+          producer?.fulfillment_delivery === true,
+
+        fulfillment_shipping:
+          producer?.fulfillment_shipping === true,
+
+        items:
+          Array.isArray(cart.items)
+            ? cart.items.map(
+                (item) => ({
+                  ...item,
+                })
+              )
             : [],
-        }
-      : {
-          producer_id: producerId,
-          producer_name: producerName,
-          tax_rate: producer?.tax_rate || 0.08375,
-          delivery_fee: producer?.delivery_fee || 0,
-          items: [],
-        };
+      }
+    : {
+        producer_id:
+          producerId,
 
-    const existingItem = nextCart.items.find(
-      (item) => item.product_id === product.id
+        producer_name:
+          producerName,
+
+        tax_rate:
+          producer?.tax_rate ||
+          0.08375,
+
+        delivery_fee:
+          producer?.delivery_fee ||
+          0,
+
+        fulfillment_pickup:
+          producer?.fulfillment_pickup === true,
+
+        fulfillment_delivery:
+          producer?.fulfillment_delivery === true,
+
+        fulfillment_shipping:
+          producer?.fulfillment_shipping === true,
+
+        /*
+         * Quick-add intentionally does not
+         * preselect a fulfillment method.
+         *
+         * The shopper will choose it in Cart.
+         */
+        fulfillment_type:
+          null,
+
+        items: [],
+      };
+
+  const existingItem =
+    nextCart.items.find(
+      (item) =>
+        item.product_id ===
+        product.id
     );
 
-    if (existingItem) {
-      existingItem.quantity += 1;
-    } else {
-      nextCart.items.push({
-        product_id: product.id,
-        name: product.name,
-        price: Number(product.price || 0),
-        unit: product.unit,
-        quantity: 1,
-        image_url: product.image_url,
-      });
-    }
+  if (existingItem) {
+    existingItem.quantity += 1;
+  } else {
+    nextCart.items.push({
+      product_id:
+        product.id,
+
+      name:
+        product.name,
+
+      price:
+        Number(
+          product.price || 0
+        ),
+
+      unit:
+        product.unit,
+
+      quantity:
+        1,
+
+      image_url:
+        product.image_url,
+
+      /*
+       * No item-level fulfillment selection
+       * when using the producer-page + button.
+       */
+      fulfillment_type:
+        null,
+    });
+  }
+
+  setCart(nextCart);
+
+  Alert.alert(
+    'Added to cart',
+    `${product.name} was added to your cart.`,
+    [
+      {
+        text:
+          'Keep Shopping',
+        style:
+          'cancel',
+      },
+
+      {
+        text:
+          'View Cart',
+
+        onPress: () =>
+          navigation.navigate(
+            'Main',
+            {
+              screen:
+                'Cart',
+            }
+          ),
+      },
+    ]
+  );
+}
 
     setCart(nextCart);
 
@@ -291,7 +387,15 @@ export default function ProducerScreen({
               <TouchableOpacity
                 activeOpacity={0.85}
                 style={styles.headerIconButton}
-                onPress={() => navigation.navigate('Cart')}
+                onPress={() =>
+                  navigation.navigate(
+                    'Main',
+                    {
+                      screen:
+                        'Cart',
+                    }
+                  )
+                }
               >
                 <Ionicons
                   name="bag-outline"

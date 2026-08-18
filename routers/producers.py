@@ -1,5 +1,8 @@
 ﻿from fastapi import APIRouter, HTTPException, Depends
-from pydantic import BaseModel
+from pydantic import (
+    BaseModel,
+    Field,
+)
 from typing import Optional
 from database import get_conn
 from auth import get_current_user, get_current_producer, get_current_admin
@@ -11,29 +14,64 @@ import os
 from fastapi import UploadFile, File
 
 cloudinary.config(
-    cloud_name=os.getenv("CLOUDINARY_CLOUD_NAME", "dekyfsnmh"),
-    api_key=os.getenv("CLOUDINARY_API_KEY", "692448999435973"),
-    api_secret=os.getenv("CLOUDINARY_API_SECRET", "SDDISfCZioH5Z5na0YkuXIN8iOc")
+    cloud_name=os.getenv(
+        "CLOUDINARY_CLOUD_NAME"
+    ),
+    api_key=os.getenv(
+        "CLOUDINARY_API_KEY"
+    ),
+    api_secret=os.getenv(
+        "CLOUDINARY_API_SECRET"
+    ),
 )
 
 router = APIRouter(prefix="/api/producers", tags=["producers"])
 
 class CreateShopRequest(BaseModel):
     shop_name: str
+
     description: Optional[str] = None
     bio: Optional[str] = None
     address: Optional[str] = None
     city: Optional[str] = None
+
     state: str = "OK"
+
     zip_code: Optional[str] = None
-    latitude: Optional[float] = None
-    longitude: Optional[float] = None
-    service_radius_miles: int = 25
+
+    latitude: Optional[float] = Field(
+        default=None,
+        ge=-90,
+        le=90,
+    )
+
+    longitude: Optional[float] = Field(
+        default=None,
+        ge=-180,
+        le=180,
+    )
+
+    service_radius_miles: int = Field(
+        default=25,
+        ge=0,
+        le=500,
+    )
+
     fulfillment_pickup: bool = True
     fulfillment_delivery: bool = False
     fulfillment_shipping: bool = False
-    delivery_fee: float = 0.00
-    tax_rate: float = 0.08375
+
+    delivery_fee: float = Field(
+        default=0.00,
+        ge=0,
+    )
+
+    tax_rate: float = Field(
+        default=0.08375,
+        ge=0,
+        le=1,
+    )
+
 
 class UpdateShopRequest(BaseModel):
     shop_name: Optional[str] = None
@@ -43,15 +81,40 @@ class UpdateShopRequest(BaseModel):
     city: Optional[str] = None
     state: Optional[str] = None
     zip_code: Optional[str] = None
-    latitude: Optional[float] = None
-    longitude: Optional[float] = None
-    service_radius_miles: Optional[int] = None
+
+    latitude: Optional[float] = Field(
+        default=None,
+        ge=-90,
+        le=90,
+    )
+
+    longitude: Optional[float] = Field(
+        default=None,
+        ge=-180,
+        le=180,
+    )
+
+    service_radius_miles: Optional[int] = Field(
+        default=None,
+        ge=0,
+        le=500,
+    )
+
     fulfillment_pickup: Optional[bool] = None
     fulfillment_delivery: Optional[bool] = None
     fulfillment_shipping: Optional[bool] = None
-    delivery_fee: Optional[float] = None
-    tax_rate: Optional[float] = None
 
+    delivery_fee: Optional[float] = Field(
+        default=None,
+        ge=0,
+    )
+
+    tax_rate: Optional[float] = Field(
+        default=None,
+        ge=0,
+        le=1,
+    )
+    
 @router.post("/setup")
 def setup_shop(req: CreateShopRequest, user=Depends(get_current_producer)):
     conn = get_conn(); cur = conn.cursor()

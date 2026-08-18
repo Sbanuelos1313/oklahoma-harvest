@@ -1,17 +1,63 @@
 // App.js
-// From Our Place V2 full route wiring through Pass 10.
+// From Our Place V2
+// Customer + Vendor navigation and shared application state.
 
-import { NavigationContainer } from '@react-navigation/native';
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { StatusBar } from 'expo-status-bar';
-import { View, ActivityIndicator, Image } from 'react-native';
-import { StripeProvider } from '@stripe/stripe-react-native';
-import { useFonts, PlayfairDisplay_700Bold, PlayfairDisplay_400Regular } from '@expo-google-fonts/playfair-display';
-import { DMSans_400Regular, DMSans_700Bold } from '@expo-google-fonts/dm-sans';
-import { useFonts as useSatisfy, Satisfy_400Regular } from '@expo-google-fonts/satisfy';
-import { useState } from 'react';
+import {
+  useEffect,
+  useState,
+} from 'react';
+
+import {
+  View,
+  Text,
+  ActivityIndicator,
+  Image,
+} from 'react-native';
+
+import {
+  NavigationContainer,
+} from '@react-navigation/native';
+
+import {
+  createBottomTabNavigator,
+} from '@react-navigation/bottom-tabs';
+
+import {
+  createNativeStackNavigator,
+} from '@react-navigation/native-stack';
+
+import {
+  SafeAreaProvider,
+} from 'react-native-safe-area-context';
+
+import {
+  StatusBar,
+} from 'expo-status-bar';
+
+import {
+  StripeProvider,
+} from '@stripe/stripe-react-native';
+
+import {
+  useFonts,
+  PlayfairDisplay_700Bold,
+  PlayfairDisplay_400Regular,
+} from '@expo-google-fonts/playfair-display';
+
+import {
+  DMSans_400Regular,
+  DMSans_700Bold,
+} from '@expo-google-fonts/dm-sans';
+
+import {
+  useFonts as useSatisfy,
+  Satisfy_400Regular,
+} from '@expo-google-fonts/satisfy';
+
+
+// =====================================================
+// CUSTOMER SCREENS
+// =====================================================
 
 import HomeScreen from './screens/HomeScreen';
 import SearchScreen from './screens/SearchScreen';
@@ -28,6 +74,11 @@ import SettingsScreen from './screens/SettingsScreen';
 import AuthScreen from './screens/AuthScreen';
 import WelcomeScreen from './screens/WelcomeScreen';
 
+
+// =====================================================
+// VENDOR SCREENS
+// =====================================================
+
 import VendorDashboardScreen from './screens/vendor/VendorDashboardScreen';
 import VendorProductsScreen from './screens/vendor/VendorProductsScreen';
 import VendorOrdersScreen from './screens/vendor/VendorOrdersScreen';
@@ -37,307 +88,1172 @@ import VendorAddProductScreen from './screens/vendor/VendorAddProductScreen';
 import VendorEditProductScreen from './screens/vendor/VendorEditProductScreen';
 import VendorEditStoreScreen from './screens/vendor/VendorEditStoreScreen';
 
-import { COLORS, FONTS, SHADOWS } from './constants/theme';
-import { IMAGE_ASSETS } from './constants/assets';
 
-const Tab = createBottomTabNavigator();
+// =====================================================
+// THEME / ASSETS
+// =====================================================
 
-const Stack = createNativeStackNavigator();
+import {
+  COLORS,
+  FONTS,
+  SHADOWS,
+} from './constants/theme';
 
-const API = 'https://from-our-place.chronos-ai.net';
+import {
+  IMAGE_ASSETS,
+} from './constants/assets';
 
-const STRIPE_KEY = 'pk_live_your_key_here';
 
-function TabIcon({ source, focused }) {
+// =====================================================
+// NAVIGATORS
+// =====================================================
+
+const Tab =
+  createBottomTabNavigator();
+
+const Stack =
+  createNativeStackNavigator();
+
+
+// =====================================================
+// CONFIG
+// =====================================================
+
+const API =
+  'https://from-our-place.chronos-ai.net';
+
+// =====================================================
+// TAB ICON
+// =====================================================
+
+function TabIcon({
+  source,
+  focused,
+}) {
   return (
-    <View style={{
-      width: 38,
-      height: 38,
-      borderRadius: 19,
-      alignItems: 'center',
-      justifyContent: 'center',
-      backgroundColor: focused  ? 'rgba(74,103,65,0.14)'  : 'transparent',
-    }}>
-      <Image source={source} style={{ width: 24, height: 24, opacity: focused ? 1 : 0.62 }} resizeMode="contain" />
+    <View
+      style={{
+        width: 38,
+        height: 38,
+        borderRadius: 19,
+
+        alignItems: 'center',
+        justifyContent: 'center',
+
+        backgroundColor:
+          focused
+            ? 'rgba(74,103,65,0.14)'
+            : 'transparent',
+      }}
+    >
+      <Image
+        source={source}
+        resizeMode="contain"
+        style={{
+          width: 24,
+          height: 24,
+
+          opacity:
+            focused
+              ? 1
+              : 0.62,
+        }}
+      />
     </View>
   );
 }
+
+
+// =====================================================
+// SHARED TAB OPTIONS
+// =====================================================
 
 const tabScreenOptions = {
   headerShown: false,
 
   tabBarStyle: {
     position: 'absolute',
+
     left: 14,
     right: 14,
     bottom: 12,
+
     height: 72,
+
     borderRadius: 28,
-    backgroundColor: 'rgba(252,250,247,0.97)',
+
+    backgroundColor:
+      'rgba(252,250,247,0.97)',
+
     borderTopWidth: 0,
+
     paddingBottom: 10,
     paddingTop: 8,
+
     ...SHADOWS.medium,
   },
 
-  tabBarActiveTintColor: COLORS.forest,
-  tabBarInactiveTintColor: COLORS.brownSoft,
+  tabBarActiveTintColor:
+    COLORS.forest,
+
+  tabBarInactiveTintColor:
+    COLORS.brownSoft,
 
   tabBarLabelStyle: {
-    fontFamily: FONTS.bodyBold,
+    fontFamily:
+      FONTS.bodyBold,
+
     fontSize: 11,
+  },
+
+  // Styling for numeric tab badges.
+  tabBarBadgeStyle: {
+    minWidth: 18,
+    height: 18,
+
+    borderRadius: 9,
+
+    fontFamily:
+      FONTS.bodyBold,
+
+    fontSize: 9,
+
+    color: COLORS.warmWhite,
+
+    backgroundColor:
+      COLORS.forest,
   },
 };
 
-function CustomerTabs({ token, setToken, user, setUser, cart, setCart }) {
+
+// =====================================================
+// CUSTOMER TABS
+// =====================================================
+
+function CustomerTabs({
+  token,
+  setToken,
+
+  user,
+  setUser,
+
+  cart,
+  setCart,
+}) {
+  // ---------------------------------------------------
+  // LIVE CART COUNT
+  // ---------------------------------------------------
+
+  const cartCount =
+    cart?.items?.reduce(
+      (
+        total,
+        item
+      ) =>
+        total +
+        Number(
+          item?.quantity || 0
+        ),
+      0
+    ) || 0;
+
+
   return (
-    <Tab.Navigator screenOptions={tabScreenOptions}>
-      <Tab.Screen name="Home" options={{ tabBarLabel: 'Shop', tabBarIcon: ({ focused }) => <TabIcon focused={focused} source={IMAGE_ASSETS.icons.home} /> }}>
-        {props => <HomeScreen {...props} API={API} token={token} user={user} cart={cart} setCart={setCart} />}
+    <Tab.Navigator
+      screenOptions={
+        tabScreenOptions
+      }
+    >
+      {/* HOME */}
+
+      <Tab.Screen
+        name="Home"
+        options={{
+          tabBarLabel:
+            'Shop',
+
+          tabBarIcon:
+            ({
+              focused,
+            }) => (
+              <TabIcon
+                focused={
+                  focused
+                }
+                source={
+                  IMAGE_ASSETS
+                    .icons
+                    .home
+                }
+              />
+            ),
+        }}
+      >
+        {props => (
+          <HomeScreen
+            {...props}
+
+            API={API}
+
+            token={token}
+            user={user}
+
+            cart={cart}
+            setCart={
+              setCart
+            }
+          />
+        )}
       </Tab.Screen>
 
-      <Tab.Screen name="Search" options={{ tabBarLabel: 'Discover', tabBarIcon: ({ focused }) => <TabIcon focused={focused} source={IMAGE_ASSETS.icons.search} /> }}>
-        {props => <SearchScreen {...props} API={API} token={token} user={user} cart={cart} setCart={setCart} />}
+
+      {/* SEARCH / DISCOVER */}
+
+      <Tab.Screen
+        name="Search"
+        options={{
+          tabBarLabel:
+            'Discover',
+
+          tabBarIcon:
+            ({
+              focused,
+            }) => (
+              <TabIcon
+                focused={
+                  focused
+                }
+                source={
+                  IMAGE_ASSETS
+                    .icons
+                    .search
+                }
+              />
+            ),
+        }}
+      >
+        {props => (
+          <SearchScreen
+            {...props}
+
+            API={API}
+
+            token={token}
+            user={user}
+
+            cart={cart}
+            setCart={
+              setCart
+            }
+          />
+        )}
       </Tab.Screen>
 
-      <Tab.Screen name="Cart" options={{ tabBarLabel: 'Cart', tabBarIcon: ({ focused }) => <TabIcon focused={focused} source={IMAGE_ASSETS.icons.cart} /> }}>
-        {props => <CartScreen {...props} API={API} token={token} user={user} cart={cart} setCart={setCart} />}
+
+      {/* CART */}
+
+      <Tab.Screen
+        name="Cart"
+        options={{
+          tabBarLabel:
+            'Cart',
+
+          // ---------------------------------------------
+          // SHOW LIVE CART QUANTITY ON BOTTOM TAB
+          // ---------------------------------------------
+
+          tabBarBadge:
+            cartCount > 0
+              ? cartCount
+              : undefined,
+
+          tabBarIcon:
+            ({
+              focused,
+            }) => (
+              <TabIcon
+                focused={
+                  focused
+                }
+                source={
+                  IMAGE_ASSETS
+                    .icons
+                    .cart
+                }
+              />
+            ),
+        }}
+      >
+        {props => (
+          <CartScreen
+            {...props}
+
+            API={API}
+
+            token={token}
+            user={user}
+
+            cart={cart}
+            setCart={
+              setCart
+            }
+          />
+        )}
       </Tab.Screen>
 
-      <Tab.Screen name="Orders" options={{ tabBarLabel: 'Orders', tabBarIcon: ({ focused }) => <TabIcon focused={focused} source={IMAGE_ASSETS.icons.orders} /> }}>
-        {props => <OrdersScreen {...props} API={API} token={token} user={user} cart={cart} />}
+
+      {/* ORDERS */}
+
+      <Tab.Screen
+        name="Orders"
+        options={{
+          tabBarLabel:
+            'Orders',
+
+          tabBarIcon:
+            ({
+              focused,
+            }) => (
+              <TabIcon
+                focused={
+                  focused
+                }
+                source={
+                  IMAGE_ASSETS
+                    .icons
+                    .orders
+                }
+              />
+            ),
+        }}
+      >
+        {props => (
+          <OrdersScreen
+            {...props}
+
+            API={API}
+
+            token={token}
+            user={user}
+
+            cart={cart}
+          />
+        )}
       </Tab.Screen>
 
-      <Tab.Screen name="Profile" options={{ tabBarLabel: 'Profile', tabBarIcon: ({ focused }) => <TabIcon focused={focused} source={IMAGE_ASSETS.icons.profile} /> }}>
-        {props => <ProfileScreen {...props} API={API} token={token} setToken={setToken} user={user} setUser={setUser} cart={cart} />}
+
+      {/* PROFILE */}
+
+      <Tab.Screen
+        name="Profile"
+        options={{
+          tabBarLabel:
+            'Profile',
+
+          tabBarIcon:
+            ({
+              focused,
+            }) => (
+              <TabIcon
+                focused={
+                  focused
+                }
+                source={
+                  IMAGE_ASSETS
+                    .icons
+                    .profile
+                }
+              />
+            ),
+        }}
+      >
+        {props => (
+          <ProfileScreen
+            {...props}
+
+            API={API}
+
+            token={token}
+            setToken={
+              setToken
+            }
+
+            user={user}
+            setUser={
+              setUser
+            }
+
+            cart={cart}
+          />
+        )}
       </Tab.Screen>
     </Tab.Navigator>
   );
 }
 
-function VendorTabs({ token, setToken, user, setUser }) {
+
+// =====================================================
+// VENDOR TABS
+// =====================================================
+
+function VendorTabs({
+  token,
+  setToken,
+
+  user,
+  setUser,
+}) {
   return (
-    <Tab.Navigator screenOptions={tabScreenOptions}>
-      <Tab.Screen name="VendorDashboard" options={{ tabBarLabel: 'Dashboard', tabBarIcon: ({ focused }) => <TabIcon focused={focused} source={IMAGE_ASSETS.icons.home} /> }}>
-        {props => <VendorDashboardScreen {...props} API={API} token={token} user={user} />}
+    <Tab.Navigator
+      screenOptions={
+        tabScreenOptions
+      }
+    >
+      {/* DASHBOARD */}
+
+      <Tab.Screen
+        name="VendorDashboard"
+        options={{
+          tabBarLabel:
+            'Dashboard',
+
+          tabBarIcon:
+            ({
+              focused,
+            }) => (
+              <TabIcon
+                focused={
+                  focused
+                }
+                source={
+                  IMAGE_ASSETS
+                    .icons
+                    .home
+                }
+              />
+            ),
+        }}
+      >
+        {props => (
+          <VendorDashboardScreen
+            {...props}
+
+            API={API}
+
+            token={token}
+            user={user}
+          />
+        )}
       </Tab.Screen>
 
-      <Tab.Screen name="VendorProducts" options={{ tabBarLabel: 'Products', tabBarIcon: ({ focused }) => <TabIcon focused={focused} source={IMAGE_ASSETS.icons.vendor} /> }}>
-        {props => <VendorProductsScreen {...props} API={API} token={token} user={user} />}
+
+      {/* PRODUCTS */}
+
+      <Tab.Screen
+        name="VendorProducts"
+        options={{
+          tabBarLabel:
+            'Products',
+
+          tabBarIcon:
+            ({
+              focused,
+            }) => (
+              <TabIcon
+                focused={
+                  focused
+                }
+                source={
+                  IMAGE_ASSETS
+                    .icons
+                    .vendor
+                }
+              />
+            ),
+        }}
+      >
+        {props => (
+          <VendorProductsScreen
+            {...props}
+
+            API={API}
+
+            token={token}
+            user={user}
+          />
+        )}
       </Tab.Screen>
 
-      <Tab.Screen name="VendorOrders" options={{ tabBarLabel: 'Orders', tabBarIcon: ({ focused }) => <TabIcon focused={focused} source={IMAGE_ASSETS.icons.orders} /> }}>
-        {props => <VendorOrdersScreen {...props} API={API} token={token} user={user} />}
+
+      {/* ORDERS */}
+
+      <Tab.Screen
+        name="VendorOrders"
+        options={{
+          tabBarLabel:
+            'Orders',
+
+          tabBarIcon:
+            ({
+              focused,
+            }) => (
+              <TabIcon
+                focused={
+                  focused
+                }
+                source={
+                  IMAGE_ASSETS
+                    .icons
+                    .orders
+                }
+              />
+            ),
+        }}
+      >
+        {props => (
+          <VendorOrdersScreen
+            {...props}
+
+            API={API}
+
+            token={token}
+            user={user}
+          />
+        )}
       </Tab.Screen>
 
-      <Tab.Screen name="VendorProfile" options={{ tabBarLabel: 'Store', tabBarIcon: ({ focused }) => <TabIcon focused={focused} source={IMAGE_ASSETS.icons.profile} /> }}>
-        {props => <VendorProfileScreen {...props} API={API} token={token} user={user} setToken={setToken} setUser={setUser} />}
+
+      {/* STORE PROFILE */}
+
+      <Tab.Screen
+        name="VendorProfile"
+        options={{
+          tabBarLabel:
+            'Store',
+
+          tabBarIcon:
+            ({
+              focused,
+            }) => (
+              <TabIcon
+                focused={
+                  focused
+                }
+                source={
+                  IMAGE_ASSETS
+                    .icons
+                    .profile
+                }
+              />
+            ),
+        }}
+      >
+        {props => (
+          <VendorProfileScreen
+            {...props}
+
+            API={API}
+
+            token={token}
+            user={user}
+
+            setToken={
+              setToken
+            }
+
+            setUser={
+              setUser
+            }
+          />
+        )}
       </Tab.Screen>
     </Tab.Navigator>
   );
 }
+
+
+// =====================================================
+// APP
+// =====================================================
 
 export default function App() {
-  const [token, setToken] = useState(null);
-  const [user, setUser] = useState(null);
-  const [cart, setCart] = useState(null);
+  const [
+    token,
+    setToken,
+  ] = useState(null);
 
-  const [fontsLoaded] = useFonts({
+  const [
+    user,
+    setUser,
+  ] = useState(null);
+
+  const [
+    cart,
+    setCart,
+  ] = useState(null);
+
+  const [
+    stripeKey,
+    setStripeKey,
+  ] = useState(null);
+
+  const [
+    stripeConfigError,
+    setStripeConfigError,
+  ] = useState(null);
+
+
+  useEffect(() => {
+    let mounted = true;
+
+    async function loadStripeConfiguration() {
+      try {
+        const response = await fetch(
+          `${API}/api/stripe/publishable-key`
+        );
+
+        const data = await response
+          .json()
+          .catch(() => null);
+
+        if (!response.ok) {
+          throw new Error(
+            data?.detail ||
+              'Unable to load Stripe configuration.'
+          );
+        }
+
+        if (
+          !data?.key ||
+          typeof data.key !== 'string'
+        ) {
+          throw new Error(
+            'Stripe publishable key was not returned by the server.'
+          );
+        }
+
+        if (
+          !data.key.startsWith('pk_')
+        ) {
+          throw new Error(
+            'The server returned an invalid Stripe publishable key.'
+          );
+        }
+
+        if (mounted) {
+          setStripeKey(data.key);
+          setStripeConfigError(null);
+        }
+      } catch (error) {
+        console.error(
+          'STRIPE CONFIG ERROR:',
+          error
+        );
+
+        if (mounted) {
+          setStripeConfigError(
+            error?.message ||
+              'Unable to initialize Stripe.'
+          );
+        }
+      }
+    }
+
+    loadStripeConfiguration();
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  console.log(
+    '================================='
+  );
+
+  console.log(
+    'TOKEN:',
+    token
+  );
+
+  console.log(
+    'USER:',
+    user
+  );
+
+  console.log(
+    '================================='
+  );
+
+
+  // ===================================================
+  // FONTS
+  // ===================================================
+
+  const [
+    fontsLoaded,
+  ] = useFonts({
     PlayfairDisplay_700Bold,
     PlayfairDisplay_400Regular,
+
     DMSans_400Regular,
     DMSans_700Bold,
   });
-  const [satisfyLoaded] = useSatisfy({ Satisfy_400Regular });
 
-  if (!fontsLoaded || !satisfyLoaded) {
+  const [
+    satisfyLoaded,
+  ] = useSatisfy({
+    Satisfy_400Regular,
+  });
+
+
+if (
+  !fontsLoaded ||
+  !satisfyLoaded ||
+  !stripeKey
+) {
+  if (stripeConfigError) {
     return (
-      <View style={{ flex: 1, backgroundColor: COLORS.cream, alignItems: 'center', justifyContent: 'center' }}>
-        <ActivityIndicator color={COLORS.forest} />
+      <View
+        style={{
+          flex: 1,
+          backgroundColor:
+            COLORS.cream,
+          alignItems:
+            'center',
+          justifyContent:
+            'center',
+          paddingHorizontal: 28,
+        }}
+      >
+        <Text
+          style={{
+            fontFamily:
+              FONTS.bodyBold,
+            fontSize: 15,
+            textAlign: 'center',
+            color:
+              COLORS.brown,
+          }}
+        >
+          Payment configuration
+          could not be loaded.
+        </Text>
+
+        <Text
+          style={{
+            marginTop: 8,
+            fontFamily:
+              FONTS.body,
+            fontSize: 12,
+            lineHeight: 18,
+            textAlign: 'center',
+            color:
+              COLORS.brownSoft,
+          }}
+        >
+          {stripeConfigError}
+        </Text>
       </View>
     );
   }
 
-  const isVendor = user?.role === 'producer';
+  return (
+    <View
+      style={{
+        flex: 1,
+        backgroundColor:
+          COLORS.cream,
+        alignItems:
+          'center',
+        justifyContent:
+          'center',
+      }}
+    >
+      <ActivityIndicator
+        color={
+          COLORS.forest
+        }
+      />
+    </View>
+  );
+}
+
+  // ===================================================
+  // USER TYPE
+  // ===================================================
+
+  const isVendor =
+    user?.role ===
+    'producer';
+
+
+  // ===================================================
+  // ROOT NAVIGATION
+  // ===================================================
 
   return (
     <SafeAreaProvider>
-      <StripeProvider publishableKey={STRIPE_KEY}>
-        <StatusBar style="dark" backgroundColor={COLORS.cream} />
-<NavigationContainer>
-  <Stack.Navigator
-    screenOptions={{
-      headerShown: false,
-    }}
-  >
-    <Stack.Screen name="Welcome">
-      {props => (
-        <WelcomeScreen
-          {...props}
+      <StripeProvider
+        publishableKey={
+          stripeKey
+        }
+      >
+        <StatusBar
+          style="dark"
+          backgroundColor={
+            COLORS.cream
+          }
         />
-      )}
-    </Stack.Screen>
 
-    <Stack.Screen name="Auth">
-      {props => (
-        <AuthScreen
-          {...props}
-          API={API}
-          setToken={setToken}
-          setUser={setUser}
-        />
-      )}
-    </Stack.Screen>
+        <NavigationContainer>
+          <Stack.Navigator
+            screenOptions={{
+              headerShown:
+                false,
+            }}
+          >
+            {/* =========================================
+                WELCOME
+            ========================================= */}
 
-    {token && isVendor && (
-      <>
-        <Stack.Screen name="VendorMain">
-          {props => (
-            <VendorTabs
-              {...props}
-              token={token}
-              setToken={setToken}
-              user={user}
-              setUser={setUser}
-            />
-          )}
-        </Stack.Screen>
+            <Stack.Screen
+              name="Welcome"
+            >
+              {props => (
+                <WelcomeScreen
+                  {...props}
+                />
+              )}
+            </Stack.Screen>
 
-        <Stack.Screen name="VendorStoreSetup">
-          {props => (
-            <VendorStoreSetupScreen
-              {...props}
-              API={API}
-              token={token}
-            />
-          )}
-        </Stack.Screen>
 
-        <Stack.Screen name="VendorAddProduct">
-          {props => (
-            <VendorAddProductScreen
-              {...props}
-              API={API}
-              token={token}
-            />
-          )}
-        </Stack.Screen>
+            {/* =========================================
+                AUTH
+            ========================================= */}
 
-        <Stack.Screen name="VendorEditProduct">
-          {props => (
-            <VendorEditProductScreen
-              {...props}
-              API={API}
-              token={token}
-            />
-          )}
-        </Stack.Screen>
+            <Stack.Screen
+              name="Auth"
+            >
+              {props => (
+                <AuthScreen
+                  {...props}
 
-        <Stack.Screen name="VendorEditStore">
-          {props => (
-            <VendorEditStoreScreen
-              {...props}
-              API={API}
-              token={token}
-            />
-          )}
-        </Stack.Screen>
-      </>
-    )}
+                  API={API}
 
-    {token && !isVendor && (
-      <>
-        <Stack.Screen name="Main">
-          {props => (
-            <CustomerTabs
-              {...props}
-              token={token}
-              setToken={setToken}
-              user={user}
-              setUser={setUser}
-              cart={cart}
-              setCart={setCart}
-            />
-          )}
-        </Stack.Screen>
+                  setToken={
+                    setToken
+                  }
 
-        <Stack.Screen name="Producer">
-          {props => (
-            <ProducerScreen
-              {...props}
-              API={API}
-              token={token}
-              cart={cart}
-              setCart={setCart}
-            />
-          )}
-        </Stack.Screen>
+                  setUser={
+                    setUser
+                  }
+                />
+              )}
+            </Stack.Screen>
 
-        <Stack.Screen name="ProductDetail">
-          {props => (
-            <ProductDetailScreen
-              {...props}
-              cart={cart}
-              setCart={setCart}
-            />
-          )}
-        </Stack.Screen>
 
-        <Stack.Screen name="OrderConfirmation">
-          {props => (
-            <OrderConfirmationScreen
-              {...props}
-            />
-          )}
-        </Stack.Screen>
+            {/* =========================================
+                VENDOR ROUTES
+            ========================================= */}
 
-        <Stack.Screen name="OrderDetail">
-          {props => (
-            <OrderDetailScreen
-              {...props}
-            />
-          )}
-        </Stack.Screen>
+            {token &&
+              isVendor && (
+                <>
+                  <Stack.Screen
+                    name="VendorMain"
+                  >
+                    {props => (
+                      <VendorTabs
+                        {...props}
 
-        <Stack.Screen name="LeaveReview">
-          {props => (
-            <LeaveReviewScreen
-              {...props}
-              API={API}
-              token={token}
-            />
-          )}
-        </Stack.Screen>
+                        token={
+                          token
+                        }
 
-        <Stack.Screen name="Favorites">
-          {props => (
-            <FavoritesScreen
-              {...props}
-              API={API}
-              token={token}
-              user={user}
-              cart={cart}
-            />
-          )}
-        </Stack.Screen>
+                        setToken={
+                          setToken
+                        }
 
-        <Stack.Screen name="Settings">
-          {props => (
-            <SettingsScreen
-              {...props}
-              API={API}
-              token={token}
-              user={user}
-              setUser={setUser}
-              cart={cart}
-            />
-          )}
-        </Stack.Screen>
-      </>
-    )}
-  </Stack.Navigator>
-</NavigationContainer>
-    </StripeProvider>
+                        user={
+                          user
+                        }
+
+                        setUser={
+                          setUser
+                        }
+                      />
+                    )}
+                  </Stack.Screen>
+
+
+                  <Stack.Screen
+                    name="VendorStoreSetup"
+                  >
+                    {props => (
+                      <VendorStoreSetupScreen
+                        {...props}
+
+                        API={API}
+
+                        token={
+                          token
+                        }
+                      />
+                    )}
+                  </Stack.Screen>
+
+
+                  <Stack.Screen
+                    name="VendorAddProduct"
+                  >
+                    {props => (
+                      <VendorAddProductScreen
+                        {...props}
+
+                        API={API}
+
+                        token={
+                          token
+                        }
+                      />
+                    )}
+                  </Stack.Screen>
+
+
+                  <Stack.Screen
+                    name="VendorEditProduct"
+                  >
+                    {props => (
+                      <VendorEditProductScreen
+                        {...props}
+
+                        API={API}
+
+                        token={
+                          token
+                        }
+                      />
+                    )}
+                  </Stack.Screen>
+
+
+                  <Stack.Screen
+                    name="VendorEditStore"
+                  >
+                    {props => (
+                      <VendorEditStoreScreen
+                        {...props}
+
+                        API={API}
+
+                        token={
+                          token
+                        }
+                      />
+                    )}
+                  </Stack.Screen>
+                </>
+              )}
+
+
+            {/* =========================================
+                CUSTOMER ROUTES
+            ========================================= */}
+
+            {token &&
+              !isVendor && (
+                <>
+                  {/* MAIN BOTTOM TABS */}
+
+                  <Stack.Screen
+                    name="Main"
+                  >
+                    {props => (
+                      <CustomerTabs
+                        {...props}
+
+                        token={
+                          token
+                        }
+
+                        setToken={
+                          setToken
+                        }
+
+                        user={
+                          user
+                        }
+
+                        setUser={
+                          setUser
+                        }
+
+                        cart={
+                          cart
+                        }
+
+                        setCart={
+                          setCart
+                        }
+                      />
+                    )}
+                  </Stack.Screen>
+
+
+                  {/* PRODUCER */}
+
+                  <Stack.Screen
+                    name="Producer"
+                  >
+                    {props => (
+                      <ProducerScreen
+                        {...props}
+
+                        API={API}
+
+                        token={
+                          token
+                        }
+
+                        cart={
+                          cart
+                        }
+
+                        setCart={
+                          setCart
+                        }
+                      />
+                    )}
+                  </Stack.Screen>
+
+
+                  {/* PRODUCT DETAIL */}
+
+                  <Stack.Screen
+                    name="ProductDetail"
+                  >
+                    {props => (
+                      <ProductDetailScreen
+                        {...props}
+
+                        cart={
+                          cart
+                        }
+
+                        setCart={
+                          setCart
+                        }
+                      />
+                    )}
+                  </Stack.Screen>
+
+
+                  {/* ORDER CONFIRMATION */}
+
+                  <Stack.Screen
+                    name="OrderConfirmation"
+                  >
+                    {props => (
+                      <OrderConfirmationScreen
+                        {...props}
+                      />
+                    )}
+                  </Stack.Screen>
+
+
+                  {/* ORDER DETAIL */}
+
+                  <Stack.Screen
+                    name="OrderDetail"
+                  >
+                    {props => (
+                      <OrderDetailScreen
+                        {...props}
+                      />
+                    )}
+                  </Stack.Screen>
+
+
+                  {/* LEAVE REVIEW */}
+
+                  <Stack.Screen
+                    name="LeaveReview"
+                  >
+                    {props => (
+                      <LeaveReviewScreen
+                        {...props}
+
+                        API={API}
+
+                        token={
+                          token
+                        }
+                      />
+                    )}
+                  </Stack.Screen>
+
+
+                  {/* FAVORITES */}
+
+                  <Stack.Screen
+                    name="Favorites"
+                  >
+                    {props => (
+                      <FavoritesScreen
+                        {...props}
+
+                        API={API}
+
+                        token={
+                          token
+                        }
+
+                        user={
+                          user
+                        }
+
+                        cart={
+                          cart
+                        }
+                      />
+                    )}
+                  </Stack.Screen>
+
+
+                  {/* SETTINGS */}
+
+                  <Stack.Screen
+                    name="Settings"
+                  >
+                    {props => (
+                      <SettingsScreen
+                        {...props}
+
+                        API={API}
+
+                        token={
+                          token
+                        }
+
+                        user={
+                          user
+                        }
+
+                        setUser={
+                          setUser
+                        }
+
+                        cart={
+                          cart
+                        }
+                      />
+                    )}
+                  </Stack.Screen>
+                </>
+              )}
+          </Stack.Navigator>
+        </NavigationContainer>
+      </StripeProvider>
     </SafeAreaProvider>
   );
 }

@@ -90,27 +90,68 @@ def check_prohibited(name: str, description: str = "") -> bool:
 
 
 class CreateProductRequest(BaseModel):
-    name: str
+    name: str = Field(
+        min_length=1,
+        max_length=200,
+    )
+
     description: Optional[str] = None
+
     category: str
-    price: float
-    unit: str
-    quantity_available: int = 0
+
+    price: float = Field(
+        gt=0,
+    )
+
+    unit: str = Field(
+        min_length=1,
+        max_length=100,
+    )
+
+    quantity_available: int = Field(
+        default=0,
+        ge=0,
+    )
+
     image_url: Optional[str] = None
-    tags: List[str] = Field(default_factory=list)
+
+    tags: List[str] = Field(
+        default_factory=list,
+    )
 
 
 class UpdateProductRequest(BaseModel):
-    name: Optional[str] = None
-    description: Optional[str] = None
-    category: Optional[str] = None
-    price: Optional[float] = None
-    unit: Optional[str] = None
-    quantity_available: Optional[int] = None
-    image_url: Optional[str] = None
-    tags: Optional[List[str]] = None
-    is_active: Optional[bool] = None
+    name: Optional[str] = Field(
+        default=None,
+        min_length=1,
+        max_length=200,
+    )
 
+    description: Optional[str] = None
+
+    category: Optional[str] = None
+
+    price: Optional[float] = Field(
+        default=None,
+        gt=0,
+    )
+
+    unit: Optional[str] = Field(
+        default=None,
+        min_length=1,
+        max_length=100,
+    )
+
+    quantity_available: Optional[int] = Field(
+        default=None,
+        ge=0,
+    )
+
+    image_url: Optional[str] = None
+
+    tags: Optional[List[str]] = None
+
+    is_active: Optional[bool] = None
 
 @router.post("/")
 def create_product(
@@ -336,12 +377,6 @@ def update_product(
             detail="Quantity cannot be negative",
         )
 
-    if req.name is not None or req.description is not None:
-        if check_prohibited(req.name or "", req.description or ""):
-            raise HTTPException(
-                status_code=400,
-                detail="Prohibited item keywords detected",
-            )
 
     fields = {
         key: value
@@ -361,18 +396,59 @@ def update_product(
     try:
         cur.execute(
             """
-            SELECT pr.id
+            SELECT
+                pr.id,
+                pr.name,
+                pr.description
             FROM products pr
-            JOIN producers p ON pr.producer_id = p.id
-            WHERE pr.id = %s AND p.user_id = %s
+            JOIN producers p
+            ON pr.producer_id = p.id
+            WHERE pr.id = %s
+            AND p.user_id = %s
             """,
-            (product_id, user["id"]),
+            (
+                product_id,
+                user["id"],
+            ),
         )
+
+        existing_product = cur.fetchone()
+
+        if not existing_product:
+            raise HTTPException(
+                status_code=403,
+                detail="Product not found or not yours",
+            )
 
         if not cur.fetchone():
             raise HTTPException(
                 status_code=403,
                 detail="Product not found or not yours",
+            )
+
+        existing_id, existing_name, existing_description = (
+            existing_product
+        )
+
+        final_name = (
+            req.name
+            if req.name is not None
+            else existing_name
+        )
+
+        final_description = (
+            req.description
+            if req.description is not None
+            else existing_description
+        )
+
+        if check_prohibited(
+            final_name or "",
+            final_description or "",
+        ):
+            raise HTTPException(
+                status_code=400,
+                detail="Prohibited item keywords detected",
             )
 
         set_clause = ", ".join(
@@ -464,6 +540,7 @@ def get_producer_products(
             WHERE producer_id = %s
               AND is_active = TRUE
               AND quantity_available > 0
+              AND COALESCE(is_prohibited, FALSE) = FALSE
         """
         params = [producer_id]
 

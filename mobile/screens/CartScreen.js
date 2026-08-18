@@ -1,4 +1,8 @@
-import React, { useMemo, useState } from 'react';
+import React, {
+  useEffect,
+  useMemo,
+  useState,
+} from 'react';
 
 import {
   View,
@@ -13,10 +17,17 @@ import {
   ActivityIndicator,
 } from 'react-native';
 
-import { SafeAreaView } from 'react-native-safe-area-context';
+import {
+  SafeAreaView,
+} from 'react-native-safe-area-context';
 
-import { Ionicons } from '@expo/vector-icons';
-import { useStripe } from '@stripe/stripe-react-native';
+import {
+  Ionicons,
+} from '@expo/vector-icons';
+
+import {
+  useStripe,
+} from '@stripe/stripe-react-native';
 
 import {
   COLORS,
@@ -24,7 +35,10 @@ import {
   SHADOWS,
 } from '../constants/theme';
 
-import { IMAGE_ASSETS } from '../constants/assets';
+import {
+  IMAGE_ASSETS,
+} from '../constants/assets';
+
 
 export default function CartScreen({
   API,
@@ -34,36 +48,123 @@ export default function CartScreen({
   setCart,
   navigation,
 }) {
-  const [fulfillmentType, setFulfillmentType] =
-    useState('pickup');
+  // ===================================================
+  // FULFILLMENT
+  // ===================================================
 
-  const [loading, setLoading] = useState(false);
+  const cartFulfillmentType =
+    cart?.fulfillment_type ||
+    cart?.items?.[0]?.fulfillment_type ||
+    null;
+
+  const [
+    fulfillmentType,
+    setFulfillmentType,
+  ] = useState(
+    cartFulfillmentType
+  );
+
+
+  /*
+   * Determine which fulfillment methods are actually
+   * available.
+   *
+   * The selected fulfillment method from the product
+   * page also counts as available because that selection
+   * was validated before the product entered the cart.
+   */
+
+  const fulfillmentPickup =
+    cart?.fulfillment_pickup === true ||
+    cartFulfillmentType === 'pickup';
+
+  const fulfillmentDelivery =
+    cart?.fulfillment_delivery === true ||
+    cartFulfillmentType === 'delivery';
+
+  const fulfillmentShipping =
+    cart?.fulfillment_shipping === true ||
+    cartFulfillmentType === 'shipping';
+
+
+  // ===================================================
+  // LOCAL STATE
+  // ===================================================
+
+  const [
+    loading,
+    setLoading,
+  ] = useState(false);
+
+
+  // ===================================================
+  // STRIPE
+  // ===================================================
 
   const {
     initPaymentSheet,
     presentPaymentSheet,
   } = useStripe();
 
+
+  // ===================================================
+  // KEEP CART + LOCAL FULFILLMENT IN SYNC
+  // ===================================================
+
+  useEffect(() => {
+    if (
+      cartFulfillmentType &&
+      cartFulfillmentType !==
+        fulfillmentType
+    ) {
+      setFulfillmentType(
+        cartFulfillmentType
+      );
+    }
+  }, [
+    cartFulfillmentType,
+    fulfillmentType,
+  ]);
+
+
+  // ===================================================
+  // TOTALS
+  // ===================================================
+
   const totals = useMemo(() => {
     const subtotal =
       cart?.items?.reduce(
         (sum, item) =>
           sum +
-          Number(item.price || 0) *
-            Number(item.quantity || 0),
+          Number(
+            item.price || 0
+          ) *
+            Number(
+              item.quantity || 0
+            ),
         0
       ) || 0;
 
     const tax =
-      subtotal * Number(cart?.tax_rate || 0.08375);
+      subtotal *
+      Number(
+        cart?.tax_rate ||
+          0.08375
+      );
 
     const deliveryFee =
-      fulfillmentType === 'delivery'
-        ? Number(cart?.delivery_fee || 0)
+      fulfillmentType ===
+      'delivery'
+        ? Number(
+            cart?.delivery_fee ||
+              0
+          )
         : 0;
 
     const total =
-      subtotal + tax + deliveryFee;
+      subtotal +
+      tax +
+      deliveryFee;
 
     return {
       subtotal,
@@ -71,126 +172,331 @@ export default function CartScreen({
       deliveryFee,
       total,
     };
-  }, [cart, fulfillmentType]);
+  }, [
+    cart,
+    fulfillmentType,
+  ]);
+
+
+  // ===================================================
+  // CART COUNT
+  // ===================================================
 
   const cartCount =
     cart?.items?.reduce(
       (total, item) =>
-        total + Number(item.quantity || 0),
+        total +
+        Number(
+          item.quantity || 0
+        ),
       0
     ) || 0;
 
-  function updateQuantity(index, delta) {
-    if (!cart?.items?.length) {
+
+  // ===================================================
+  // QUANTITY
+  // ===================================================
+
+  function updateQuantity(
+    index,
+    delta
+  ) {
+    if (
+      !cart?.items?.length
+    ) {
       return;
     }
 
-    const items = cart.items.map((item) => ({
-      ...item,
-    }));
-
-    items[index].quantity += delta;
-
-    if (items[index].quantity <= 0) {
-      items.splice(index, 1);
-    }
-
-    if (!items.length) {
-      setCart(null);
-      return;
-    }
-
-    setCart({
-      ...cart,
-      items,
-    });
-  }
-
-  function removeItem(index) {
-    if (!cart?.items?.length) {
-      return;
-    }
-
-    const items = cart.items.filter(
-      (_, itemIndex) => itemIndex !== index
-    );
-
-    if (!items.length) {
-      setCart(null);
-      return;
-    }
-
-    setCart({
-      ...cart,
-      items,
-    });
-  }
-
-  async function doCheckout() {
-    if (!token || token === 'guest') {
-      Alert.alert(
-        'Sign in required',
-        'Please sign in or create an account to complete checkout.',
-        [
-          {
-            text: 'Not Now',
-            style: 'cancel',
-          },
-          {
-            text: 'Sign In',
-            onPress: () =>
-              navigation
-                .getParent()
-                ?.navigate('Auth'),
-          },
-        ]
+    const items =
+      cart.items.map(
+        (item) => ({
+          ...item,
+        })
       );
 
+    items[index].quantity +=
+      delta;
+
+    if (
+      items[index].quantity <=
+      0
+    ) {
+      items.splice(
+        index,
+        1
+      );
+    }
+
+    if (!items.length) {
+      setCart(null);
       return;
     }
 
-    if (!cart?.items?.length) {
+    setCart({
+      ...cart,
+      items,
+    });
+  }
+
+
+  // ===================================================
+  // REMOVE ITEM
+  // ===================================================
+
+  function removeItem(index) {
+    if (
+      !cart?.items?.length
+    ) {
       return;
     }
 
-    setLoading(true);
+    const items =
+      cart.items.filter(
+        (_, itemIndex) =>
+          itemIndex !== index
+      );
 
-    try {
+    if (!items.length) {
+      setCart(null);
+      return;
+    }
+
+    setCart({
+      ...cart,
+      items,
+    });
+  }
+function getSelectedFulfillment() {
+  /*
+   * Only return a fulfillment method that the
+   * shopper actually selected.
+   *
+   * We intentionally DO NOT automatically choose
+   * pickup, delivery, or shipping merely because
+   * the producer offers it.
+   *
+   * This allows quick-add products to enter the
+   * cart without forcing a fulfillment choice.
+   */
+
+  if (fulfillmentType) {
+    return fulfillmentType;
+  }
+
+  if (cart?.fulfillment_type) {
+    return cart.fulfillment_type;
+  }
+
+  if (
+    cart?.items?.[0]
+      ?.fulfillment_type
+  ) {
+    return cart.items[0]
+      .fulfillment_type;
+  }
+
+  return null;
+}
+  async function doCheckout() {
+  // ===================================================
+  // REQUIRE SIGN IN
+  // ===================================================
+
+  if (!token || token === 'guest') {
+    Alert.alert(
+      'Sign in required',
+      'Please sign in or create an account to complete checkout.',
+      [
+        {
+          text: 'Not Now',
+          style: 'cancel',
+        },
+        {
+          text: 'Sign In',
+          onPress: () =>
+            navigation
+              .getParent()
+              ?.navigate('Auth'),
+        },
+      ]
+    );
+
+    return;
+  }
+
+
+  // ===================================================
+  // REQUIRE CART ITEMS
+  // ===================================================
+
+  if (!cart?.items?.length) {
+    Alert.alert(
+      'Cart is empty',
+      'Add an item before checking out.'
+    );
+
+    return;
+  }
+
+
+  // ===================================================
+  // RESOLVE FULFILLMENT
+  // ===================================================
+
+  const checkoutFulfillment =
+  getSelectedFulfillment();
+
+
+  if (!checkoutFulfillment) {
+    Alert.alert(
+      'Choose fulfillment',
+      'Please select pickup, delivery, or shipping before continuing to payment.'
+    );
+
+    return;
+  }
+
+
+  // ===================================================
+  // KEEP STATE + CART SYNCHRONIZED
+  // ===================================================
+
+  if (
+    fulfillmentType !==
+    checkoutFulfillment
+  ) {
+    setFulfillmentType(
+      checkoutFulfillment
+    );
+  }
+
+
+
+    if (
+    cart?.fulfillment_type !==
+    checkoutFulfillment
+  ) {
+    setCart({
+      ...cart,
+      fulfillment_type:
+        checkoutFulfillment,
+    });
+  }
+
+
+  // ===================================================
+  // BUILD PAYMENT PAYLOAD
+  // ===================================================
+
+  const paymentPayload = {
+    producer_id:
+      cart.producer_id,
+
+    fulfillment_type:
+      checkoutFulfillment,
+
+    items:
+      cart.items.map(
+        (item) => ({
+          product_id:
+            item.product_id ??
+            item.id,
+
+          quantity:
+            Number(
+              item.quantity || 1
+            ),
+        })
+      ),
+  };
+
+  // ===================================================
+  // DEBUG
+  // ===================================================
+
+  console.log(
+    'CHECKOUT FULFILLMENT:',
+    checkoutFulfillment
+  );
+
+  console.log(
+    'PAYMENT PAYLOAD:',
+    paymentPayload
+  );
+
+
+  // ===================================================
+  // BEGIN CHECKOUT
+  // ===================================================
+
+  setLoading(true);
+
+  try {
       const paymentResponse = await fetch(
         `${API}/api/stripe/create-payment-intent`,
         {
           method: 'POST',
+
           headers: {
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json',
+            Accept: 'application/json',
+            Authorization: 
+              `Bearer ${token}`,
+            'Content-Type': 
+              'application/json',
           },
-          body: JSON.stringify({
-            amount: Math.round(
-              totals.total * 100
-            ),
-            producer_id: cart.producer_id,
-          }),
+
+          body: JSON.stringify(
+            paymentPayload
+          ),
         }
       );
 
       const paymentData =
-        await paymentResponse.json();
+        await paymentResponse
+          .json()
+          .catch(() => null);
+
+      console.log(
+        'PAYMENT INTENT RESPONSE:',
+        paymentResponse.status,
+        JSON.stringify(paymentData, null, 2)
+      );
 
       if (!paymentResponse.ok) {
         throw new Error(
-          paymentData.detail ||
-            'Payment setup failed.'
+          paymentData?.detail ||
+            'Unable to prepare payment.'
         );
       }
 
-      const { error: initializationError } =
-        await initPaymentSheet({
-          merchantDisplayName:
-            'From Our Place',
-          paymentIntentClientSecret:
-            paymentData.client_secret,
-          style: 'automatic',
-        });
+      console.log(
+        'SERVER CHECKOUT TOTALS:',
+        {
+          subtotal:
+            paymentData?.subtotal,
+          tax:
+            paymentData?.tax,
+          deliveryFee:
+            paymentData?.delivery_fee,
+          total:
+            paymentData?.total,
+        }
+      );
+      const {
+        error: initError,
+      } = await initPaymentSheet({
+        merchantDisplayName:
+          'From Our Place',
+
+        paymentIntentClientSecret:
+          paymentData.client_secret,
+
+        returnURL:
+          'fromourplace://stripe-redirect',
+
+        style:
+          'automatic',
+      });
 
       if (initializationError) {
         throw new Error(
@@ -211,13 +517,26 @@ export default function CartScreen({
         return;
       }
 
+      console.log(
+        'PAYMENT INTENT PAYLOAD:',
+        JSON.stringify(
+          paymentPayload,
+          null,
+          2
+        )
+      );
+
       const orderResponse = await fetch(
         `${API}/api/orders/from-payment`,
         {
           method: 'POST',
           headers: {
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json',
+            Authorization: 
+              `Bearer ${token}`,
+            'Content-Type': 
+              'application/json',
+            'Accept': 
+              'application/json',
           },
           body: JSON.stringify({
             producer_id: cart.producer_id,
@@ -280,9 +599,14 @@ export default function CartScreen({
           selected &&
             styles.fulfillmentOptionActive,
         ]}
-        onPress={() =>
-          setFulfillmentType(key)
-        }
+        onPress={() => {
+          setFulfillmentType(key);
+
+          setCart({
+            ...cart,
+            fulfillment_type: key,
+          });
+        }}
       >
         <View
           style={[
@@ -433,7 +757,13 @@ export default function CartScreen({
 
             <View style={styles.fulfillmentCard}>
               <Text style={styles.sectionTitle}>
-                How would you like it?
+                How would you like to receive your goods?
+              </Text>
+
+              <Text style={styles.sectionSubtitle}>
+                {fulfillmentType
+                  ? 'Your selection will apply to this order.'
+                  : 'Please choose an available option before continuing to payment.'}
               </Text>
 
               <Text style={styles.sectionSubtitle}>
@@ -442,26 +772,32 @@ export default function CartScreen({
               </Text>
 
               <View style={styles.fulfillmentRow}>
-                {renderFulfillmentOption({
-                  key: 'pickup',
-                  title: 'Pickup',
-                  subtitle: 'Collect from the producer',
-                  icon: 'bag-handle-outline',
-                })}
+                {fulfillmentPickup
+                  ? renderFulfillmentOption({
+                      key: 'pickup',
+                      title: 'Pickup',
+                      subtitle: 'Collect from the producer',
+                      icon: 'bag-handle-outline',
+                    })
+                  : null}
 
-                {renderFulfillmentOption({
-                  key: 'delivery',
-                  title: 'Delivery',
-                  subtitle: 'Delivered to your address',
-                  icon: 'car-outline',
-                })}
+                {fulfillmentDelivery
+                  ? renderFulfillmentOption({
+                      key: 'delivery',
+                      title: 'Delivery',
+                      subtitle: 'Delivered to your address',
+                      icon: 'car-outline',
+                    })
+                  : null}
 
-                {renderFulfillmentOption({
-                  key: 'shipping',
-                  title: 'Shipping',
-                  subtitle: 'Shipped when available',
-                  icon: 'cube-outline',
-                })}
+                {fulfillmentShipping
+                  ? renderFulfillmentOption({
+                      key: 'shipping',
+                      title: 'Shipping',
+                      subtitle: 'Shipped when available',
+                      icon: 'cube-outline',
+                    })
+                  : null}
               </View>
             </View>
 

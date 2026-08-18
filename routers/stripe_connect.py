@@ -75,17 +75,19 @@ def get_publishable_key():
 # ============================================================
 
 class PaymentItem(BaseModel):
-    product_id: int
+    product_id: int = Field(
+        gt=0,
+    )
 
     quantity: int = Field(
         gt=0,
     )
 
 
-class CreatePaymentIntentRequest(
-    BaseModel
-):
-    producer_id: int
+class CreatePaymentIntentRequest(BaseModel):
+    producer_id: int = Field(
+        gt=0,
+    )
 
     fulfillment_type: str
 
@@ -94,34 +96,15 @@ class CreatePaymentIntentRequest(
 
 # ============================================================
 # CREATE PAYMENT INTENT
-#
-# IMPORTANT:
-# The client does NOT provide:
-#
-#   - price
-#   - subtotal
-#   - tax
-#   - delivery fee
-#   - total
-#   - Stripe amount
-#
-# All monetary values are calculated here from authoritative
-# database records.
 # ============================================================
 
-@router.post(
-    "/create-payment-intent"
-)
+@router.post("/create-payment-intent")
 def create_payment_intent(
     req: CreatePaymentIntentRequest,
     user=Depends(
         get_current_shopper
     ),
 ):
-    # --------------------------------------------------------
-    # BASIC REQUEST VALIDATION
-    # --------------------------------------------------------
-
     if not req.items:
         raise HTTPException(
             status_code=400,
@@ -140,22 +123,15 @@ def create_payment_intent(
     ):
         raise HTTPException(
             status_code=400,
-            detail=(
-                "Invalid fulfillment type"
-            ),
+            detail="Invalid fulfillment type",
         )
-
-
-    # --------------------------------------------------------
-    # DATABASE
-    # --------------------------------------------------------
 
     conn = get_conn()
     cur = conn.cursor()
 
     try:
         # ====================================================
-        # LOAD PRODUCER
+        # PRODUCER
         # ====================================================
 
         cur.execute(
@@ -182,9 +158,7 @@ def create_payment_intent(
         if not producer:
             raise HTTPException(
                 status_code=404,
-                detail=(
-                    "Producer not found"
-                ),
+                detail="Producer not found",
             )
 
         (
@@ -217,7 +191,7 @@ def create_payment_intent(
 
 
         # ====================================================
-        # AUTHORITATIVE FULFILLMENT VALIDATION
+        # FULFILLMENT VALIDATION
         # ====================================================
 
         if (
@@ -228,9 +202,8 @@ def create_payment_intent(
             raise HTTPException(
                 status_code=400,
                 detail=(
-                    "Pickup is not "
-                    "available for this "
-                    "producer"
+                    "Pickup is not available "
+                    "for this producer"
                 ),
             )
 
@@ -242,9 +215,8 @@ def create_payment_intent(
             raise HTTPException(
                 status_code=400,
                 detail=(
-                    "Delivery is not "
-                    "available for this "
-                    "producer"
+                    "Delivery is not available "
+                    "for this producer"
                 ),
             )
 
@@ -256,9 +228,8 @@ def create_payment_intent(
             raise HTTPException(
                 status_code=400,
                 detail=(
-                    "Shipping is not "
-                    "available for this "
-                    "producer"
+                    "Shipping is not available "
+                    "for this producer"
                 ),
             )
 
@@ -279,16 +250,13 @@ def create_payment_intent(
             raise HTTPException(
                 status_code=400,
                 detail=(
-                    "Duplicate products "
-                    "in cart"
+                    "Duplicate products in cart"
                 ),
             )
 
 
         # ====================================================
-        # LOAD AUTHORITATIVE PRODUCT DATA
-        #
-        # NEVER trust prices sent from the client.
+        # AUTHORITATIVE PRODUCT DATA
         # ====================================================
 
         placeholders = ", ".join(
@@ -310,9 +278,7 @@ def create_payment_intent(
             product_ids,
         )
 
-        product_rows = (
-            cur.fetchall()
-        )
+        product_rows = cur.fetchall()
 
         if (
             len(product_rows)
@@ -333,24 +299,20 @@ def create_payment_intent(
 
 
         # ====================================================
-        # CALCULATE AUTHORITATIVE SUBTOTAL
+        # AUTHORITATIVE SUBTOTAL
         # ====================================================
 
         subtotal = 0.0
 
         for item in req.items:
-            product = (
-                products_by_id.get(
-                    item.product_id
-                )
+            product = products_by_id.get(
+                item.product_id
             )
 
             if not product:
                 raise HTTPException(
                     status_code=400,
-                    detail=(
-                        "Product not found"
-                    ),
+                    detail="Product not found",
                 )
 
             (
@@ -363,10 +325,6 @@ def create_payment_intent(
             ) = product
 
 
-            # ------------------------------------------------
-            # PREVENT MIXED-VENDOR CHECKOUT
-            # ------------------------------------------------
-
             if (
                 product_producer_id
                 != req.producer_id
@@ -374,16 +332,11 @@ def create_payment_intent(
                 raise HTTPException(
                     status_code=400,
                     detail=(
-                        "All products must "
-                        "belong to the same "
-                        "producer"
+                        "All products must belong "
+                        "to the same producer"
                     ),
                 )
 
-
-            # ------------------------------------------------
-            # PRODUCT AVAILABILITY
-            # ------------------------------------------------
 
             if (
                 not product_active
@@ -398,10 +351,6 @@ def create_payment_intent(
                 )
 
 
-            # ------------------------------------------------
-            # INVENTORY VALIDATION
-            # ------------------------------------------------
-
             if (
                 item.quantity
                 > quantity_available
@@ -409,18 +358,12 @@ def create_payment_intent(
                 raise HTTPException(
                     status_code=400,
                     detail=(
-                        f"Only "
-                        f"{quantity_available} "
-                        f"units are available "
-                        f"for product "
-                        f"{product_id}"
+                        f"Only {quantity_available} "
+                        f"units are available for "
+                        f"product {product_id}"
                     ),
                 )
 
-
-            # ------------------------------------------------
-            # AUTHORITATIVE LINE TOTAL
-            # ------------------------------------------------
 
             subtotal += (
                 float(product_price)
@@ -429,50 +372,45 @@ def create_payment_intent(
 
 
         # ====================================================
-        # AUTHORITATIVE TAX
+        # AUTHORITATIVE TOTALS
         # ====================================================
+
+        subtotal = round(
+            subtotal,
+            2,
+        )
 
         tax_rate_value = float(
             tax_rate or 0
         )
 
-        tax = (
-            subtotal
-            * tax_rate_value
+        tax = round(
+            subtotal * tax_rate_value,
+            2,
         )
 
-
-        # ====================================================
-        # AUTHORITATIVE DELIVERY FEE
-        # ====================================================
 
         if (
             req.fulfillment_type
             == "delivery"
         ):
-            delivery_fee_value = float(
-                delivery_fee or 0
+            delivery_fee_value = round(
+                float(
+                    delivery_fee or 0
+                ),
+                2,
             )
+
         else:
             delivery_fee_value = 0.0
 
 
-        # ====================================================
-        # AUTHORITATIVE TOTAL
-        # ====================================================
-
-        total = (
+        total = round(
             subtotal
             + tax
-            + delivery_fee_value
+            + delivery_fee_value,
+            2,
         )
-
-
-        # ====================================================
-        # STRIPE AMOUNT
-        #
-        # Stripe expects USD in cents.
-        # ====================================================
 
         amount_cents = round(
             total * 100
@@ -489,7 +427,7 @@ def create_payment_intent(
 
 
         # ====================================================
-        # SHOPPER / STRIPE CUSTOMER
+        # STRIPE CUSTOMER
         # ====================================================
 
         cur.execute(
@@ -507,30 +445,32 @@ def create_payment_intent(
 
         shopper = cur.fetchone()
 
+        if not shopper:
+            raise HTTPException(
+                status_code=404,
+                detail="Shopper not found",
+            )
+
         stripe_customer_id = (
             shopper[0]
-            if shopper
-            else None
         )
 
         shopper_email = (
             shopper[1]
-            if shopper
-            else ""
+            or ""
         )
 
-
-        # ====================================================
-        # CREATE STRIPE CUSTOMER IF NEEDED
-        # ====================================================
 
         if not stripe_customer_id:
             customer = (
                 stripe.Customer.create(
-                    email=shopper_email,
+                    email=
+                        shopper_email,
+
                     metadata={
                         "platform":
                             "from_our_place",
+
                         "shopper_id":
                             str(
                                 user["id"]
@@ -560,9 +500,6 @@ def create_payment_intent(
 
         # ====================================================
         # PAYMENT INTENT
-        #
-        # IMPORTANT:
-        # amount_cents was calculated entirely on the server.
         # ====================================================
 
         intent_kwargs = {
@@ -624,7 +561,7 @@ def create_payment_intent(
 
 
         # ====================================================
-        # RETURN AUTHORITATIVE CHECKOUT DATA
+        # RETURN AUTHORITATIVE TOTALS
         # ====================================================
 
         return {
@@ -641,32 +578,57 @@ def create_payment_intent(
                 req.fulfillment_type,
 
             "subtotal":
-                round(
-                    subtotal,
-                    2,
-                ),
+                subtotal,
 
             "tax":
-                round(
-                    tax,
-                    2,
-                ),
+                tax,
 
             "delivery_fee":
-                round(
-                    delivery_fee_value,
-                    2,
-                ),
+                delivery_fee_value,
 
             "total":
-                round(
-                    total,
-                    2,
-                ),
+                total,
 
             "amount":
                 amount_cents,
         }
+
+
+    except HTTPException:
+        conn.rollback()
+        raise
+
+
+    except stripe.error.StripeError as e:
+        conn.rollback()
+
+        print(
+            "STRIPE PAYMENT INTENT ERROR:",
+            e,
+        )
+
+        raise HTTPException(
+            status_code=502,
+            detail=(
+                "Unable to prepare payment"
+            ),
+        ) from e
+
+
+    except Exception as e:
+        conn.rollback()
+
+        print(
+            "PAYMENT INTENT ERROR:",
+            e,
+        )
+
+        raise HTTPException(
+            status_code=500,
+            detail=(
+                "Unable to prepare payment"
+            ),
+        )
 
 
     finally:
@@ -682,7 +644,7 @@ def create_payment_intent(
 def start_onboarding(
     user=Depends(
         get_current_producer
-    )
+    ),
 ):
     conn = get_conn()
     cur = conn.cursor()
@@ -727,9 +689,9 @@ def start_onboarding(
             }
 
 
-        # ----------------------------------------------------
-        # CREATE CONNECT ACCOUNT IF NEEDED
-        # ----------------------------------------------------
+        # ====================================================
+        # CREATE CONNECT ACCOUNT
+        # ====================================================
 
         if not stripe_acct:
             account = (
@@ -738,7 +700,9 @@ def start_onboarding(
 
                     metadata={
                         "producer_id":
-                            producer_id,
+                            str(
+                                producer_id
+                            ),
                     },
                 )
             )
@@ -762,9 +726,9 @@ def start_onboarding(
             conn.commit()
 
 
-        # ----------------------------------------------------
-        # CREATE ONBOARDING LINK
-        # ----------------------------------------------------
+        # ====================================================
+        # ONBOARDING LINK
+        # ====================================================
 
         link = (
             stripe.AccountLink.create(
@@ -786,6 +750,7 @@ def start_onboarding(
             )
         )
 
+
         return {
             "onboarding_url":
                 link.url,
@@ -793,6 +758,29 @@ def start_onboarding(
             "complete":
                 False,
         }
+
+
+    except HTTPException:
+        conn.rollback()
+        raise
+
+
+    except stripe.error.StripeError as e:
+        conn.rollback()
+
+        print(
+            "STRIPE ONBOARDING ERROR:",
+            e,
+        )
+
+        raise HTTPException(
+            status_code=502,
+            detail=(
+                "Unable to start "
+                "Stripe onboarding"
+            ),
+        ) from e
+
 
     finally:
         cur.close()
@@ -807,7 +795,7 @@ def start_onboarding(
 def get_connect_status(
     user=Depends(
         get_current_producer
-    )
+    ),
 ):
     conn = get_conn()
     cur = conn.cursor()
@@ -843,6 +831,9 @@ def get_connect_status(
 
             "onboarding_complete":
                 False,
+
+            "charges_enabled":
+                False,
         }
 
 
@@ -859,13 +850,13 @@ def get_connect_status(
         )
 
 
-        # ----------------------------------------------------
-        # SYNC COMPLETION TO DATABASE
-        # ----------------------------------------------------
+        # ====================================================
+        # SYNC DATABASE BOTH DIRECTIONS
+        # ====================================================
 
         if (
             complete
-            and not row[1]
+            != bool(row[1])
         ):
             conn2 = get_conn()
             cur2 = conn2.cursor()
@@ -874,10 +865,11 @@ def get_connect_status(
                 cur2.execute(
                     """
                     UPDATE producers
-                    SET stripe_onboarding_complete = TRUE
+                    SET stripe_onboarding_complete = %s
                     WHERE user_id = %s
                     """,
                     (
+                        complete,
                         user["id"],
                     ),
                 )
@@ -902,17 +894,153 @@ def get_connect_status(
                 ),
         }
 
-    except stripe.error.StripeError:
+
+    except stripe.error.StripeError as e:
+        print(
+            "STRIPE STATUS ERROR:",
+            e,
+        )
+
         return {
             "connected":
                 True,
 
             "onboarding_complete":
-                bool(row[1]),
+                bool(
+                    row[1]
+                ),
 
             "charges_enabled":
                 False,
         }
+
+
+# ============================================================
+# FAILED PAYMENT ORDER CLEANUP
+# ============================================================
+
+def cancel_pending_orders_for_failed_payment(
+    payment_intent_id: str,
+    reason: str,
+):
+    """
+    Safely clean up any legacy pending order tied to a failed
+    or cancelled Stripe PaymentIntent.
+
+    The current checkout flow creates orders only after payment
+    succeeds, so normally there will be no matching pending
+    order. This protects legacy or edge-case records.
+    """
+
+    conn = get_conn()
+    cur = conn.cursor()
+
+    try:
+        # ====================================================
+        # LOCK MATCHING PENDING ORDERS
+        # ====================================================
+
+        cur.execute(
+            """
+            SELECT id
+            FROM orders
+            WHERE stripe_payment_intent_id = %s
+              AND status = 'pending'
+            FOR UPDATE
+            """,
+            (
+                payment_intent_id,
+            ),
+        )
+
+        order_ids = [
+            row[0]
+            for row
+            in cur.fetchall()
+        ]
+
+
+        for order_id in order_ids:
+            # ================================================
+            # RESTORE INVENTORY
+            # ================================================
+
+            cur.execute(
+                """
+                SELECT
+                    product_id,
+                    quantity
+                FROM order_items
+                WHERE order_id = %s
+                """,
+                (
+                    order_id,
+                ),
+            )
+
+            items = cur.fetchall()
+
+
+            for (
+                product_id,
+                quantity,
+            ) in items:
+                cur.execute(
+                    """
+                    UPDATE products
+                    SET quantity_available =
+                        quantity_available
+                        + %s
+                    WHERE id = %s
+                    """,
+                    (
+                        quantity,
+                        product_id,
+                    ),
+                )
+
+
+            # ================================================
+            # CANCEL ORDER
+            # ================================================
+
+            cur.execute(
+                """
+                UPDATE orders
+                SET
+                    status =
+                        'cancelled',
+
+                    cancel_reason =
+                        %s,
+
+                    cancelled_at =
+                        NOW(),
+
+                    updated_at =
+                        NOW()
+
+                WHERE id = %s
+                  AND status = 'pending'
+                """,
+                (
+                    reason,
+                    order_id,
+                ),
+            )
+
+
+        conn.commit()
+
+
+    except Exception:
+        conn.rollback()
+        raise
+
+
+    finally:
+        cur.close()
+        conn.close()
 
 
 # ============================================================
@@ -921,40 +1049,65 @@ def get_connect_status(
 
 @router.post("/webhook")
 async def stripe_webhook(
-    request: Request
+    request: Request,
 ):
+    # ========================================================
+    # WEBHOOK CONFIG CHECK
+    # ========================================================
+
+    if not STRIPE_WEBHOOK_SECRET:
+        raise HTTPException(
+            status_code=500,
+            detail=(
+                "Stripe webhook secret "
+                "not configured"
+            ),
+        )
+
+
     payload = (
         await request.body()
     )
 
-    sig = request.headers.get(
-        "stripe-signature",
-        "",
+    signature = (
+        request.headers.get(
+            "stripe-signature",
+            "",
+        )
     )
 
 
-    # --------------------------------------------------------
+    # ========================================================
     # VERIFY STRIPE SIGNATURE
-    # --------------------------------------------------------
+    # ========================================================
 
     try:
         event = (
-            stripe.Webhook
-            .construct_event(
+            stripe.Webhook.construct_event(
                 payload,
-                sig,
+                signature,
                 STRIPE_WEBHOOK_SECRET,
             )
         )
 
-    except Exception:
+    except Exception as e:
+        print(
+            "STRIPE WEBHOOK "
+            "SIGNATURE ERROR:",
+            e,
+        )
+
         raise HTTPException(
             status_code=400,
             detail=(
-                "Invalid webhook "
-                "signature"
+                "Invalid webhook signature"
             ),
-        )
+        ) from e
+
+
+    event_type = (
+        event["type"]
+    )
 
 
     # ========================================================
@@ -962,54 +1115,22 @@ async def stripe_webhook(
     # ========================================================
 
     if (
-        event["type"]
+        event_type
         == "account.updated"
     ):
         acct = (
             event["data"]["object"]
         )
 
-        if (
+        complete = bool(
             acct.get(
-                "charges_enabled"
-            )
-            and acct.get(
                 "details_submitted"
             )
-        ):
-            conn = get_conn()
-            cur = conn.cursor()
-
-            try:
-                cur.execute(
-                    """
-                    UPDATE producers
-                    SET stripe_onboarding_complete = TRUE
-                    WHERE stripe_account_id = %s
-                    """,
-                    (
-                        acct["id"],
-                    ),
-                )
-
-                conn.commit()
-
-            finally:
-                cur.close()
-                conn.close()
-
-
-    # ========================================================
-    # PAYMENT FAILED
-    # ========================================================
-
-    elif (
-        event["type"]
-        == "payment_intent.payment_failed"
-    ):
-        intent = (
-            event["data"]["object"]
+            and acct.get(
+                "charges_enabled"
+            )
         )
+
 
         conn = get_conn()
         cur = conn.cursor()
@@ -1017,26 +1138,68 @@ async def stripe_webhook(
         try:
             cur.execute(
                 """
-                UPDATE orders
-                SET
-                    status = 'cancelled',
-                    cancel_reason = 'Payment failed',
-                    cancelled_at = NOW()
-                WHERE stripe_payment_intent_id = %s
-                  AND status = 'pending'
+                UPDATE producers
+                SET stripe_onboarding_complete = %s
+                WHERE stripe_account_id = %s
                 """,
                 (
-                    intent["id"],
+                    complete,
+                    acct["id"],
                 ),
             )
 
             conn.commit()
+
+        except Exception:
+            conn.rollback()
+            raise
 
         finally:
             cur.close()
             conn.close()
 
 
+    # ========================================================
+    # PAYMENT FAILED
+    # ========================================================
+
+    elif (
+        event_type
+        == "payment_intent.payment_failed"
+    ):
+        intent = (
+            event["data"]["object"]
+        )
+
+        cancel_pending_orders_for_failed_payment(
+            intent["id"],
+            "Payment failed",
+        )
+
+
+    # ========================================================
+    # PAYMENT INTENT CANCELLED
+    # ========================================================
+
+    elif (
+        event_type
+        == "payment_intent.canceled"
+    ):
+        intent = (
+            event["data"]["object"]
+        )
+
+        cancel_pending_orders_for_failed_payment(
+            intent["id"],
+            "Payment cancelled",
+        )
+
+
+    # ========================================================
+    # SUCCESS
+    # ========================================================
+
     return {
-        "received": True,
+        "received":
+            True,
     }
