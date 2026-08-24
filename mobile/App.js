@@ -741,9 +741,18 @@ export default function App() {
         }
 
         if (mounted) {
-          setStripeKey(data.key);
-          setStripeConfigError(null);
-        }
+          console.log(
+            'STRIPE MODE:',
+            data.key.startsWith('pk_test_')
+              ? 'TEST'
+              : data.key.startsWith('pk_live_')
+                ? 'LIVE'
+                : 'UNKNOWN'
+          );
+
+  setStripeKey(data.key);
+  setStripeConfigError(null);
+}
       } catch (error) {
         console.error(
           'STRIPE CONFIG ERROR:',

@@ -590,7 +590,6 @@ def update_order_status(
                     detail="Not your order",
                 )
 
-
         elif user["role"] == "shopper":
             if (
                 shopper_id
@@ -601,18 +600,31 @@ def update_order_status(
                     detail="Not your order",
                 )
 
-            if (
-                req.status
-                != "fulfilled"
-            ):
+            # Shoppers may cancel their own order only
+            # while it is still awaiting producer confirmation.
+            if req.status == "cancelled":
+                if current_status != "pending":
+                    raise HTTPException(
+                        status_code=400,
+                        detail=(
+                            "This order can no longer be "
+                            "cancelled because the producer "
+                            "has already confirmed it."
+                        ),
+                    )
+
+            elif req.status == "fulfilled":
+                pass
+
+            else:
                 raise HTTPException(
                     status_code=403,
                     detail=(
-                        "Shoppers can only "
-                        "mark orders fulfilled"
+                        "Shoppers can only cancel a pending "
+                        "order or mark an eligible order "
+                        "fulfilled."
                     ),
                 )
-
 
         # ====================================================
         # VALIDATE TRANSITION
@@ -1484,14 +1496,14 @@ def place_order_from_payment(
 
     if (
         req.fulfillment_type
-        == "delivery"
+        in ("delivery", "shipping")
         and not req.delivery_address
     ):
         raise HTTPException(
             status_code=400,
             detail=(
                 "delivery_address required "
-                "for delivery"
+                "for delivery or shipping"
             ),
         )
 

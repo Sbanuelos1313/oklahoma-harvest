@@ -245,14 +245,6 @@ export default function ProducerScreen({
   );
 }
 
-    setCart(nextCart);
-
-    Alert.alert(
-      'Added to cart',
-      `${product.name} was added to your cart.`
-    );
-  }
-
   function addToCart(product) {
     const producerId =
       producer?.id ||

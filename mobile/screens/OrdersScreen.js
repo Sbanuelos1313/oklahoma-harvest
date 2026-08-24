@@ -2,29 +2,29 @@ import React, {
   useCallback,
   useEffect,
   useMemo,
-  useRef,
   useState,
 } from 'react';
 
 import {
   View,
   Text,
-  Image,
-  FlatList,
   StyleSheet,
-  ActivityIndicator,
-  StatusBar,
-  RefreshControl,
+  ScrollView,
   TouchableOpacity,
-  ImageBackground,
+  ActivityIndicator,
   Alert,
+  RefreshControl,
+  ImageBackground,
+  StatusBar,
 } from 'react-native';
 
 import {
   SafeAreaView,
 } from 'react-native-safe-area-context';
 
-import { Ionicons } from '@expo/vector-icons';
+import {
+  Ionicons,
+} from '@expo/vector-icons';
 
 import {
   COLORS,
@@ -32,18 +32,10 @@ import {
   SHADOWS,
 } from '../constants/theme';
 
-import { IMAGE_ASSETS } from '../constants/assets';
 
-
-const STATUS_LABELS = {
-  pending: 'Pending Confirmation',
-  confirmed: 'Confirmed',
-  ready_for_pickup: 'Ready for Pickup',
-  out_for_delivery: 'Out for Delivery',
-  fulfilled: 'Completed',
-  cancelled: 'Cancelled',
-  auto_cancelled: 'Auto-Cancelled',
-};
+// ===========================================================
+// ORDER STATUS GROUPS
+// ===========================================================
 
 const ACTIVE_STATUSES = [
   'pending',
@@ -59,231 +51,160 @@ const COMPLETED_STATUSES = [
 ];
 
 
-export default function OrdersScreen({
-  API,
-  token,
-  user,
-  cart,
-  navigation,
-}) {
-  const [orders, setOrders] = useState([]);
-  const [selectedTab, setSelectedTab] = useState('active');
-  const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
-  const [sessionExpired, setSessionExpired] = useState(false);
+// ===========================================================
+// STATUS DISPLAY
+// ===========================================================
 
-  const alertShownRef = useRef(false);
+function getStatusDisplay(status) {
+  switch (status) {
+    case 'pending':
+      return {
+        label:
+          'Pending Confirmation',
+        icon:
+          'time-outline',
+      };
 
-  const isGuest =
-    !token ||
-    token === 'guest' ||
-    sessionExpired;
+    case 'confirmed':
+      return {
+        label:
+          'Confirmed',
+        icon:
+          'checkmark-circle-outline',
+      };
+
+    case 'ready_for_pickup':
+      return {
+        label:
+          'Ready for Pickup',
+        icon:
+          'bag-check-outline',
+      };
+
+    case 'out_for_delivery':
+      return {
+        label:
+          'Out for Delivery',
+        icon:
+          'car-outline',
+      };
+
+    case 'fulfilled':
+      return {
+        label:
+          'Completed',
+        icon:
+          'checkmark-done-circle-outline',
+      };
+
+    case 'cancelled':
+      return {
+        label:
+          'Cancelled',
+        icon:
+          'close-circle-outline',
+      };
+
+    case 'auto_cancelled':
+      return {
+        label:
+          'Cancelled',
+        icon:
+          'close-circle-outline',
+      };
+
+    default:
+      return {
+        label:
+          String(
+            status || 'Unknown'
+          )
+            .replace(
+              /_/g,
+              ' '
+            )
+            .replace(
+              /\b\w/g,
+              (letter) =>
+                letter.toUpperCase()
+            ),
+
+        icon:
+          'receipt-outline',
+      };
+  }
+}
 
 
-const navigateToAuth = useCallback(() => {
-  let rootNavigation = navigation;
+// ===========================================================
+// FULFILLMENT DISPLAY
+// ===========================================================
 
-  while (rootNavigation.getParent()) {
-    rootNavigation = rootNavigation.getParent();
+function getFulfillmentDisplay(
+  fulfillmentType
+) {
+  switch (
+    fulfillmentType
+  ) {
+    case 'pickup':
+      return {
+        label: 'Pickup',
+        icon:
+          'bag-handle-outline',
+      };
+
+    case 'delivery':
+      return {
+        label: 'Delivery',
+        icon:
+          'car-outline',
+      };
+
+    case 'shipping':
+      return {
+        label: 'Shipping',
+        icon:
+          'cube-outline',
+      };
+
+    default:
+      return {
+        label:
+          'Fulfillment',
+        icon:
+          'location-outline',
+      };
+  }
+}
+
+
+// ===========================================================
+// FORMAT MONEY
+// ===========================================================
+
+function formatMoney(value) {
+  const amount =
+    Number(value || 0);
+
+  return `$${amount.toFixed(
+    2
+  )}`;
+}
+
+
+// ===========================================================
+// FORMAT DATE
+// ===========================================================
+
+function formatOrderDate(value) {
+  if (!value) {
+    return '';
   }
 
-  rootNavigation.navigate('Auth');
-}, [navigation]);
-
-  const handleExpiredSession = useCallback(() => {
-    setOrders([]);
-    setSessionExpired(true);
-    setLoading(false);
-    setRefreshing(false);
-
-    if (alertShownRef.current) {
-      return;
-    }
-
-    alertShownRef.current = true;
-
-    Alert.alert(
-      'Session Expired',
-      'Your sign-in session has expired. Please sign in again to view your orders.',
-      [
-        {
-          text: 'Not Now',
-          style: 'cancel',
-        },
-        {
-          text: 'Sign In',
-          onPress: navigateToAuth,
-        },
-      ]
-    );
-  }, [navigateToAuth]);
-
-
-  const loadOrders = useCallback(
-    async (isRefresh = false) => {
-      if (!token || token === 'guest') {
-        setOrders([]);
-        setLoading(false);
-        setRefreshing(false);
-        return;
-      }
-
-      if (sessionExpired) {
-        setLoading(false);
-        setRefreshing(false);
-        return;
-      }
-
-      if (isRefresh) {
-        setRefreshing(true);
-      } else {
-        setLoading(true);
-      }
-
-      try {
-        const response = await fetch(
-          `${API}/api/orders/my`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-
-        let data = null;
-
-        try {
-          data = await response.json();
-        } catch {
-          data = null;
-        }
-
-        if (response.status === 401) {
-          handleExpiredSession();
-          return;
-        }
-
-        if (!response.ok) {
-          throw new Error(
-            data?.detail ||
-              data?.message ||
-              'Unable to load orders.'
-          );
-        }
-
-        setOrders(
-          Array.isArray(data)
-            ? data
-            : []
-        );
-      } catch (error) {
-        console.error(
-          'Load orders error:',
-          error
-        );
-
-        setOrders([]);
-
-        Alert.alert(
-          'Unable to Load Orders',
-          error?.message ||
-            'Your orders could not be loaded. Please try again.'
-        );
-      } finally {
-        setLoading(false);
-        setRefreshing(false);
-      }
-    },
-    [
-      API,
-      token,
-      sessionExpired,
-      handleExpiredSession,
-    ]
-  );
-
-
-  useEffect(() => {
-    if (token && token !== 'guest') {
-      setSessionExpired(false);
-      alertShownRef.current = false;
-    }
-  }, [token]);
-
-
-  useEffect(() => {
-    loadOrders();
-
-    const unsubscribe = navigation.addListener(
-      'focus',
-      () => {
-        loadOrders();
-      }
-    );
-
-    return unsubscribe;
-  }, [navigation, loadOrders]);
-
-
-  const filteredOrders = useMemo(() => {
-    if (selectedTab === 'completed') {
-      return orders.filter((order) =>
-        COMPLETED_STATUSES.includes(
-          order?.status
-        )
-      );
-    }
-
-    return orders.filter(
-      (order) =>
-        ACTIVE_STATUSES.includes(
-          order?.status
-        ) || !order?.status
-    );
-  }, [orders, selectedTab]);
-
-
-  function openOrder(order) {
-    const parentNavigation =
-      navigation.getParent();
-
-    if (parentNavigation) {
-      parentNavigation.navigate(
-        'OrderDetail',
-        {
-          order,
-        }
-      );
-
-      return;
-    }
-
-    navigation.navigate(
-      'OrderDetail',
-      {
-        order,
-      }
-    );
-  }
-
-
-  function goShopping() {
-    navigation.navigate('Home');
-  }
-
-
-  function formatDate(value) {
-    if (!value) {
-      return 'Date unavailable';
-    }
-
-    const parsed = new Date(value);
-
-    if (Number.isNaN(parsed.getTime())) {
-      return 'Date unavailable';
-    }
-
-    return parsed.toLocaleDateString(
+  try {
+    return new Date(
+      value
+    ).toLocaleDateString(
       undefined,
       {
         month: 'short',
@@ -291,348 +212,946 @@ const navigateToAuth = useCallback(() => {
         year: 'numeric',
       }
     );
+  } catch {
+    return '';
+  }
+}
+
+
+// ===========================================================
+// ORDERS SCREEN
+// ===========================================================
+
+export default function OrdersScreen({
+  API,
+  token,
+  navigation,
+}) {
+  // =========================================================
+  // STATE
+  // =========================================================
+
+  const [
+    orders,
+    setOrders,
+  ] = useState([]);
+
+  const [
+    loading,
+    setLoading,
+  ] = useState(true);
+
+  const [
+    refreshing,
+    setRefreshing,
+  ] = useState(false);
+
+  const [
+    selectedTab,
+    setSelectedTab,
+  ] = useState('active');
+
+  const [
+    cancellingOrderId,
+    setCancellingOrderId,
+  ] = useState(null);
+
+
+  // =========================================================
+  // LOAD ORDERS
+  // =========================================================
+
+  const loadOrders =
+    useCallback(
+      async ({
+        showLoader = false,
+      } = {}) => {
+        if (
+          !token ||
+          token === 'guest'
+        ) {
+          setOrders([]);
+          setLoading(false);
+          setRefreshing(false);
+          return;
+        }
+
+        if (showLoader) {
+          setLoading(true);
+        }
+
+        try {
+          const response =
+            await fetch(
+              `${API}/api/orders/my`,
+              {
+                method: 'GET',
+
+                headers: {
+                  Accept:
+                    'application/json',
+
+                  Authorization:
+                    `Bearer ${token}`,
+                },
+              }
+            );
+
+          const data =
+            await response
+              .json()
+              .catch(
+                () => null
+              );
+
+          if (!response.ok) {
+            throw new Error(
+              data?.detail ||
+                'Unable to load your orders.'
+            );
+          }
+
+          setOrders(
+            Array.isArray(data)
+              ? data
+              : []
+          );
+        } catch (error) {
+          console.log(
+            'LOAD ORDERS ERROR:',
+            error
+          );
+
+          Alert.alert(
+            'Unable to load orders',
+            error?.message ||
+              'Please try again.'
+          );
+        } finally {
+          setLoading(false);
+          setRefreshing(false);
+        }
+      },
+      [
+        API,
+        token,
+      ]
+    );
+
+
+  // =========================================================
+  // INITIAL LOAD
+  // =========================================================
+
+  useEffect(() => {
+    loadOrders({
+      showLoader: true,
+    });
+  }, [loadOrders]);
+
+
+  // =========================================================
+  // REFRESH WHEN SCREEN RECEIVES FOCUS
+  // =========================================================
+
+  useEffect(() => {
+    const unsubscribe =
+      navigation.addListener(
+        'focus',
+        () => {
+          loadOrders();
+        }
+      );
+
+    return unsubscribe;
+  }, [
+    navigation,
+    loadOrders,
+  ]);
+
+
+  // =========================================================
+  // PULL TO REFRESH
+  // =========================================================
+
+  const handleRefresh =
+    useCallback(() => {
+      setRefreshing(true);
+      loadOrders();
+    }, [loadOrders]);
+
+
+  // =========================================================
+  // ACTIVE / COMPLETED ORDERS
+  // =========================================================
+
+  const activeOrders =
+    useMemo(
+      () =>
+        orders.filter(
+          (order) =>
+            ACTIVE_STATUSES.includes(
+              order?.status
+            )
+        ),
+      [orders]
+    );
+
+  const completedOrders =
+    useMemo(
+      () =>
+        orders.filter(
+          (order) =>
+            COMPLETED_STATUSES.includes(
+              order?.status
+            )
+        ),
+      [orders]
+    );
+
+
+  // =========================================================
+  // CURRENT ORDERS
+  // =========================================================
+
+  const visibleOrders =
+    selectedTab === 'active'
+      ? activeOrders
+      : completedOrders;
+
+
+  // =========================================================
+  // OPEN ORDER
+  // =========================================================
+
+  function openOrder(order) {
+    navigation.navigate(
+      'OrderDetail',
+      {
+        orderId:
+          order?.id,
+      }
+    );
   }
 
 
-  function renderStatus(order) {
+  // =========================================================
+  // CUSTOMER CANCELLATION
+  // =========================================================
+
+  async function cancelOrder(
+    order
+  ) {
+    if (!order?.id) {
+      return;
+    }
+
+    // The UI should only expose this action
+    // for pending orders, but we check again
+    // here before sending anything to the API.
+    if (
+      order?.status !==
+      'pending'
+    ) {
+      Alert.alert(
+        'Cancellation unavailable',
+        'This order can no longer be cancelled because the producer has already confirmed it.'
+      );
+
+      return;
+    }
+
+    setCancellingOrderId(
+      order.id
+    );
+
+    try {
+      const response =
+        await fetch(
+          `${API}/api/orders/${order.id}/status`,
+          {
+            method: 'PATCH',
+
+            headers: {
+              Accept:
+                'application/json',
+
+              Authorization:
+                `Bearer ${token}`,
+
+              'Content-Type':
+                'application/json',
+            },
+
+            body:
+              JSON.stringify({
+                status:
+                  'cancelled',
+
+                cancel_reason:
+                  'Cancelled by shopper before producer confirmation',
+              }),
+          }
+        );
+
+      const data =
+        await response
+          .json()
+          .catch(
+            () => null
+          );
+
+      console.log(
+        'SHOPPER CANCEL RESPONSE:',
+        response.status,
+        JSON.stringify(
+          data,
+          null,
+          2
+        )
+      );
+
+      if (!response.ok) {
+        throw new Error(
+          data?.detail ||
+            'Unable to cancel this order.'
+        );
+      }
+
+      // Update locally immediately so the
+      // order leaves Active without waiting
+      // for another screen load.
+      setOrders(
+        (currentOrders) =>
+          currentOrders.map(
+            (currentOrder) =>
+              currentOrder.id ===
+              order.id
+                ? {
+                    ...currentOrder,
+                    status:
+                      'cancelled',
+                    cancel_reason:
+                      'Cancelled by shopper before producer confirmation',
+                  }
+                : currentOrder
+          )
+      );
+
+      Alert.alert(
+        'Order cancelled',
+        'Your order has been cancelled. Your refund will be returned to the original payment method.'
+      );
+
+      // Reload from the server so the UI
+      // reflects the authoritative order.
+      await loadOrders();
+    } catch (error) {
+      console.log(
+        'SHOPPER CANCEL ERROR:',
+        error
+      );
+
+      Alert.alert(
+        'Unable to cancel order',
+        error?.message ||
+          'Please try again.'
+      );
+    } finally {
+      setCancellingOrderId(
+        null
+      );
+    }
+  }
+
+
+  // =========================================================
+  // CONFIRM CUSTOMER CANCELLATION
+  // =========================================================
+
+  function confirmCancellation(
+    order
+  ) {
+    if (
+      order?.status !==
+      'pending'
+    ) {
+      Alert.alert(
+        'Cancellation unavailable',
+        'This order can no longer be cancelled because the producer has already confirmed it.'
+      );
+
+      return;
+    }
+
+    Alert.alert(
+      'Cancel this order?',
+      'This order has not yet been confirmed by the producer. If you cancel now, your payment will be refunded to your original payment method.',
+      [
+        {
+          text:
+            'Keep Order',
+
+          style:
+            'cancel',
+        },
+
+        {
+          text:
+            'Cancel & Refund',
+
+          style:
+            'destructive',
+
+          onPress: () =>
+            cancelOrder(
+              order
+            ),
+        },
+      ]
+    );
+  }
+
+
+  // =========================================================
+  // ORDER CARD
+  // =========================================================
+
+  function renderOrderCard(
+    item
+  ) {
     const status =
-      order?.status || 'pending';
+      getStatusDisplay(
+        item?.status
+      );
 
-    const isCompleted =
-      status === 'fulfilled';
+    const fulfillment =
+      getFulfillmentDisplay(
+        item?.fulfillment_type
+      );
 
-    const isCancelled = [
-      'cancelled',
-      'auto_cancelled',
-    ].includes(status);
+    const canCancel =
+      item?.status ===
+      'pending';
+
+    const isCancelling =
+      cancellingOrderId ===
+      item?.id;
 
     return (
       <View
-        style={[
-          styles.statusBadge,
-          isCompleted &&
-            styles.statusBadgeCompleted,
-          isCancelled &&
-            styles.statusBadgeCancelled,
-        ]}
+        key={item?.id}
+        style={
+          styles.orderCard
+        }
       >
-        <View
-          style={[
-            styles.statusDot,
-            isCompleted &&
-              styles.statusDotCompleted,
-            isCancelled &&
-              styles.statusDotCancelled,
-          ]}
-        />
-
-        <Text
-          style={[
-            styles.statusText,
-            isCompleted &&
-              styles.statusTextCompleted,
-            isCancelled &&
-              styles.statusTextCancelled,
-          ]}
+        <TouchableOpacity
+          activeOpacity={0.9}
+          onPress={() =>
+            openOrder(item)
+          }
         >
-          {STATUS_LABELS[status] ||
-            String(status).replaceAll(
-              '_',
-              ' '
-            )}
-        </Text>
-      </View>
-    );
-  }
+          <View
+            style={
+              styles.orderHeader
+            }
+          >
+            <View
+              style={
+                styles.orderHeaderLeft
+              }
+            >
+              <Text
+                style={
+                  styles.orderNumber
+                }
+              >
+                Order #{item?.id}
+              </Text>
 
-
-  function renderOrder({ item }) {
-    const itemCount =
-      item?.items?.reduce(
-        (sum, orderItem) =>
-          sum +
-          Number(
-            orderItem?.quantity || 0
-          ),
-        0
-      ) ||
-      item?.item_count ||
-      0;
-
-    const fulfillment =
-      item?.fulfillment_type ||
-      'pickup';
-
-    const fulfillmentIcon =
-      fulfillment === 'delivery'
-        ? 'car-outline'
-        : fulfillment === 'shipping'
-          ? 'cube-outline'
-          : 'bag-handle-outline';
-
-    return (
-      <TouchableOpacity
-        activeOpacity={0.9}
-        style={styles.orderCard}
-        onPress={() => openOrder(item)}
-      >
-        <View style={styles.orderTopRow}>
-          <View style={styles.orderIdentity}>
-            <View style={styles.vendorIconWrap}>
-              <Ionicons
-                name="storefront-outline"
-                size={22}
-                color={COLORS.forest}
-              />
+              {!!item?.created_at && (
+                <Text
+                  style={
+                    styles.orderDate
+                  }
+                >
+                  {formatOrderDate(
+                    item.created_at
+                  )}
+                </Text>
+              )}
             </View>
 
-            <View style={styles.orderIdentityText}>
-              <Text style={styles.orderNumber}>
-                Order #{item?.id || '—'}
-              </Text>
+            <View
+              style={
+                styles.statusBadge
+              }
+            >
+              <Ionicons
+                name={
+                  status.icon
+                }
+                size={15}
+                color={
+                  COLORS.forest
+                }
+              />
 
               <Text
-                numberOfLines={1}
-                style={styles.vendorName}
+                style={
+                  styles.statusText
+                }
               >
-                {item?.shop_name ||
-                  item?.producer_name ||
-                  'Local Vendor'}
+                {status.label}
               </Text>
             </View>
           </View>
 
-          <Text style={styles.orderTotal}>
-            $
-            {Number(
-              item?.total || 0
-            ).toFixed(2)}
-          </Text>
-        </View>
 
-        {renderStatus(item)}
+          {/* =============================================
+              PRODUCER
+          ============================================= */}
 
-        <View style={styles.orderDivider} />
-
-        <View style={styles.orderMetaRow}>
-          <View style={styles.metaItem}>
-            <Ionicons
-              name="calendar-outline"
-              size={16}
-              color={COLORS.forest}
-            />
-
-            <Text style={styles.metaText}>
-              {formatDate(
-                item?.created_at
-              )}
-            </Text>
-          </View>
-
-          <View style={styles.metaItem}>
-            <Ionicons
-              name={fulfillmentIcon}
-              size={16}
-              color={COLORS.forest}
-            />
-
-            <Text style={styles.metaText}>
-              {String(
-                fulfillment
-              ).replaceAll('_', ' ')}
-            </Text>
-          </View>
-
-          {itemCount > 0 && (
-            <View style={styles.metaItem}>
-              <Ionicons
-                name="basket-outline"
-                size={16}
-                color={COLORS.forest}
-              />
-
-              <Text style={styles.metaText}>
-                {itemCount}{' '}
-                {itemCount === 1
-                  ? 'item'
-                  : 'items'}
-              </Text>
-            </View>
-          )}
-        </View>
-
-        <View style={styles.orderActionRow}>
-          <Text style={styles.viewDetailsText}>
-            View Order
-          </Text>
-
-          <Ionicons
-            name="chevron-forward"
-            size={20}
-            color={COLORS.forest}
-          />
-        </View>
-      </TouchableOpacity>
-    );
-  }
-
-
-  function renderEmptyState() {
-    const completed =
-      selectedTab === 'completed';
-
-    return (
-      <View style={styles.emptyCard}>
-        <View style={styles.emptyDecorativeHeader}>
-          <View style={styles.emptyHeaderIcon}>
-            <Ionicons
-              name={
-                completed
-                  ? 'checkmark-done-outline'
-                  : 'receipt-outline'
+          <View
+            style={
+              styles.producerRow
+            }
+          >
+            <View
+              style={
+                styles.producerIcon
               }
-              size={38}
-              color={COLORS.forest}
-            />
-          </View>
-
-          <Text style={styles.emptyEyebrow}>
-            {completed
-              ? 'Order History'
-              : 'Local Purchases'}
-          </Text>
-        </View>
-
-        <View style={styles.emptyContent}>
-          <Text style={styles.emptyTitle}>
-            {completed
-              ? 'No completed orders yet'
-              : 'No active orders'}
-          </Text>
-
-          <Text style={styles.emptyMessage}>
-            {completed
-              ? 'Completed and cancelled purchases will appear here.'
-              : 'Start shopping local vendors and your purchases will appear here.'}
-          </Text>
-
-          {!completed && (
-            <TouchableOpacity
-              activeOpacity={0.88}
-              style={styles.shopButton}
-              onPress={goShopping}
             >
               <Ionicons
                 name="storefront-outline"
                 size={20}
-                color={COLORS.brown}
+                color={
+                  COLORS.forest
+                }
+              />
+            </View>
+
+            <View
+              style={
+                styles.producerText
+              }
+            >
+              <Text
+                style={
+                  styles.producerLabel
+                }
+              >
+                Producer
+              </Text>
+
+              <Text
+                numberOfLines={1}
+                style={
+                  styles.producerName
+                }
+              >
+                {item?.shop_name ||
+                  item?.producer_name ||
+                  'Local Producer'}
+              </Text>
+            </View>
+          </View>
+
+
+          {/* =============================================
+              ORDER META
+          ============================================= */}
+
+          <View
+            style={
+              styles.metaRow
+            }
+          >
+            <View
+              style={
+                styles.metaItem
+              }
+            >
+              <Ionicons
+                name={
+                  fulfillment.icon
+                }
+                size={17}
+                color={
+                  COLORS.forest
+                }
               />
 
-              <Text style={styles.shopButtonText}>
-                Shop Local
-              </Text>
+              <View
+                style={
+                  styles.metaTextWrap
+                }
+              >
+                <Text
+                  style={
+                    styles.metaLabel
+                  }
+                >
+                  Fulfillment
+                </Text>
+
+                <Text
+                  style={
+                    styles.metaValue
+                  }
+                >
+                  {fulfillment.label}
+                </Text>
+              </View>
+            </View>
+
+            <View
+              style={
+                styles.metaItem
+              }
+            >
+              <Ionicons
+                name="cash-outline"
+                size={17}
+                color={
+                  COLORS.forest
+                }
+              />
+
+              <View
+                style={
+                  styles.metaTextWrap
+                }
+              >
+                <Text
+                  style={
+                    styles.metaLabel
+                  }
+                >
+                  Total
+                </Text>
+
+                <Text
+                  style={
+                    styles.metaValue
+                  }
+                >
+                  {formatMoney(
+                    item?.total
+                  )}
+                </Text>
+              </View>
+            </View>
+          </View>
+        </TouchableOpacity>
+                {/* =============================================
+            ACTIONS
+        ============================================= */}
+
+        <View
+          style={
+            styles.actionSection
+          }
+        >
+          <TouchableOpacity
+            activeOpacity={0.88}
+            style={
+              styles.viewOrderButton
+            }
+            onPress={() =>
+              openOrder(item)
+            }
+          >
+            <Text
+              style={
+                styles.viewOrderButtonText
+              }
+            >
+              View Order
+            </Text>
+
+            <Ionicons
+              name="chevron-forward"
+              size={18}
+              color={
+                COLORS.forest
+              }
+            />
+          </TouchableOpacity>
+
+          {canCancel && (
+            <TouchableOpacity
+              activeOpacity={0.88}
+              disabled={
+                isCancelling
+              }
+              style={[
+                styles.cancelOrderButton,
+
+                isCancelling &&
+                  styles
+                    .cancelOrderButtonDisabled,
+              ]}
+              onPress={() =>
+                confirmCancellation(
+                  item
+                )
+              }
+            >
+              {isCancelling ? (
+                <ActivityIndicator
+                  size="small"
+                  color={
+                    COLORS.danger
+                  }
+                />
+              ) : (
+                <>
+                  <Ionicons
+                    name="close-circle-outline"
+                    size={18}
+                    color={
+                      COLORS.danger
+                    }
+                  />
+
+                  <Text
+                    style={
+                      styles
+                        .cancelOrderButtonText
+                    }
+                  >
+                    Cancel Order
+                  </Text>
+                </>
+              )}
             </TouchableOpacity>
           )}
         </View>
+
+
+        {/* =============================================
+            CUSTOMER CANCELLATION WINDOW
+        ============================================= */}
+
+        {canCancel && (
+          <View
+            style={
+              styles.cancelInfo
+            }
+          >
+            <Ionicons
+              name="information-circle-outline"
+              size={16}
+              color={
+                COLORS.subText
+              }
+            />
+
+            <Text
+              style={
+                styles.cancelInfoText
+              }
+            >
+              You may cancel this order
+              until the producer confirms
+              it. A cancellation will
+              refund the original payment
+              method.
+            </Text>
+          </View>
+        )}
       </View>
     );
   }
 
 
-  function renderSignedOutState() {
+  // =========================================================
+  // EMPTY STATE
+  // =========================================================
+
+  function renderEmptyState() {
+    const isCompleted =
+      selectedTab ===
+      'completed';
+
+    return (
+      <View
+        style={
+          styles.emptyCard
+        }
+      >
+        <View
+          style={
+            styles.emptyIconWrap
+          }
+        >
+          <Ionicons
+            name={
+              isCompleted
+                ? 'checkmark-done-outline'
+                : 'receipt-outline'
+            }
+            size={34}
+            color={
+              COLORS.forest
+            }
+          />
+        </View>
+
+        <Text
+          style={
+            styles.emptyTitle
+          }
+        >
+          {isCompleted
+            ? 'No completed orders yet'
+            : 'No active orders'}
+        </Text>
+
+        <Text
+          style={
+            styles.emptyMessage
+          }
+        >
+          {isCompleted
+            ? 'Completed and cancelled orders will appear here.'
+            : 'Your current local purchases will appear here.'}
+        </Text>
+
+        {!isCompleted && (
+          <TouchableOpacity
+            activeOpacity={0.88}
+            style={
+              styles.shopButton
+            }
+            onPress={() =>
+              navigation.navigate(
+                'Home'
+              )
+            }
+          >
+            <Ionicons
+              name="storefront-outline"
+              size={19}
+              color={
+                COLORS.brown
+              }
+            />
+
+            <Text
+              style={
+                styles.shopButtonText
+              }
+            >
+              Shop Local
+            </Text>
+          </TouchableOpacity>
+        )}
+      </View>
+    );
+  }
+
+
+  // =========================================================
+  // SIGNED OUT
+  // =========================================================
+
+  if (
+    !token ||
+    token === 'guest'
+  ) {
     return (
       <ImageBackground
         source={require('../assets/backgrounds/bg_settings.jpg')}
         resizeMode="cover"
-        style={styles.background}
+        style={
+          styles.background
+        }
       >
-        <View style={styles.backgroundOverlay}>
-          <SafeAreaView style={styles.safeArea}>
-            <StatusBar barStyle="dark-content" />
+        <View
+          style={
+            styles.backgroundOverlay
+          }
+        >
+          <SafeAreaView
+            style={
+              styles.safeArea
+            }
+          >
+            <StatusBar
+              barStyle="dark-content"
+            />
 
-            <View style={styles.guestHeader}>
-              <Text style={styles.eyebrow}>
-                Purchases
-              </Text>
-
-              <Text style={styles.title}>
-                My Orders
-              </Text>
-
-              <Text style={styles.subtitle}>
-                Sign in to view confirmations,
-                pickup updates, deliveries,
-                receipts, and completed purchases.
-              </Text>
-            </View>
-
-            <View style={styles.guestCard}>
-              <View style={styles.guestDecorativeHeader}>
-                <View style={styles.guestHeaderIcon}>
-                  <Ionicons
-                    name={
-                      sessionExpired
-                        ? 'time-outline'
-                        : 'receipt-outline'
-                    }
-                    size={38}
-                    color={COLORS.forest}
-                  />
-                </View>
-
-                <Text style={styles.guestCardEyebrow}>
-                  {sessionExpired
-                    ? 'Secure Access Required'
-                    : 'Your Local Purchases'}
-                </Text>
+            <View
+              style={
+                styles.signedOutWrap
+              }
+            >
+              <View
+                style={
+                  styles.signedOutIcon
+                }
+              >
+                <Ionicons
+                  name="receipt-outline"
+                  size={36}
+                  color={
+                    COLORS.forest
+                  }
+                />
               </View>
 
-              <View style={styles.guestContent}>
-                <Text style={styles.emptyTitle}>
-                  {sessionExpired
-                    ? 'Your session expired'
-                    : 'Sign in to view orders'}
-                </Text>
+              <Text
+                style={
+                  styles.signedOutTitle
+                }
+              >
+                Sign in to view your
+                orders
+              </Text>
 
-                <Text style={styles.emptyMessage}>
-                  {sessionExpired
-                    ? 'Please sign in again to securely access your order history, confirmations, and pickup updates.'
-                    : 'Sign in or create an account to track purchases from your favorite local producers.'}
-                </Text>
+              <Text
+                style={
+                  styles.signedOutText
+                }
+              >
+                Track confirmations,
+                pickup status, delivery
+                updates, refunds, and
+                completed purchases.
+              </Text>
 
-                <View style={styles.guestFeatureList}>
-                  <GuestFeature
-                    icon="checkmark-circle-outline"
-                    text="Track producer confirmations"
-                  />
+              <TouchableOpacity
+                activeOpacity={0.88}
+                style={
+                  styles.shopButton
+                }
+                onPress={() =>
+                  navigation
+                    .getParent()
+                    ?.navigate(
+                      'Auth'
+                    )
+                }
+              >
+                <Ionicons
+                  name="log-in-outline"
+                  size={19}
+                  color={
+                    COLORS.brown
+                  }
+                />
 
-                  <GuestFeature
-                    icon="bag-handle-outline"
-                    text="View pickup and delivery updates"
-                  />
-
-                  <GuestFeature
-                    icon="receipt-outline"
-                    text="Access completed orders and receipts"
-                  />
-                </View>
-
-                <TouchableOpacity
-                  activeOpacity={0.88}
-                  style={styles.shopButton}
-                  onPress={navigateToAuth}
+                <Text
+                  style={
+                    styles
+                      .shopButtonText
+                  }
                 >
-                  <Ionicons
-                    name="log-in-outline"
-                    size={20}
-                    color={COLORS.brown}
-                  />
-
-                  <Text style={styles.shopButtonText}>
-                    Sign In
-                  </Text>
-                </TouchableOpacity>
-              </View>
+                  Sign In
+                </Text>
+              </TouchableOpacity>
             </View>
           </SafeAreaView>
         </View>
@@ -641,122 +1160,329 @@ const navigateToAuth = useCallback(() => {
   }
 
 
-  if (isGuest) {
-    return renderSignedOutState();
+  // =========================================================
+  // LOADING
+  // =========================================================
+
+  if (
+    loading &&
+    !orders.length
+  ) {
+    return (
+      <ImageBackground
+        source={require('../assets/backgrounds/bg_settings.jpg')}
+        resizeMode="cover"
+        style={
+          styles.background
+        }
+      >
+        <View
+          style={
+            styles.backgroundOverlay
+          }
+        >
+          <SafeAreaView
+            style={
+              styles.loadingScreen
+            }
+          >
+            <StatusBar
+              barStyle="dark-content"
+            />
+
+            <ActivityIndicator
+              size="large"
+              color={
+                COLORS.forest
+              }
+            />
+
+            <Text
+              style={
+                styles.loadingText
+              }
+            >
+              Loading your orders...
+            </Text>
+          </SafeAreaView>
+        </View>
+      </ImageBackground>
+    );
   }
 
+
+  // =========================================================
+  // SCREEN
+  // =========================================================
 
   return (
     <ImageBackground
       source={require('../assets/backgrounds/bg_settings.jpg')}
       resizeMode="cover"
-      style={styles.background}
+      style={
+        styles.background
+      }
     >
-      <View style={styles.backgroundOverlay}>
-        <SafeAreaView style={styles.safeArea}>
-          <StatusBar barStyle="dark-content" />
+      <View
+        style={
+          styles.backgroundOverlay
+        }
+      >
+        <SafeAreaView
+          style={
+            styles.safeArea
+          }
+        >
+          <StatusBar
+            barStyle="dark-content"
+          />
 
-          <FlatList
-            data={filteredOrders}
-            keyExtractor={(item, index) =>
-              String(item?.id || index)
+          <ScrollView
+            showsVerticalScrollIndicator={
+              false
             }
-            renderItem={renderOrder}
-            showsVerticalScrollIndicator={false}
-            contentContainerStyle={styles.listContent}
             refreshControl={
               <RefreshControl
-                refreshing={refreshing}
-                onRefresh={() =>
-                  loadOrders(true)
+                refreshing={
+                  refreshing
                 }
-                tintColor={COLORS.forest}
+                onRefresh={
+                  handleRefresh
+                }
+                tintColor={
+                  COLORS.forest
+                }
+                colors={[
+                  COLORS.forest,
+                ]}
               />
             }
-            ListHeaderComponent={
-              <View>
-                <View style={styles.header}>
-                  <Text style={styles.eyebrow}>
-                    Purchases
-                  </Text>
+            contentContainerStyle={
+              styles.scrollContent
+            }
+          >
 
-                  <Text style={styles.title}>
-                    My Orders
-                  </Text>
+            {/* =========================================
+                HEADER
+            ========================================= */}
 
-                  <Text style={styles.subtitle}>
-                    Track confirmations, pickup
-                    status, delivery updates, and
-                    completed local purchases.
-                  </Text>
-                </View>
+            <View
+              style={
+                styles.header
+              }
+            >
+              <Text
+                style={
+                  styles.eyebrow
+                }
+              >
+                Purchases
+              </Text>
 
-                <View style={styles.tabContainer}>
-                  <TouchableOpacity
-                    activeOpacity={0.82}
-                    style={[
-                      styles.tabButton,
-                      selectedTab === 'active' &&
-                        styles.tabButtonActive,
-                    ]}
-                    onPress={() =>
-                      setSelectedTab('active')
-                    }
-                  >
-                    <Text
-                      style={[
-                        styles.tabText,
-                        selectedTab === 'active' &&
-                          styles.tabTextActive,
-                      ]}
-                    >
-                      Active
-                    </Text>
-                  </TouchableOpacity>
+              <Text
+                style={
+                  styles.title
+                }
+              >
+                My Orders
+              </Text>
 
-                  <TouchableOpacity
-                    activeOpacity={0.82}
-                    style={[
-                      styles.tabButton,
-                      selectedTab === 'completed' &&
-                        styles.tabButtonActive,
-                    ]}
-                    onPress={() =>
-                      setSelectedTab('completed')
-                    }
-                  >
-                    <Text
-                      style={[
-                        styles.tabText,
-                        selectedTab === 'completed' &&
-                          styles.tabTextActive,
-                      ]}
-                    >
-                      Completed
-                    </Text>
-                  </TouchableOpacity>
-                </View>
+              <Text
+                style={
+                  styles.subtitle
+                }
+              >
+                Track confirmations,
+                pickup status, delivery
+                updates, refunds, and
+                completed local
+                purchases.
+              </Text>
+            </View>
 
-                {loading && (
-                  <View style={styles.loadingState}>
-                    <ActivityIndicator
-                      size="large"
-                      color={COLORS.forest}
-                    />
 
-                    <Text style={styles.loadingText}>
-                      Loading your orders...
-                    </Text>
-                  </View>
-                )}
+            {/* =========================================
+                TABS
+            ========================================= */}
+
+            <View
+              style={
+                styles.tabContainer
+              }
+            >
+              <TouchableOpacity
+                activeOpacity={0.82}
+                style={[
+                  styles.tabButton,
+
+                  selectedTab ===
+                    'active' &&
+                    styles
+                      .tabButtonActive,
+                ]}
+                onPress={() =>
+                  setSelectedTab(
+                    'active'
+                  )
+                }
+              >
+                <Text
+                  style={[
+                    styles.tabText,
+
+                    selectedTab ===
+                      'active' &&
+                      styles
+                        .tabTextActive,
+                  ]}
+                >
+                  Active
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                activeOpacity={0.82}
+                style={[
+                  styles.tabButton,
+
+                  selectedTab ===
+                    'completed' &&
+                    styles
+                      .tabButtonActive,
+                ]}
+                onPress={() =>
+                  setSelectedTab(
+                    'completed'
+                  )
+                }
+              >
+                <Text
+                  style={[
+                    styles.tabText,
+
+                    selectedTab ===
+                      'completed' &&
+                      styles
+                        .tabTextActive,
+                  ]}
+                >
+                  Completed
+                </Text>
+              </TouchableOpacity>
+            </View>
+
+
+            {/* =========================================
+                ORDER COUNTS
+            ========================================= */}
+
+            <View
+              style={
+                styles.countRow
+              }
+            >
+              <View
+                style={
+                  styles.countCard
+                }
+              >
+                <Text
+                  style={
+                    styles.countValue
+                  }
+                >
+                  {
+                    activeOrders.length
+                  }
+                </Text>
+
+                <Text
+                  style={
+                    styles.countLabel
+                  }
+                >
+                  Active
+                </Text>
               </View>
-            }
-            ListEmptyComponent={
-              loading
-                ? null
-                : renderEmptyState()
-            }
-          />
+
+              <View
+                style={
+                  styles.countCard
+                }
+              >
+                <Text
+                  style={
+                    styles.countValue
+                  }
+                >
+                  {
+                    completedOrders.length
+                  }
+                </Text>
+
+                <Text
+                  style={
+                    styles.countLabel
+                  }
+                >
+                  Completed
+                </Text>
+              </View>
+            </View>
+
+
+            {/* =========================================
+                ORDERS
+            ========================================= */}
+
+            <View
+              style={
+                styles.ordersSection
+              }
+            >
+              <View
+                style={
+                  styles.ordersHeadingRow
+                }
+              >
+                <Text
+                  style={
+                    styles.ordersHeading
+                  }
+                >
+                  {selectedTab ===
+                  'active'
+                    ? 'Current Orders'
+                    : 'Order History'}
+                </Text>
+
+                <Text
+                  style={
+                    styles.ordersCountText
+                  }
+                >
+                  {
+                    visibleOrders.length
+                  }{' '}
+                  {visibleOrders.length ===
+                  1
+                    ? 'order'
+                    : 'orders'}
+                </Text>
+              </View>
+
+              {visibleOrders.length ? (
+                visibleOrders.map(
+                  (order) =>
+                    renderOrderCard(
+                      order
+                    )
+                )
+              ) : (
+                renderEmptyState()
+              )}
+            </View>
+          </ScrollView>
         </SafeAreaView>
       </View>
     </ImageBackground>
@@ -764,440 +1490,601 @@ const navigateToAuth = useCallback(() => {
 }
 
 
-function GuestFeature({
-  icon,
-  text,
-}) {
-  return (
-    <View style={styles.guestFeatureRow}>
-      <View style={styles.guestFeatureIcon}>
-        <Ionicons
-          name={icon}
-          size={18}
-          color={COLORS.forest}
-        />
-      </View>
-
-      <Text style={styles.guestFeatureText}>
-        {text}
-      </Text>
-    </View>
-  );
-}
-
+// ===========================================================
+// STYLES
+// ===========================================================
 
 const styles = StyleSheet.create({
+    // =========================================================
+  // SCREEN
+  // =========================================================
+
   background: {
     flex: 1,
+    backgroundColor:
+      COLORS.cream,
   },
 
   backgroundOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(255,255,255,0.16)',
+    backgroundColor:
+      'rgba(255,255,255,0.82)',
   },
 
   safeArea: {
     flex: 1,
-    backgroundColor: 'transparent',
   },
 
-  listContent: {
-    paddingHorizontal: 20,
-    paddingBottom: 132,
+  scrollContent: {
+    paddingHorizontal: 18,
+    paddingTop: 12,
+    paddingBottom: 120,
   },
+
+
+  // =========================================================
+  // HEADER
+  // =========================================================
 
   header: {
-    paddingTop: 16,
-    paddingBottom: 18,
-  },
-
-  guestHeader: {
-    paddingHorizontal: 20,
-    paddingTop: 16,
+    marginBottom: 18,
   },
 
   eyebrow: {
-    fontFamily: FONTS.bodyBold,
+    fontFamily:
+      FONTS.bodyBold,
     fontSize: 11,
-    letterSpacing: 1.2,
-    textTransform: 'uppercase',
-    color: COLORS.forest,
+    letterSpacing: 1.3,
+    textTransform:
+      'uppercase',
+    color:
+      COLORS.forest,
   },
 
   title: {
-    marginTop: 4,
-    fontFamily: FONTS.display,
-    fontSize: 36,
-    lineHeight: 42,
-    color: COLORS.brown,
+    marginTop: 3,
+    fontFamily:
+      FONTS.display,
+    fontSize: 34,
+    lineHeight: 40,
+    color:
+      COLORS.brown,
   },
 
   subtitle: {
-    marginTop: 7,
-    fontFamily: FONTS.body,
-    fontSize: 14,
-    lineHeight: 21,
-    color: COLORS.subText,
+    marginTop: 6,
+    maxWidth: 340,
+    fontFamily:
+      FONTS.body,
+    fontSize: 13,
+    lineHeight: 20,
+    color:
+      COLORS.subText,
   },
 
+
+  // =========================================================
+  // TABS
+  // =========================================================
+
   tabContainer: {
-    height: 52,
-    marginBottom: 18,
-    padding: 5,
-    borderRadius: 26,
     flexDirection: 'row',
+    padding: 4,
+    marginBottom: 14,
+    borderRadius: 18,
+    backgroundColor:
+      COLORS.white,
     borderWidth: 1,
-    borderColor: COLORS.border,
-    backgroundColor: 'rgba(252,250,247,0.92)',
+    borderColor:
+      COLORS.border,
     ...SHADOWS.soft,
   },
 
   tabButton: {
     flex: 1,
-    borderRadius: 21,
+    minHeight: 44,
+    borderRadius: 14,
     alignItems: 'center',
-    justifyContent: 'center',
+    justifyContent:
+      'center',
   },
 
   tabButtonActive: {
-    backgroundColor: COLORS.forest,
+    backgroundColor:
+      COLORS.forest,
   },
 
   tabText: {
-    fontFamily: FONTS.bodyBold,
-    fontSize: 13,
-    color: COLORS.subText,
+    fontFamily:
+      FONTS.bodyBold,
+    fontSize: 12,
+    color:
+      COLORS.subText,
   },
 
   tabTextActive: {
-    color: COLORS.white,
+    color:
+      COLORS.white,
   },
 
-  loadingState: {
-    paddingVertical: 50,
+
+  // =========================================================
+  // COUNTS
+  // =========================================================
+
+  countRow: {
+    flexDirection: 'row',
+    gap: 10,
+    marginBottom: 22,
+  },
+
+  countCard: {
+    flex: 1,
+    paddingVertical: 15,
+    paddingHorizontal: 16,
+    borderRadius: 18,
+    backgroundColor:
+      COLORS.white,
+    borderWidth: 1,
+    borderColor:
+      COLORS.border,
+    ...SHADOWS.soft,
+  },
+
+  countValue: {
+    fontFamily:
+      FONTS.display,
+    fontSize: 25,
+    color:
+      COLORS.forest,
+  },
+
+  countLabel: {
+    marginTop: 2,
+    fontFamily:
+      FONTS.body,
+    fontSize: 11,
+    color:
+      COLORS.subText,
+  },
+
+
+  // =========================================================
+  // ORDERS SECTION
+  // =========================================================
+
+  ordersSection: {
+    flex: 1,
+  },
+
+  ordersHeadingRow: {
+    marginBottom: 10,
+    flexDirection: 'row',
     alignItems: 'center',
+    justifyContent:
+      'space-between',
+  },
+
+  ordersHeading: {
+    fontFamily:
+      FONTS.display,
+    fontSize: 22,
+    color:
+      COLORS.brown,
+  },
+
+  ordersCountText: {
+    fontFamily:
+      FONTS.body,
+    fontSize: 11,
+    color:
+      COLORS.subText,
+  },
+
+
+  // =========================================================
+  // ORDER CARD
+  // =========================================================
+
+  orderCard: {
+    marginBottom: 14,
+    padding: 16,
+    borderRadius: 22,
+    backgroundColor:
+      COLORS.white,
+    borderWidth: 1,
+    borderColor:
+      COLORS.border,
+    ...SHADOWS.soft,
+  },
+
+  orderHeader: {
+    flexDirection: 'row',
+    alignItems:
+      'flex-start',
+    justifyContent:
+      'space-between',
+  },
+
+  orderHeaderLeft: {
+    flex: 1,
+    paddingRight: 10,
+  },
+
+  orderNumber: {
+    fontFamily:
+      FONTS.bodyBold,
+    fontSize: 15,
+    color:
+      COLORS.brown,
+  },
+
+  orderDate: {
+    marginTop: 3,
+    fontFamily:
+      FONTS.body,
+    fontSize: 10,
+    color:
+      COLORS.subText,
+  },
+
+  statusBadge: {
+    maxWidth: 160,
+    paddingVertical: 7,
+    paddingHorizontal: 9,
+    borderRadius: 14,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor:
+      COLORS.cream,
+  },
+
+  statusText: {
+    flexShrink: 1,
+    marginLeft: 5,
+    fontFamily:
+      FONTS.bodyBold,
+    fontSize: 9,
+    color:
+      COLORS.forest,
+  },
+
+
+  // =========================================================
+  // PRODUCER
+  // =========================================================
+
+  producerRow: {
+    marginTop: 16,
+    padding: 12,
+    borderRadius: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor:
+      COLORS.cream,
+  },
+
+  producerIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    alignItems: 'center',
+    justifyContent:
+      'center',
+    backgroundColor:
+      COLORS.white,
+  },
+
+  producerText: {
+    flex: 1,
+    marginLeft: 10,
+  },
+
+  producerLabel: {
+    fontFamily:
+      FONTS.body,
+    fontSize: 9,
+    textTransform:
+      'uppercase',
+    letterSpacing: 0.7,
+    color:
+      COLORS.subText,
+  },
+
+  producerName: {
+    marginTop: 2,
+    fontFamily:
+      FONTS.bodyBold,
+    fontSize: 13,
+    color:
+      COLORS.brown,
+  },
+
+
+  // =========================================================
+  // META
+  // =========================================================
+
+  metaRow: {
+    marginTop: 14,
+    flexDirection: 'row',
+    gap: 10,
+  },
+
+  metaItem: {
+    flex: 1,
+    minHeight: 58,
+    paddingHorizontal: 11,
+    paddingVertical: 10,
+    borderRadius: 15,
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor:
+      COLORS.border,
+    backgroundColor:
+      COLORS.white,
+  },
+
+  metaTextWrap: {
+    flex: 1,
+    marginLeft: 8,
+  },
+
+  metaLabel: {
+    fontFamily:
+      FONTS.body,
+    fontSize: 9,
+    color:
+      COLORS.subText,
+  },
+
+  metaValue: {
+    marginTop: 2,
+    fontFamily:
+      FONTS.bodyBold,
+    fontSize: 11,
+    color:
+      COLORS.brown,
+  },
+
+
+  // =========================================================
+  // ORDER ACTIONS
+  // =========================================================
+
+  actionSection: {
+    marginTop: 15,
+    paddingTop: 14,
+    borderTopWidth: 1,
+    borderTopColor:
+      COLORS.border,
+    gap: 9,
+  },
+
+  viewOrderButton: {
+    minHeight: 48,
+    paddingHorizontal: 14,
+    borderRadius: 15,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent:
+      'space-between',
+    backgroundColor:
+      COLORS.cream,
+    borderWidth: 1,
+    borderColor:
+      COLORS.border,
+  },
+
+  viewOrderButtonText: {
+    fontFamily:
+      FONTS.bodyBold,
+    fontSize: 12,
+    color:
+      COLORS.forest,
+  },
+
+
+  // =========================================================
+  // CUSTOMER CANCELLATION
+  // =========================================================
+
+  cancelOrderButton: {
+    minHeight: 48,
+    paddingHorizontal: 14,
+    borderRadius: 15,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent:
+      'center',
+    borderWidth: 1,
+    borderColor:
+      COLORS.danger,
+    backgroundColor:
+      COLORS.white,
+  },
+
+  cancelOrderButtonDisabled: {
+    opacity: 0.55,
+  },
+
+  cancelOrderButtonText: {
+    marginLeft: 7,
+    fontFamily:
+      FONTS.bodyBold,
+    fontSize: 12,
+    color:
+      COLORS.danger,
+  },
+
+  cancelInfo: {
+    marginTop: 10,
+    padding: 11,
+    borderRadius: 14,
+    flexDirection: 'row',
+    alignItems:
+      'flex-start',
+    backgroundColor:
+      COLORS.cream,
+  },
+
+  cancelInfoText: {
+    flex: 1,
+    marginLeft: 7,
+    fontFamily:
+      FONTS.body,
+    fontSize: 10,
+    lineHeight: 15,
+    color:
+      COLORS.subText,
+  },
+
+
+  // =========================================================
+  // EMPTY STATE
+  // =========================================================
+
+  emptyCard: {
+    minHeight: 290,
+    paddingHorizontal: 24,
+    paddingVertical: 34,
+    borderRadius: 22,
+    alignItems: 'center',
+    justifyContent:
+      'center',
+    backgroundColor:
+      COLORS.white,
+    borderWidth: 1,
+    borderColor:
+      COLORS.border,
+    ...SHADOWS.soft,
+  },
+
+  emptyIconWrap: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    alignItems: 'center',
+    justifyContent:
+      'center',
+    backgroundColor:
+      COLORS.cream,
+  },
+
+  emptyTitle: {
+    marginTop: 16,
+    fontFamily:
+      FONTS.display,
+    fontSize: 23,
+    textAlign: 'center',
+    color:
+      COLORS.brown,
+  },
+
+  emptyMessage: {
+    marginTop: 7,
+    maxWidth: 280,
+    fontFamily:
+      FONTS.body,
+    fontSize: 12,
+    lineHeight: 18,
+    textAlign: 'center',
+    color:
+      COLORS.subText,
+  },
+
+  shopButton: {
+    minHeight: 49,
+    marginTop: 20,
+    paddingHorizontal: 22,
+    borderRadius: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent:
+      'center',
+    backgroundColor:
+      COLORS.gold,
+  },
+
+  shopButtonText: {
+    marginLeft: 7,
+    fontFamily:
+      FONTS.bodyBold,
+    fontSize: 12,
+    color:
+      COLORS.brown,
+  },
+
+
+  // =========================================================
+  // SIGNED OUT
+  // =========================================================
+
+  signedOutWrap: {
+    flex: 1,
+    paddingHorizontal: 28,
+    alignItems: 'center',
+    justifyContent:
+      'center',
+  },
+
+  signedOutIcon: {
+    width: 72,
+    height: 72,
+    borderRadius: 36,
+    alignItems: 'center',
+    justifyContent:
+      'center',
+    backgroundColor:
+      COLORS.white,
+    borderWidth: 1,
+    borderColor:
+      COLORS.border,
+    ...SHADOWS.soft,
+  },
+
+  signedOutTitle: {
+    marginTop: 18,
+    fontFamily:
+      FONTS.display,
+    fontSize: 27,
+    lineHeight: 33,
+    textAlign: 'center',
+    color:
+      COLORS.brown,
+  },
+
+  signedOutText: {
+    marginTop: 9,
+    maxWidth: 310,
+    fontFamily:
+      FONTS.body,
+    fontSize: 13,
+    lineHeight: 20,
+    textAlign: 'center',
+    color:
+      COLORS.subText,
+  },
+
+
+  // =========================================================
+  // LOADING
+  // =========================================================
+
+  loadingScreen: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent:
+      'center',
   },
 
   loadingText: {
     marginTop: 12,
-    fontFamily: FONTS.body,
-    fontSize: 13,
-    color: COLORS.subText,
-  },
-
-  orderCard: {
-    marginBottom: 15,
-    padding: 17,
-    borderRadius: 26,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    backgroundColor: 'rgba(252,250,247,0.95)',
-    ...SHADOWS.soft,
-  },
-
-  orderTopRow: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    justifyContent: 'space-between',
-  },
-
-  orderIdentity: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingRight: 12,
-  },
-
-  vendorIconWrap: {
-    width: 46,
-    height: 46,
-    marginRight: 12,
-    borderRadius: 18,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: 'rgba(74,103,65,0.11)',
-  },
-
-  orderIdentityText: {
-    flex: 1,
-  },
-
-  orderNumber: {
-    fontFamily: FONTS.bodyBold,
-    fontSize: 10,
-    letterSpacing: 0.6,
-    textTransform: 'uppercase',
-    color: COLORS.forest,
-  },
-
-  vendorName: {
-    marginTop: 3,
-    fontFamily: FONTS.display,
-    fontSize: 21,
-    color: COLORS.brown,
-  },
-
-  orderTotal: {
-    fontFamily: FONTS.display,
-    fontSize: 23,
-    color: COLORS.forest,
-  },
-
-  statusBadge: {
-    alignSelf: 'flex-start',
-    minHeight: 32,
-    marginTop: 15,
-    paddingHorizontal: 11,
-    borderRadius: 16,
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: 'rgba(201,168,76,0.18)',
-  },
-
-  statusBadgeCompleted: {
-    backgroundColor: 'rgba(74,103,65,0.13)',
-  },
-
-  statusBadgeCancelled: {
-    backgroundColor: 'rgba(183,77,77,0.12)',
-  },
-
-  statusDot: {
-    width: 7,
-    height: 7,
-    marginRight: 7,
-    borderRadius: 4,
-    backgroundColor: COLORS.gold,
-  },
-
-  statusDotCompleted: {
-    backgroundColor: COLORS.forest,
-  },
-
-  statusDotCancelled: {
-    backgroundColor: COLORS.danger,
-  },
-
-  statusText: {
-    fontFamily: FONTS.bodyBold,
-    fontSize: 11,
-    color: COLORS.brown,
-  },
-
-  statusTextCompleted: {
-    color: COLORS.forest,
-  },
-
-  statusTextCancelled: {
-    color: COLORS.danger,
-  },
-
-  orderDivider: {
-    height: 1,
-    marginVertical: 15,
-    backgroundColor: COLORS.divider,
-  },
-
-  orderMetaRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 13,
-  },
-
-  metaItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-
-  metaText: {
-    marginLeft: 5,
-    fontFamily: FONTS.bodyBold,
-    fontSize: 11,
-    textTransform: 'capitalize',
-    color: COLORS.subText,
-  },
-
-  orderActionRow: {
-    minHeight: 42,
-    marginTop: 15,
-    paddingHorizontal: 13,
-    borderRadius: 21,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    backgroundColor: 'rgba(74,103,65,0.09)',
-  },
-
-  viewDetailsText: {
-    fontFamily: FONTS.bodyBold,
+    fontFamily:
+      FONTS.body,
     fontSize: 12,
-    color: COLORS.forest,
-  },
-
-  emptyCard: {
-    borderRadius: 29,
-    overflow: 'hidden',
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    backgroundColor: 'rgba(252,250,247,0.97)',
-    ...SHADOWS.medium,
-  },
-
-  emptyDecorativeHeader: {
-    minHeight: 165,
-    paddingHorizontal: 24,
-    paddingVertical: 27,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderBottomWidth: 1,
-    borderBottomColor: COLORS.divider,
-    backgroundColor: 'rgba(74,103,65,0.10)',
-  },
-
-  emptyHeaderIcon: {
-    width: 82,
-    height: 82,
-    borderRadius: 41,
-    borderWidth: 3,
-    borderColor: COLORS.gold,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: COLORS.warmWhite,
-    ...SHADOWS.soft,
-  },
-
-  emptyEyebrow: {
-    marginTop: 16,
-    fontFamily: FONTS.bodyBold,
-    fontSize: 11,
-    letterSpacing: 1.2,
-    textTransform: 'uppercase',
-    color: COLORS.forest,
-  },
-
-  emptyContent: {
-    paddingHorizontal: 27,
-    paddingVertical: 29,
-    alignItems: 'center',
-  },
-
-  emptyTitle: {
-    fontFamily: FONTS.display,
-    fontSize: 25,
-    lineHeight: 31,
-    textAlign: 'center',
-    color: COLORS.brown,
-  },
-
-  emptyMessage: {
-    marginTop: 8,
-    fontFamily: FONTS.body,
-    fontSize: 13,
-    lineHeight: 19,
-    textAlign: 'center',
-    color: COLORS.subText,
-  },
-
-  shopButton: {
-    width: '100%',
-    height: 52,
-    marginTop: 19,
-    borderRadius: 26,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: COLORS.gold,
-    ...SHADOWS.soft,
-  },
-
-  shopButtonText: {
-    marginLeft: 8,
-    fontFamily: FONTS.bodyBold,
-    fontSize: 15,
-    color: COLORS.brown,
-  },
-
-  guestCard: {
-    marginHorizontal: 20,
-    marginTop: 18,
-    marginBottom: 150,
-    borderRadius: 30,
-    overflow: 'hidden',
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    backgroundColor: 'rgba(252,250,247,0.97)',
-    ...SHADOWS.medium,
-  },
-
-  guestDecorativeHeader: {
-    minHeight: 135,
-    paddingHorizontal: 24,
-    paddingVertical: 20,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderBottomWidth: 1,
-    borderBottomColor: COLORS.divider,
-    backgroundColor: 'rgba(74,103,65,0.10)',
-  },
-
-  guestHeaderIcon: {
-    width: 74,
-    height: 74,
-    borderRadius: 37,
-    borderWidth: 3,
-    borderColor: COLORS.gold,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: COLORS.warmWhite,
-    ...SHADOWS.soft,
-  },
-
-  guestCardEyebrow: {
-    marginTop: 13,
-    fontFamily: FONTS.bodyBold,
-    fontSize: 10,
-    letterSpacing: 1.1,
-    textTransform: 'uppercase',
-    color: COLORS.forest,
-  },
-
-  guestContent: {
-    paddingHorizontal: 28,
-    paddingTop: 22,
-    paddingBottom: 26,
-    alignItems: 'center',
-  },
-
-  guestFeatureList: {
-    width: '100%',
-    marginTop: 18,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderRadius: 22,
-    backgroundColor: 'rgba(74,103,65,0.07)',
-  },
-
-  guestFeatureRow: {
-    minHeight: 39,
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-
-  guestFeatureIcon: {
-    width: 31,
-    height: 31,
-    marginRight: 10,
-    borderRadius: 13,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: 'rgba(252,250,247,0.88)',
-  },
-
-  guestFeatureText: {
-    flex: 1,
-    fontFamily: FONTS.bodyBold,
-    fontSize: 11,
-    lineHeight: 16,
-    color: COLORS.brown,
+    color:
+      COLORS.subText,
   },
 });

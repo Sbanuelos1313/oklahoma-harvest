@@ -15,6 +15,7 @@ import {
   ScrollView,
   ImageBackground,
   ActivityIndicator,
+  TextInput,
 } from 'react-native';
 
 import {
@@ -95,6 +96,36 @@ export default function CartScreen({
     loading,
     setLoading,
   ] = useState(false);
+
+  const [
+    streetAddress,
+    setStreetAddress,
+  ] = useState('');
+
+  const [
+    addressLine2,
+    setAddressLine2,
+  ] = useState('');
+
+  const [
+    addressCity,
+    setAddressCity,
+  ] = useState('');
+
+  const [
+    addressState,
+    setAddressState,
+  ] = useState('');
+
+  const [
+    addressZip,
+    setAddressZip,
+  ] = useState('');
+
+  const [
+    deliveryInstructions,
+    setDeliveryInstructions,
+  ] = useState('');
 
 
   // ===================================================
@@ -266,190 +297,260 @@ export default function CartScreen({
       items,
     });
   }
-function getSelectedFulfillment() {
-  /*
-   * Only return a fulfillment method that the
-   * shopper actually selected.
-   *
-   * We intentionally DO NOT automatically choose
-   * pickup, delivery, or shipping merely because
-   * the producer offers it.
-   *
-   * This allows quick-add products to enter the
-   * cart without forcing a fulfillment choice.
-   */
-
-  if (fulfillmentType) {
-    return fulfillmentType;
-  }
-
-  if (cart?.fulfillment_type) {
-    return cart.fulfillment_type;
-  }
-
-  if (
-    cart?.items?.[0]
-      ?.fulfillment_type
-  ) {
-    return cart.items[0]
-      .fulfillment_type;
-  }
-
-  return null;
-}
-  async function doCheckout() {
-  // ===================================================
-  // REQUIRE SIGN IN
-  // ===================================================
-
-  if (!token || token === 'guest') {
-    Alert.alert(
-      'Sign in required',
-      'Please sign in or create an account to complete checkout.',
-      [
-        {
-          text: 'Not Now',
-          style: 'cancel',
-        },
-        {
-          text: 'Sign In',
-          onPress: () =>
-            navigation
-              .getParent()
-              ?.navigate('Auth'),
-        },
-      ]
-    );
-
-    return;
-  }
 
 
   // ===================================================
-  // REQUIRE CART ITEMS
+  // SELECTED FULFILLMENT
   // ===================================================
 
-  if (!cart?.items?.length) {
-    Alert.alert(
-      'Cart is empty',
-      'Add an item before checking out.'
-    );
+  function getSelectedFulfillment() {
+    /*
+     * Only return a fulfillment method that the
+     * shopper actually selected.
+     *
+     * We intentionally DO NOT automatically choose
+     * pickup, delivery, or shipping merely because
+     * the producer offers it.
+     *
+     * This allows quick-add products to enter the
+     * cart without forcing a fulfillment choice.
+     */
 
-    return;
-  }
+    if (fulfillmentType) {
+      return fulfillmentType;
+    }
 
-
-  // ===================================================
-  // RESOLVE FULFILLMENT
-  // ===================================================
-
-  const checkoutFulfillment =
-  getSelectedFulfillment();
-
-
-  if (!checkoutFulfillment) {
-    Alert.alert(
-      'Choose fulfillment',
-      'Please select pickup, delivery, or shipping before continuing to payment.'
-    );
-
-    return;
-  }
-
-
-  // ===================================================
-  // KEEP STATE + CART SYNCHRONIZED
-  // ===================================================
-
-  if (
-    fulfillmentType !==
-    checkoutFulfillment
-  ) {
-    setFulfillmentType(
-      checkoutFulfillment
-    );
-  }
-
-
+    if (cart?.fulfillment_type) {
+      return cart.fulfillment_type;
+    }
 
     if (
-    cart?.fulfillment_type !==
-    checkoutFulfillment
-  ) {
-    setCart({
-      ...cart,
-      fulfillment_type:
-        checkoutFulfillment,
-    });
+      cart?.items?.[0]
+        ?.fulfillment_type
+    ) {
+      return cart.items[0]
+        .fulfillment_type;
+    }
+
+    return null;
   }
 
 
   // ===================================================
-  // BUILD PAYMENT PAYLOAD
+  // CHECKOUT
   // ===================================================
 
-  const paymentPayload = {
-    producer_id:
-      cart.producer_id,
+  async function doCheckout() {
+    // =================================================
+    // REQUIRE SIGN IN
+    // =================================================
 
-    fulfillment_type:
-      checkoutFulfillment,
-
-    items:
-      cart.items.map(
-        (item) => ({
-          product_id:
-            item.product_id ??
-            item.id,
-
-          quantity:
-            Number(
-              item.quantity || 1
-            ),
-        })
-      ),
-  };
-
-  // ===================================================
-  // DEBUG
-  // ===================================================
-
-  console.log(
-    'CHECKOUT FULFILLMENT:',
-    checkoutFulfillment
-  );
-
-  console.log(
-    'PAYMENT PAYLOAD:',
-    paymentPayload
-  );
-
-
-  // ===================================================
-  // BEGIN CHECKOUT
-  // ===================================================
-
-  setLoading(true);
-
-  try {
-      const paymentResponse = await fetch(
-        `${API}/api/stripe/create-payment-intent`,
-        {
-          method: 'POST',
-
-          headers: {
-            Accept: 'application/json',
-            Authorization: 
-              `Bearer ${token}`,
-            'Content-Type': 
-              'application/json',
+    if (!token || token === 'guest') {
+      Alert.alert(
+        'Sign in required',
+        'Please sign in or create an account to complete checkout.',
+        [
+          {
+            text: 'Not Now',
+            style: 'cancel',
           },
-
-          body: JSON.stringify(
-            paymentPayload
-          ),
-        }
+          {
+            text: 'Sign In',
+            onPress: () =>
+              navigation
+                .getParent()
+                ?.navigate('Auth'),
+          },
+        ]
       );
+
+      return;
+    }
+
+
+    // =================================================
+    // REQUIRE CART ITEMS
+    // =================================================
+
+    if (!cart?.items?.length) {
+      Alert.alert(
+        'Cart is empty',
+        'Add an item before checking out.'
+      );
+
+      return;
+    }
+
+
+    // =================================================
+    // RESOLVE FULFILLMENT
+    // =================================================
+
+    const checkoutFulfillment =
+      getSelectedFulfillment();
+
+    if (!checkoutFulfillment) {
+      Alert.alert(
+        'Choose fulfillment',
+        'Please select pickup, delivery, or shipping before continuing to payment.'
+      );
+
+      return;
+    }
+
+
+    // =================================================
+    // REQUIRE ADDRESS FOR DELIVERY / SHIPPING
+    // =================================================
+
+    const requiresAddress =
+      checkoutFulfillment ===
+        'delivery' ||
+      checkoutFulfillment ===
+        'shipping';
+
+    if (
+      requiresAddress &&
+      (
+        !streetAddress.trim() ||
+        !addressCity.trim() ||
+        !addressState.trim() ||
+        !addressZip.trim()
+      )
+    ) {
+      Alert.alert(
+        'Address required',
+        `Please enter a complete ${
+          checkoutFulfillment ===
+          'delivery'
+            ? 'delivery'
+            : 'shipping'
+        } address before continuing to payment.`
+      );
+
+      return;
+    }
+
+
+    // =================================================
+    // BUILD FULFILLMENT ADDRESS
+    // =================================================
+
+    const fulfillmentAddress =
+      requiresAddress
+        ? [
+            streetAddress.trim(),
+
+            addressLine2.trim(),
+
+            `${addressCity.trim()}, ${addressState.trim()} ${addressZip.trim()}`,
+
+            deliveryInstructions.trim()
+              ? `Instructions: ${deliveryInstructions.trim()}`
+              : null,
+          ]
+            .filter(Boolean)
+            .join('\n')
+        : null;
+
+
+    // =================================================
+    // KEEP STATE + CART SYNCHRONIZED
+    // =================================================
+
+    if (
+      fulfillmentType !==
+      checkoutFulfillment
+    ) {
+      setFulfillmentType(
+        checkoutFulfillment
+      );
+    }
+
+    if (
+      cart?.fulfillment_type !==
+      checkoutFulfillment
+    ) {
+      setCart({
+        ...cart,
+        fulfillment_type:
+          checkoutFulfillment,
+      });
+    }
+
+
+    // =================================================
+    // BUILD PAYMENT PAYLOAD
+    // =================================================
+
+    const paymentPayload = {
+      producer_id:
+        cart.producer_id,
+
+      fulfillment_type:
+        checkoutFulfillment,
+
+      items:
+        cart.items.map(
+          (item) => ({
+            product_id:
+              item.product_id ??
+              item.id,
+
+            quantity:
+              Number(
+                item.quantity || 1
+              ),
+          })
+        ),
+    };
+
+
+    // =================================================
+    // DEBUG
+    // =================================================
+
+    console.log(
+      'CHECKOUT FULFILLMENT:',
+      checkoutFulfillment
+    );
+
+    console.log(
+      'PAYMENT PAYLOAD:',
+      paymentPayload
+    );
+
+
+    // =================================================
+    // BEGIN CHECKOUT
+    // =================================================
+
+    setLoading(true);
+
+    try {
+      const paymentResponse =
+        await fetch(
+          `${API}/api/stripe/create-payment-intent`,
+          {
+            method: 'POST',
+
+            headers: {
+              Accept:
+                'application/json',
+
+              Authorization:
+                `Bearer ${token}`,
+
+              'Content-Type':
+                'application/json',
+            },
+
+            body:
+              JSON.stringify(
+                paymentPayload
+              ),
+          }
+        );
 
       const paymentData =
         await paymentResponse
@@ -459,7 +560,11 @@ function getSelectedFulfillment() {
       console.log(
         'PAYMENT INTENT RESPONSE:',
         paymentResponse.status,
-        JSON.stringify(paymentData, null, 2)
+        JSON.stringify(
+          paymentData,
+          null,
+          2
+        )
       );
 
       if (!paymentResponse.ok) {
@@ -474,41 +579,54 @@ function getSelectedFulfillment() {
         {
           subtotal:
             paymentData?.subtotal,
+
           tax:
             paymentData?.tax,
+
           deliveryFee:
-            paymentData?.delivery_fee,
+            paymentData
+              ?.delivery_fee,
+
           total:
             paymentData?.total,
         }
       );
+
       const {
-        error: initError,
-      } = await initPaymentSheet({
-        merchantDisplayName:
-          'From Our Place',
+        error:
+          initializationError,
+      } =
+        await initPaymentSheet({
+          merchantDisplayName:
+            'From Our Place',
 
-        paymentIntentClientSecret:
-          paymentData.client_secret,
+          paymentIntentClientSecret:
+            paymentData.client_secret,
 
-        returnURL:
-          'fromourplace://stripe-redirect',
+          returnURL:
+            'fromourplace://stripe-redirect',
 
-        style:
-          'automatic',
-      });
+          style:
+            'automatic',
+        });
 
       if (initializationError) {
         throw new Error(
-          initializationError.message
+          initializationError.message ||
+            'Unable to initialize payment.'
         );
       }
 
-      const { error: paymentError } =
+      const {
+        error: paymentError,
+      } =
         await presentPaymentSheet();
 
       if (paymentError) {
-        if (paymentError.code !== 'Canceled') {
+        if (
+          paymentError.code !==
+          'Canceled'
+        ) {
           throw new Error(
             paymentError.message
           );
@@ -526,38 +644,69 @@ function getSelectedFulfillment() {
         )
       );
 
-      const orderResponse = await fetch(
-        `${API}/api/orders/from-payment`,
-        {
-          method: 'POST',
-          headers: {
-            Authorization: 
-              `Bearer ${token}`,
-            'Content-Type': 
-              'application/json',
-            'Accept': 
-              'application/json',
-          },
-          body: JSON.stringify({
-            producer_id: cart.producer_id,
-            items: cart.items.map((item) => ({
-              product_id: item.product_id,
-              quantity: item.quantity,
-            })),
-            fulfillment_type:
-              fulfillmentType,
-            payment_intent_id:
-              paymentData.payment_intent_id,
-          }),
-        }
-      );
+
+      // =================================================
+      // CREATE ORDER AFTER SUCCESSFUL PAYMENT
+      // =================================================
+
+      const orderResponse =
+        await fetch(
+          `${API}/api/orders/from-payment`,
+          {
+            method: 'POST',
+
+            headers: {
+              Authorization:
+                `Bearer ${token}`,
+
+              'Content-Type':
+                'application/json',
+
+              Accept:
+                'application/json',
+            },
+
+            body:
+              JSON.stringify({
+                producer_id:
+                  cart.producer_id,
+
+                items:
+                  cart.items.map(
+                    (item) => ({
+                      product_id:
+                        item.product_id ??
+                        item.id,
+
+                      quantity:
+                        Number(
+                          item.quantity ||
+                            1
+                        ),
+                    })
+                  ),
+
+                fulfillment_type:
+                  checkoutFulfillment,
+
+                delivery_address:
+                  fulfillmentAddress,
+
+                payment_intent_id:
+                  paymentData
+                    .payment_intent_id,
+              }),
+          }
+        );
 
       const orderData =
-        await orderResponse.json();
+        await orderResponse
+          .json()
+          .catch(() => null);
 
       if (!orderResponse.ok) {
         throw new Error(
-          orderData.detail ||
+          orderData?.detail ||
             'Your order could not be placed.'
         );
       }
@@ -566,10 +715,16 @@ function getSelectedFulfillment() {
 
       navigation
         .getParent()
-        ?.navigate('OrderConfirmation', {
-          order: orderData,
-          fulfillmentType,
-        });
+        ?.navigate(
+          'OrderConfirmation',
+          {
+            order:
+              orderData,
+
+            fulfillmentType:
+              checkoutFulfillment,
+          }
+        );
     } catch (error) {
       Alert.alert(
         'Checkout error',
@@ -580,6 +735,11 @@ function getSelectedFulfillment() {
       setLoading(false);
     }
   }
+
+
+  // ===================================================
+  // FULFILLMENT OPTION
+  // ===================================================
 
   function renderFulfillmentOption({
     key,
@@ -596,6 +756,7 @@ function getSelectedFulfillment() {
         activeOpacity={0.86}
         style={[
           styles.fulfillmentOption,
+
           selected &&
             styles.fulfillmentOptionActive,
         ]}
@@ -611,6 +772,7 @@ function getSelectedFulfillment() {
         <View
           style={[
             styles.fulfillmentIconWrap,
+
             selected &&
               styles.fulfillmentIconWrapActive,
           ]}
@@ -629,6 +791,7 @@ function getSelectedFulfillment() {
         <Text
           style={[
             styles.fulfillmentTitle,
+
             selected &&
               styles.fulfillmentTitleActive,
           ]}
@@ -640,6 +803,7 @@ function getSelectedFulfillment() {
           numberOfLines={2}
           style={[
             styles.fulfillmentSubtitle,
+
             selected &&
               styles.fulfillmentSubtitleActive,
           ]}
@@ -649,6 +813,9 @@ function getSelectedFulfillment() {
       </TouchableOpacity>
     );
   }
+  // ===================================================
+  // EMPTY CART
+  // ===================================================
 
   if (!cart?.items?.length) {
     return (
@@ -657,51 +824,111 @@ function getSelectedFulfillment() {
         resizeMode="cover"
         style={styles.background}
       >
-        <View style={styles.backgroundOverlay}>
-          <SafeAreaView style={styles.safeArea}>
-            <StatusBar barStyle="dark-content" />
+        <View
+          style={
+            styles.backgroundOverlay
+          }
+        >
+          <SafeAreaView
+            style={styles.safeArea}
+          >
+            <StatusBar
+              barStyle="dark-content"
+            />
 
-            <View style={styles.emptyHeader}>
-              <Text style={styles.screenTitle}>
+            <View
+              style={
+                styles.emptyHeader
+              }
+            >
+              <Text
+                style={
+                  styles.screenTitle
+                }
+              >
                 Your Cart
               </Text>
             </View>
 
-            <View style={styles.emptyState}>
+            <View
+              style={
+                styles.emptyState
+              }
+            >
               <Image
-                source={IMAGE_ASSETS.hero.checkout}
-                style={styles.emptyImage}
+                source={
+                  IMAGE_ASSETS
+                    .hero
+                    .checkout
+                }
+                style={
+                  styles.emptyImage
+                }
               />
 
-              <View style={styles.emptyImageOverlay} />
+              <View
+                style={
+                  styles
+                    .emptyImageOverlay
+                }
+              />
 
-              <View style={styles.emptyContent}>
-                <View style={styles.emptyIcon}>
+              <View
+                style={
+                  styles.emptyContent
+                }
+              >
+                <View
+                  style={
+                    styles.emptyIcon
+                  }
+                >
                   <Ionicons
                     name="basket-outline"
                     size={34}
-                    color={COLORS.forest}
+                    color={
+                      COLORS.forest
+                    }
                   />
                 </View>
 
-                <Text style={styles.emptyTitle}>
+                <Text
+                  style={
+                    styles.emptyTitle
+                  }
+                >
                   Ready to shop local?
                 </Text>
 
-                <Text style={styles.emptyMessage}>
-                  Add fresh food, handmade goods,
-                  gifts, wellness products, and
-                  local market finds to your cart.
+                <Text
+                  style={
+                    styles.emptyMessage
+                  }
+                >
+                  Add fresh food,
+                  handmade goods, gifts,
+                  wellness products, and
+                  local market finds to
+                  your cart.
                 </Text>
 
                 <TouchableOpacity
                   activeOpacity={0.88}
-                  style={styles.shopButton}
+                  style={
+                    styles.shopButton
+                  }
                   onPress={() =>
-                    navigation.navigate('Home')
+                    navigation.navigate(
+                      'Home'
+                    )
                   }
                 >
-                  <Text style={styles.shopButtonText}>
+                  <Text
+                    style={
+                      styles
+                        .shopButtonText
+                    }
+                  >
                     Start Shopping
                   </Text>
                 </TouchableOpacity>
@@ -713,221 +940,621 @@ function getSelectedFulfillment() {
     );
   }
 
+
+  // ===================================================
+  // MAIN CART
+  // ===================================================
+
   return (
     <ImageBackground
       source={require('../assets/backgrounds/bg_settings.jpg')}
       resizeMode="cover"
       style={styles.background}
     >
-      <View style={styles.backgroundOverlay}>
-        <SafeAreaView style={styles.safeArea}>
-          <StatusBar barStyle="dark-content" />
+      <View
+        style={
+          styles.backgroundOverlay
+        }
+      >
+        <SafeAreaView
+          style={styles.safeArea}
+        >
+          <StatusBar
+            barStyle="dark-content"
+          />
 
           <ScrollView
-            showsVerticalScrollIndicator={false}
-            contentContainerStyle={styles.scrollContent}
+            showsVerticalScrollIndicator={
+              false
+            }
+            contentContainerStyle={
+              styles.scrollContent
+            }
           >
-            <View style={styles.header}>
+
+            {/* =========================================
+                HEADER
+            ========================================= */}
+
+            <View
+              style={styles.header}
+            >
               <View>
-                <Text style={styles.eyebrow}>
+                <Text
+                  style={
+                    styles.eyebrow
+                  }
+                >
                   Checkout
                 </Text>
 
-                <Text style={styles.screenTitle}>
+                <Text
+                  style={
+                    styles.screenTitle
+                  }
+                >
                   Your Cart
                 </Text>
 
-                <Text style={styles.vendorLine}>
-                  From {cart.producer_name}
+                <Text
+                  style={
+                    styles.vendorLine
+                  }
+                >
+                  From{' '}
+                  {cart.producer_name}
                 </Text>
               </View>
 
-              <View style={styles.cartCountBadge}>
+              <View
+                style={
+                  styles.cartCountBadge
+                }
+              >
                 <Ionicons
                   name="bag-outline"
                   size={21}
-                  color={COLORS.forest}
+                  color={
+                    COLORS.forest
+                  }
                 />
 
-                <Text style={styles.cartCountText}>
+                <Text
+                  style={
+                    styles.cartCountText
+                  }
+                >
                   {cartCount}
                 </Text>
               </View>
             </View>
 
-            <View style={styles.fulfillmentCard}>
-              <Text style={styles.sectionTitle}>
-                How would you like to receive your goods?
+
+            {/* =========================================
+                FULFILLMENT
+            ========================================= */}
+
+            <View
+              style={
+                styles.fulfillmentCard
+              }
+            >
+              <Text
+                style={
+                  styles.sectionTitle
+                }
+              >
+                How would you like to
+                receive your goods?
               </Text>
 
-              <Text style={styles.sectionSubtitle}>
+              <Text
+                style={
+                  styles.sectionSubtitle
+                }
+              >
                 {fulfillmentType
                   ? 'Your selection will apply to this order.'
                   : 'Please choose an available option before continuing to payment.'}
               </Text>
 
-              <Text style={styles.sectionSubtitle}>
-                Select the fulfillment option for
-                this order.
+              <Text
+                style={
+                  styles.sectionSubtitle
+                }
+              >
+                Select the fulfillment
+                option for this order.
               </Text>
 
-              <View style={styles.fulfillmentRow}>
+              <View
+                style={
+                  styles.fulfillmentRow
+                }
+              >
                 {fulfillmentPickup
-                  ? renderFulfillmentOption({
-                      key: 'pickup',
-                      title: 'Pickup',
-                      subtitle: 'Collect from the producer',
-                      icon: 'bag-handle-outline',
-                    })
+                  ? renderFulfillmentOption(
+                      {
+                        key:
+                          'pickup',
+
+                        title:
+                          'Pickup',
+
+                        subtitle:
+                          'Collect from the producer',
+
+                        icon:
+                          'bag-handle-outline',
+                      }
+                    )
                   : null}
 
                 {fulfillmentDelivery
-                  ? renderFulfillmentOption({
-                      key: 'delivery',
-                      title: 'Delivery',
-                      subtitle: 'Delivered to your address',
-                      icon: 'car-outline',
-                    })
+                  ? renderFulfillmentOption(
+                      {
+                        key:
+                          'delivery',
+
+                        title:
+                          'Delivery',
+
+                        subtitle:
+                          'Delivered to your address',
+
+                        icon:
+                          'car-outline',
+                      }
+                    )
                   : null}
 
                 {fulfillmentShipping
-                  ? renderFulfillmentOption({
-                      key: 'shipping',
-                      title: 'Shipping',
-                      subtitle: 'Shipped when available',
-                      icon: 'cube-outline',
-                    })
+                  ? renderFulfillmentOption(
+                      {
+                        key:
+                          'shipping',
+
+                        title:
+                          'Shipping',
+
+                        subtitle:
+                          'Shipped when available',
+
+                        icon:
+                          'cube-outline',
+                      }
+                    )
                   : null}
               </View>
+
+
+              {/* =======================================
+                  DELIVERY / SHIPPING ADDRESS
+              ======================================= */}
+
+              {(
+                fulfillmentType ===
+                  'delivery' ||
+                fulfillmentType ===
+                  'shipping'
+              ) && (
+                <View
+                  style={
+                    styles.addressSection
+                  }
+                >
+                  <View
+                    style={
+                      styles
+                        .addressHeadingRow
+                    }
+                  >
+                    <Ionicons
+                      name={
+                        fulfillmentType ===
+                        'delivery'
+                          ? 'location-outline'
+                          : 'mail-outline'
+                      }
+                      size={20}
+                      color={
+                        COLORS.forest
+                      }
+                    />
+
+                    <Text
+                      style={
+                        styles.addressTitle
+                      }
+                    >
+                      {fulfillmentType ===
+                      'delivery'
+                        ? 'Delivery Address'
+                        : 'Shipping Address'}
+                    </Text>
+                  </View>
+
+                  <Text
+                    style={
+                      styles.addressHelp
+                    }
+                  >
+                    Enter the address
+                    where this order
+                    should be{' '}
+                    {fulfillmentType ===
+                    'delivery'
+                      ? 'delivered.'
+                      : 'shipped.'}
+                  </Text>
+
+
+                  {/* STREET ADDRESS */}
+
+                  <TextInput
+                    value={
+                      streetAddress
+                    }
+                    onChangeText={
+                      setStreetAddress
+                    }
+                    placeholder="Street address *"
+                    placeholderTextColor={
+                      COLORS.subText
+                    }
+                    autoComplete="street-address"
+                    style={
+                      styles.addressInput
+                    }
+                  />
+
+
+                  {/* APARTMENT / UNIT */}
+
+                  <TextInput
+                    value={
+                      addressLine2
+                    }
+                    onChangeText={
+                      setAddressLine2
+                    }
+                    placeholder="Apartment, suite, unit (optional)"
+                    placeholderTextColor={
+                      COLORS.subText
+                    }
+                    style={
+                      styles.addressInput
+                    }
+                  />
+
+
+                  {/* CITY */}
+
+                  <TextInput
+                    value={
+                      addressCity
+                    }
+                    onChangeText={
+                      setAddressCity
+                    }
+                    placeholder="City *"
+                    placeholderTextColor={
+                      COLORS.subText
+                    }
+                    style={
+                      styles.addressInput
+                    }
+                  />
+
+
+                  {/* STATE + ZIP */}
+
+                  <View
+                    style={
+                      styles.addressRow
+                    }
+                  >
+                    <TextInput
+                      value={
+                        addressState
+                      }
+                      onChangeText={
+                        setAddressState
+                      }
+                      placeholder="State *"
+                      placeholderTextColor={
+                        COLORS.subText
+                      }
+                      autoCapitalize="characters"
+                      maxLength={2}
+                      style={[
+                        styles.addressInput,
+                        styles
+                          .addressStateInput,
+                      ]}
+                    />
+
+                    <TextInput
+                      value={
+                        addressZip
+                      }
+                      onChangeText={
+                        setAddressZip
+                      }
+                      placeholder="ZIP code *"
+                      placeholderTextColor={
+                        COLORS.subText
+                      }
+                      keyboardType="number-pad"
+                      maxLength={10}
+                      style={[
+                        styles.addressInput,
+                        styles
+                          .addressZipInput,
+                      ]}
+                    />
+                  </View>
+
+
+                  {/* DELIVERY INSTRUCTIONS */}
+
+                  {fulfillmentType ===
+                    'delivery' && (
+                    <TextInput
+                      value={
+                        deliveryInstructions
+                      }
+                      onChangeText={
+                        setDeliveryInstructions
+                      }
+                      placeholder="Delivery instructions (optional)"
+                      placeholderTextColor={
+                        COLORS.subText
+                      }
+                      multiline
+                      textAlignVertical="top"
+                      style={[
+                        styles.addressInput,
+                        styles
+                          .instructionsInput,
+                      ]}
+                    />
+                  )}
+                </View>
+              )}
             </View>
 
-            <Text style={styles.itemsHeading}>
+
+            {/* =========================================
+                ITEMS
+            ========================================= */}
+
+            <Text
+              style={
+                styles.itemsHeading
+              }
+            >
               Your Items
             </Text>
 
-            {cart.items.map((item, index) => {
-              const lineTotal =
-                Number(item.price || 0) *
-                Number(item.quantity || 0);
+            {cart.items.map(
+              (item, index) => {
+                const lineTotal =
+                  Number(
+                    item.price || 0
+                  ) *
+                  Number(
+                    item.quantity || 0
+                  );
 
-              return (
-                <View
-                  key={`${item.product_id}-${index}`}
-                  style={styles.itemCard}
-                >
-                  <Image
-                    source={
-                      item.image_url
-                        ? {
-                            uri: item.image_url,
-                          }
-                        : IMAGE_ASSETS.products.default
+                return (
+                  <View
+                    key={`${item.product_id}-${index}`}
+                    style={
+                      styles.itemCard
                     }
-                    style={styles.itemImage}
-                  />
+                  >
+                    <Image
+                      source={
+                        item.image_url
+                          ? {
+                              uri:
+                                item.image_url,
+                            }
+                          : IMAGE_ASSETS
+                              .products
+                              .default
+                      }
+                      style={
+                        styles.itemImage
+                      }
+                    />
 
-                  <View style={styles.itemBody}>
-                    <View style={styles.itemTopRow}>
-                      <View style={styles.itemTextBlock}>
-                        <Text
-                          numberOfLines={2}
-                          style={styles.itemName}
-                        >
-                          {item.name}
-                        </Text>
-
-                        <Text style={styles.itemMeta}>
-                          $
-                          {Number(
-                            item.price || 0
-                          ).toFixed(2)}
-                          {item.unit
-                            ? ` / ${item.unit}`
-                            : ''}
-                        </Text>
-                      </View>
-
-                      <Text style={styles.lineTotal}>
-                        ${lineTotal.toFixed(2)}
-                      </Text>
-                    </View>
-
-                    <View style={styles.itemFooter}>
+                    <View
+                      style={
+                        styles.itemBody
+                      }
+                    >
                       <View
-                        style={styles.quantitySelector}
-                      >
-                        <TouchableOpacity
-                          activeOpacity={0.8}
-                          style={
-                            styles.quantityButton
-                          }
-                          onPress={() =>
-                            updateQuantity(
-                              index,
-                              -1
-                            )
-                          }
-                        >
-                          <Ionicons
-                            name="remove"
-                            size={18}
-                            color={COLORS.brown}
-                          />
-                        </TouchableOpacity>
-
-                        <Text
-                          style={styles.quantityText}
-                        >
-                          {item.quantity}
-                        </Text>
-
-                        <TouchableOpacity
-                          activeOpacity={0.8}
-                          style={
-                            styles.quantityButton
-                          }
-                          onPress={() =>
-                            updateQuantity(
-                              index,
-                              1
-                            )
-                          }
-                        >
-                          <Ionicons
-                            name="add"
-                            size={18}
-                            color={COLORS.brown}
-                          />
-                        </TouchableOpacity>
-                      </View>
-
-                      <TouchableOpacity
-                        activeOpacity={0.75}
-                        style={styles.removeButton}
-                        onPress={() =>
-                          removeItem(index)
+                        style={
+                          styles.itemTopRow
                         }
                       >
-                        <Ionicons
-                          name="trash-outline"
-                          size={16}
-                          color={COLORS.danger}
-                        />
+                        <View
+                          style={
+                            styles
+                              .itemTextBlock
+                          }
+                        >
+                          <Text
+                            numberOfLines={
+                              2
+                            }
+                            style={
+                              styles.itemName
+                            }
+                          >
+                            {item.name}
+                          </Text>
+
+                          <Text
+                            style={
+                              styles.itemMeta
+                            }
+                          >
+                            $
+                            {Number(
+                              item.price ||
+                                0
+                            ).toFixed(
+                              2
+                            )}
+                            {item.unit
+                              ? ` / ${item.unit}`
+                              : ''}
+                          </Text>
+                        </View>
 
                         <Text
-                          style={styles.removeText}
+                          style={
+                            styles.lineTotal
+                          }
                         >
-                          Remove
+                          $
+                          {lineTotal.toFixed(
+                            2
+                          )}
                         </Text>
-                      </TouchableOpacity>
+                      </View>
+
+
+                      {/* ===============================
+                          ITEM ACTIONS
+                      =============================== */}
+
+                      <View
+                        style={
+                          styles.itemFooter
+                        }
+                      >
+                        <View
+                          style={
+                            styles
+                              .quantitySelector
+                          }
+                        >
+                          <TouchableOpacity
+                            activeOpacity={
+                              0.8
+                            }
+                            style={
+                              styles
+                                .quantityButton
+                            }
+                            onPress={() =>
+                              updateQuantity(
+                                index,
+                                -1
+                              )
+                            }
+                          >
+                            <Ionicons
+                              name="remove"
+                              size={18}
+                              color={
+                                COLORS.brown
+                              }
+                            />
+                          </TouchableOpacity>
+
+                          <Text
+                            style={
+                              styles
+                                .quantityText
+                            }
+                          >
+                            {item.quantity}
+                          </Text>
+
+                          <TouchableOpacity
+                            activeOpacity={
+                              0.8
+                            }
+                            style={
+                              styles
+                                .quantityButton
+                            }
+                            onPress={() =>
+                              updateQuantity(
+                                index,
+                                1
+                              )
+                            }
+                          >
+                            <Ionicons
+                              name="add"
+                              size={18}
+                              color={
+                                COLORS.brown
+                              }
+                            />
+                          </TouchableOpacity>
+                        </View>
+
+
+                        <TouchableOpacity
+                          activeOpacity={
+                            0.75
+                          }
+                          style={
+                            styles
+                              .removeButton
+                          }
+                          onPress={() =>
+                            removeItem(
+                              index
+                            )
+                          }
+                        >
+                          <Ionicons
+                            name="trash-outline"
+                            size={16}
+                            color={
+                              COLORS.danger
+                            }
+                          />
+
+                          <Text
+                            style={
+                              styles
+                                .removeText
+                            }
+                          >
+                            Remove
+                          </Text>
+                        </TouchableOpacity>
+                      </View>
                     </View>
                   </View>
-                </View>
-              );
-            })}
+                );
+              }
+            )}
 
-            <View style={styles.summaryCard}>
-              <Text style={styles.sectionTitle}>
+
+            {/* =========================================
+                ORDER SUMMARY
+            ========================================= */}
+
+            <View
+              style={
+                styles.summaryCard
+              }
+            >
+              <Text
+                style={
+                  styles.sectionTitle
+                }
+              >
                 Order Summary
               </Text>
 
@@ -940,10 +1567,13 @@ function getSelectedFulfillment() {
 
               <SummaryRow
                 label="Estimated tax"
-                value={`$${totals.tax.toFixed(2)}`}
+                value={`$${totals.tax.toFixed(
+                  2
+                )}`}
               />
 
-              {fulfillmentType === 'delivery' && (
+              {fulfillmentType ===
+                'delivery' && (
                 <SummaryRow
                   label="Delivery fee"
                   value={`$${totals.deliveryFee.toFixed(
@@ -952,43 +1582,74 @@ function getSelectedFulfillment() {
                 />
               )}
 
-              <View style={styles.divider} />
+              <View
+                style={
+                  styles.divider
+                }
+              />
 
-              <View style={styles.totalRow}>
-                <Text style={styles.totalLabel}>
+              <View
+                style={
+                  styles.totalRow
+                }
+              >
+                <Text
+                  style={
+                    styles.totalLabel
+                  }
+                >
                   Total
                 </Text>
 
-                <Text style={styles.totalValue}>
-                  ${totals.total.toFixed(2)}
+                <Text
+                  style={
+                    styles.totalValue
+                  }
+                >
+                  $
+                  {totals.total.toFixed(
+                    2
+                  )}
                 </Text>
               </View>
+
+
+              {/* =======================================
+                  PAYMENT BUTTON
+              ======================================= */}
 
               <TouchableOpacity
                 activeOpacity={0.88}
                 disabled={loading}
                 style={[
                   styles.checkoutButton,
+
                   loading &&
-                    styles.checkoutButtonDisabled,
+                    styles
+                      .checkoutButtonDisabled,
                 ]}
                 onPress={doCheckout}
               >
                 {loading ? (
                   <ActivityIndicator
-                    color={COLORS.brown}
+                    color={
+                      COLORS.brown
+                    }
                   />
                 ) : (
                   <>
                     <Ionicons
                       name="lock-closed-outline"
                       size={19}
-                      color={COLORS.brown}
+                      color={
+                        COLORS.brown
+                      }
                     />
 
                     <Text
                       style={
-                        styles.checkoutButtonText
+                        styles
+                          .checkoutButtonText
                       }
                     >
                       Continue to Payment
@@ -997,22 +1658,37 @@ function getSelectedFulfillment() {
                 )}
               </TouchableOpacity>
 
-              <View style={styles.secureRow}>
+
+              <View
+                style={
+                  styles.secureRow
+                }
+              >
                 <Ionicons
                   name="shield-checkmark-outline"
                   size={16}
-                  color={COLORS.forest}
+                  color={
+                    COLORS.forest
+                  }
                 />
 
-                <Text style={styles.secureText}>
-                  Secure payment powered by Stripe
+                <Text
+                  style={
+                    styles.secureText
+                  }
+                >
+                  Secure payment powered
+                  by Stripe
                 </Text>
               </View>
 
-              <Text style={styles.note}>
-                The producer has 12 hours to
-                confirm your order. Unconfirmed
-                orders are automatically cancelled
+              <Text
+                style={styles.note}
+              >
+                The producer has 12 hours
+                to confirm your order.
+                Unconfirmed orders are
+                automatically cancelled
                 and refunded.
               </Text>
             </View>
@@ -1023,137 +1699,201 @@ function getSelectedFulfillment() {
   );
 }
 
-function SummaryRow({ label, value }) {
+
+// ===========================================================
+// SUMMARY ROW
+// ===========================================================
+
+function SummaryRow({
+  label,
+  value,
+}) {
   return (
-    <View style={styles.summaryRow}>
-      <Text style={styles.summaryLabel}>
+    <View
+      style={styles.summaryRow}
+    >
+      <Text
+        style={
+          styles.summaryLabel
+        }
+      >
         {label}
       </Text>
 
-      <Text style={styles.summaryValue}>
+      <Text
+        style={
+          styles.summaryValue
+        }
+      >
         {value}
       </Text>
     </View>
   );
 }
 
+
+// ===========================================================
+// STYLES
+// ===========================================================
+
 const styles = StyleSheet.create({
+  // =========================================================
+  // SCREEN
+  // =========================================================
+
   background: {
     flex: 1,
+    backgroundColor:
+      COLORS.cream,
   },
 
   backgroundOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(248,244,236,0.10)',
+    backgroundColor:
+      'rgba(255,255,255,0.82)',
   },
 
   safeArea: {
     flex: 1,
-    backgroundColor: 'transparent',
   },
 
   scrollContent: {
-    paddingHorizontal: 20,
-    paddingBottom: 130,
+    paddingHorizontal: 18,
+    paddingTop: 12,
+    paddingBottom: 120,
   },
 
+
+  // =========================================================
+  // HEADER
+  // =========================================================
+
   header: {
-    paddingTop: 14,
-    paddingBottom: 20,
     flexDirection: 'row',
-    alignItems: 'flex-end',
-    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    justifyContent:
+      'space-between',
+    marginBottom: 18,
   },
 
   eyebrow: {
-    fontFamily: FONTS.bodyBold,
+    fontFamily:
+      FONTS.bodyBold,
     fontSize: 11,
-    letterSpacing: 1.2,
-    textTransform: 'uppercase',
-    color: COLORS.forest,
+    letterSpacing: 1.3,
+    textTransform:
+      'uppercase',
+    color:
+      COLORS.forest,
   },
 
   screenTitle: {
     marginTop: 3,
-    fontFamily: FONTS.display,
-    fontSize: 35,
-    lineHeight: 41,
-    color: COLORS.brown,
+    fontFamily:
+      FONTS.display,
+    fontSize: 34,
+    lineHeight: 40,
+    color:
+      COLORS.brown,
   },
 
   vendorLine: {
-    marginTop: 3,
-    fontFamily: FONTS.bodyBold,
+    marginTop: 4,
+    fontFamily:
+      FONTS.body,
     fontSize: 13,
-    color: COLORS.subText,
+    color:
+      COLORS.subText,
   },
 
   cartCountBadge: {
-    minWidth: 52,
-    height: 44,
-    paddingHorizontal: 12,
-    borderRadius: 22,
+    minWidth: 48,
+    height: 42,
+    paddingHorizontal: 10,
+    borderRadius: 21,
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: 'rgba(252,250,247,0.92)',
+    justifyContent:
+      'center',
+    backgroundColor:
+      COLORS.white,
     borderWidth: 1,
-    borderColor: COLORS.border,
+    borderColor:
+      COLORS.border,
     ...SHADOWS.soft,
   },
 
   cartCountText: {
-    marginLeft: 6,
-    fontFamily: FONTS.bodyBold,
-    fontSize: 14,
-    color: COLORS.brown,
+    marginLeft: 5,
+    fontFamily:
+      FONTS.bodyBold,
+    fontSize: 13,
+    color:
+      COLORS.forest,
   },
 
+
+  // =========================================================
+  // FULFILLMENT
+  // =========================================================
+
   fulfillmentCard: {
-    padding: 18,
-    marginBottom: 24,
-    borderRadius: 26,
+    padding: 17,
+    borderRadius: 22,
+    backgroundColor:
+      COLORS.white,
     borderWidth: 1,
-    borderColor: COLORS.border,
-    backgroundColor: 'rgba(252,250,247,0.94)',
+    borderColor:
+      COLORS.border,
     ...SHADOWS.soft,
   },
 
   sectionTitle: {
-    fontFamily: FONTS.display,
-    fontSize: 24,
-    color: COLORS.brown,
+    fontFamily:
+      FONTS.display,
+    fontSize: 22,
+    lineHeight: 27,
+    color:
+      COLORS.brown,
   },
 
   sectionSubtitle: {
     marginTop: 5,
-    fontFamily: FONTS.body,
-    fontSize: 13,
-    lineHeight: 19,
-    color: COLORS.subText,
+    fontFamily:
+      FONTS.body,
+    fontSize: 12,
+    lineHeight: 18,
+    color:
+      COLORS.subText,
   },
 
   fulfillmentRow: {
-    marginTop: 16,
+    marginTop: 14,
     flexDirection: 'row',
-    gap: 9,
+    gap: 8,
   },
 
   fulfillmentOption: {
     flex: 1,
-    minHeight: 122,
-    paddingHorizontal: 8,
+    minHeight: 120,
     paddingVertical: 13,
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: COLORS.border,
+    paddingHorizontal: 8,
+    borderRadius: 17,
     alignItems: 'center',
-    backgroundColor: COLORS.cream,
+    justifyContent:
+      'center',
+    borderWidth: 1,
+    borderColor:
+      COLORS.border,
+    backgroundColor:
+      COLORS.cream,
   },
 
   fulfillmentOptionActive: {
-    backgroundColor: COLORS.forest,
-    borderColor: COLORS.forest,
+    borderColor:
+      COLORS.forest,
+    backgroundColor:
+      COLORS.forest,
   },
 
   fulfillmentIconWrap: {
@@ -1161,71 +1901,170 @@ const styles = StyleSheet.create({
     height: 42,
     borderRadius: 21,
     alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: COLORS.white,
+    justifyContent:
+      'center',
+    backgroundColor:
+      COLORS.white,
   },
 
   fulfillmentIconWrapActive: {
-    backgroundColor: 'rgba(255,255,255,0.14)',
+    backgroundColor:
+      'rgba(255,255,255,0.16)',
   },
 
   fulfillmentTitle: {
-    marginTop: 9,
-    fontFamily: FONTS.bodyBold,
+    marginTop: 8,
+    fontFamily:
+      FONTS.bodyBold,
     fontSize: 12,
-    color: COLORS.brown,
+    color:
+      COLORS.brown,
   },
 
   fulfillmentTitleActive: {
-    color: COLORS.white,
+    color:
+      COLORS.white,
   },
 
   fulfillmentSubtitle: {
-    marginTop: 4,
-    fontFamily: FONTS.body,
+    marginTop: 3,
+    fontFamily:
+      FONTS.body,
     fontSize: 9,
     lineHeight: 13,
     textAlign: 'center',
-    color: COLORS.subText,
+    color:
+      COLORS.subText,
   },
 
   fulfillmentSubtitleActive: {
-    color: COLORS.cream,
+    color:
+      'rgba(255,255,255,0.78)',
   },
 
+
+  // =========================================================
+  // DELIVERY / SHIPPING ADDRESS
+  // =========================================================
+
+  addressSection: {
+    marginTop: 18,
+    paddingTop: 18,
+    borderTopWidth: 1,
+    borderTopColor:
+      COLORS.border,
+  },
+
+  addressHeadingRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+
+  addressTitle: {
+    marginLeft: 8,
+    fontFamily:
+      FONTS.bodyBold,
+    fontSize: 15,
+    color:
+      COLORS.brown,
+  },
+
+  addressHelp: {
+    marginTop: 6,
+    marginBottom: 4,
+    fontFamily:
+      FONTS.body,
+    fontSize: 12,
+    lineHeight: 18,
+    color:
+      COLORS.subText,
+  },
+
+  addressInput: {
+    minHeight: 50,
+    marginTop: 10,
+    paddingHorizontal: 14,
+    borderWidth: 1,
+    borderColor:
+      COLORS.border,
+    borderRadius: 15,
+    backgroundColor:
+      COLORS.white,
+    fontFamily:
+      FONTS.body,
+    fontSize: 14,
+    color:
+      COLORS.brown,
+  },
+
+  addressRow: {
+    flexDirection: 'row',
+    gap: 10,
+  },
+
+  addressStateInput: {
+    flex: 0.38,
+  },
+
+  addressZipInput: {
+    flex: 0.62,
+  },
+
+  instructionsInput: {
+    minHeight: 82,
+    paddingTop: 14,
+    paddingBottom: 14,
+  },
+
+
+  // =========================================================
+  // ITEMS
+  // =========================================================
+
   itemsHeading: {
-    marginBottom: 13,
-    fontFamily: FONTS.display,
-    fontSize: 27,
-    color: COLORS.brown,
+    marginTop: 24,
+    marginBottom: 10,
+    fontFamily:
+      FONTS.display,
+    fontSize: 23,
+    color:
+      COLORS.brown,
   },
 
   itemCard: {
+    marginBottom: 12,
     padding: 12,
-    marginBottom: 14,
-    borderRadius: 24,
-    borderWidth: 1,
-    borderColor: COLORS.border,
+    borderRadius: 20,
     flexDirection: 'row',
-    backgroundColor: 'rgba(252,250,247,0.95)',
+    backgroundColor:
+      COLORS.white,
+    borderWidth: 1,
+    borderColor:
+      COLORS.border,
     ...SHADOWS.soft,
   },
 
   itemImage: {
     width: 92,
-    height: 108,
-    marginRight: 13,
-    borderRadius: 19,
-    backgroundColor: COLORS.cream,
+    height: 92,
+    borderRadius: 15,
+    backgroundColor:
+      COLORS.cream,
   },
 
   itemBody: {
     flex: 1,
+    marginLeft: 12,
+    justifyContent:
+      'space-between',
   },
 
   itemTopRow: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    alignItems:
+      'flex-start',
+    justifyContent:
+      'space-between',
   },
 
   itemTextBlock: {
@@ -1234,242 +2073,308 @@ const styles = StyleSheet.create({
   },
 
   itemName: {
-    fontFamily: FONTS.bodyBold,
-    fontSize: 15,
-    lineHeight: 20,
-    color: COLORS.brown,
+    fontFamily:
+      FONTS.bodyBold,
+    fontSize: 14,
+    lineHeight: 19,
+    color:
+      COLORS.brown,
   },
 
   itemMeta: {
     marginTop: 4,
-    fontFamily: FONTS.body,
-    fontSize: 12,
-    color: COLORS.subText,
+    fontFamily:
+      FONTS.body,
+    fontSize: 11,
+    color:
+      COLORS.subText,
   },
 
   lineTotal: {
-    fontFamily: FONTS.bodyBold,
+    fontFamily:
+      FONTS.bodyBold,
     fontSize: 14,
-    color: COLORS.forest,
+    color:
+      COLORS.forest,
   },
 
   itemFooter: {
-    marginTop: 18,
+    marginTop: 12,
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
+    justifyContent:
+      'space-between',
   },
 
   quantitySelector: {
-    height: 38,
-    paddingHorizontal: 4,
-    borderRadius: 19,
+    height: 34,
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: COLORS.cream,
+    borderRadius: 17,
     borderWidth: 1,
-    borderColor: COLORS.border,
+    borderColor:
+      COLORS.border,
+    backgroundColor:
+      COLORS.cream,
+    overflow: 'hidden',
   },
 
   quantityButton: {
-    width: 30,
-    height: 30,
-    borderRadius: 15,
+    width: 34,
+    height: 34,
     alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: COLORS.white,
+    justifyContent:
+      'center',
   },
 
   quantityText: {
-    minWidth: 28,
+    minWidth: 25,
     textAlign: 'center',
-    fontFamily: FONTS.bodyBold,
-    fontSize: 14,
-    color: COLORS.brown,
+    fontFamily:
+      FONTS.bodyBold,
+    fontSize: 12,
+    color:
+      COLORS.brown,
   },
 
   removeButton: {
     flexDirection: 'row',
     alignItems: 'center',
+    paddingVertical: 6,
+    paddingHorizontal: 4,
   },
 
   removeText: {
     marginLeft: 4,
-    fontFamily: FONTS.bodyBold,
-    fontSize: 11,
-    color: COLORS.danger,
+    fontFamily:
+      FONTS.bodyBold,
+    fontSize: 10,
+    color:
+      COLORS.danger,
   },
 
+
+  // =========================================================
+  // SUMMARY
+  // =========================================================
+
   summaryCard: {
-    padding: 20,
-    marginTop: 8,
-    borderRadius: 28,
+    marginTop: 10,
+    padding: 18,
+    borderRadius: 22,
+    backgroundColor:
+      COLORS.white,
     borderWidth: 1,
-    borderColor: COLORS.border,
-    backgroundColor: 'rgba(252,250,247,0.94)',
-    ...SHADOWS.medium,
+    borderColor:
+      COLORS.border,
+    ...SHADOWS.soft,
   },
 
   summaryRow: {
-    marginTop: 14,
+    marginTop: 13,
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    alignItems: 'center',
+    justifyContent:
+      'space-between',
   },
 
   summaryLabel: {
-    fontFamily: FONTS.body,
-    fontSize: 14,
-    color: COLORS.subText,
+    fontFamily:
+      FONTS.body,
+    fontSize: 13,
+    color:
+      COLORS.subText,
   },
 
   summaryValue: {
-    fontFamily: FONTS.bodyBold,
-    fontSize: 14,
-    color: COLORS.brown,
+    fontFamily:
+      FONTS.bodyBold,
+    fontSize: 13,
+    color:
+      COLORS.brown,
   },
 
   divider: {
     height: 1,
-    marginVertical: 17,
-    backgroundColor: COLORS.border,
+    marginVertical: 16,
+    backgroundColor:
+      COLORS.border,
   },
 
   totalRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
+    justifyContent:
+      'space-between',
   },
 
   totalLabel: {
-    fontFamily: FONTS.display,
-    fontSize: 24,
-    color: COLORS.brown,
+    fontFamily:
+      FONTS.display,
+    fontSize: 21,
+    color:
+      COLORS.brown,
   },
 
   totalValue: {
-    fontFamily: FONTS.display,
-    fontSize: 28,
-    color: COLORS.forest,
+    fontFamily:
+      FONTS.display,
+    fontSize: 25,
+    color:
+      COLORS.forest,
   },
 
+
+  // =========================================================
+  // CHECKOUT
+  // =========================================================
+
   checkoutButton: {
-    height: 56,
-    marginTop: 19,
-    borderRadius: 28,
+    minHeight: 56,
+    marginTop: 20,
+    borderRadius: 18,
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: COLORS.gold,
-    ...SHADOWS.medium,
+    justifyContent:
+      'center',
+    backgroundColor:
+      COLORS.gold,
+    ...SHADOWS.soft,
   },
 
   checkoutButtonDisabled: {
-    opacity: 0.65,
+    opacity: 0.6,
   },
 
   checkoutButtonText: {
     marginLeft: 8,
-    fontFamily: FONTS.bodyBold,
-    fontSize: 15,
-    color: COLORS.brown,
+    fontFamily:
+      FONTS.bodyBold,
+    fontSize: 14,
+    color:
+      COLORS.brown,
   },
 
   secureRow: {
-    marginTop: 14,
+    marginTop: 13,
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
+    justifyContent:
+      'center',
   },
 
   secureText: {
     marginLeft: 6,
-    fontFamily: FONTS.bodyBold,
-    fontSize: 11,
-    color: COLORS.forest,
+    fontFamily:
+      FONTS.body,
+    fontSize: 10,
+    color:
+      COLORS.forest,
   },
 
   note: {
-    marginTop: 12,
-    fontFamily: FONTS.body,
-    fontSize: 11,
-    lineHeight: 17,
+    marginTop: 10,
+    fontFamily:
+      FONTS.body,
+    fontSize: 10,
+    lineHeight: 15,
     textAlign: 'center',
-    color: COLORS.subText,
+    color:
+      COLORS.subText,
   },
+
+
+  // =========================================================
+  // EMPTY CART
+  // =========================================================
 
   emptyHeader: {
     paddingHorizontal: 20,
-    paddingTop: 16,
+    paddingTop: 14,
   },
 
   emptyState: {
     flex: 1,
-    marginHorizontal: 20,
-    marginTop: 20,
-    marginBottom: 108,
-    borderRadius: 30,
+    margin: 20,
+    minHeight: 500,
+    borderRadius: 26,
     overflow: 'hidden',
-    backgroundColor: COLORS.warmWhite,
-    ...SHADOWS.medium,
+    justifyContent:
+      'flex-end',
+    backgroundColor:
+      COLORS.forest,
+    ...SHADOWS.soft,
   },
 
   emptyImage: {
+    ...StyleSheet.absoluteFillObject,
     width: '100%',
-    height: 230,
+    height: '100%',
   },
 
   emptyImageOverlay: {
     ...StyleSheet.absoluteFillObject,
-    height: 230,
-    backgroundColor: 'rgba(35,69,44,0.10)',
+    backgroundColor:
+      'rgba(27,49,31,0.52)',
   },
 
   emptyContent: {
-    flex: 1,
-    paddingHorizontal: 28,
-    paddingVertical: 30,
+    paddingHorizontal: 24,
+    paddingVertical: 32,
     alignItems: 'center',
-    justifyContent: 'center',
   },
 
   emptyIcon: {
-    width: 70,
-    height: 70,
-    borderRadius: 35,
+    width: 64,
+    height: 64,
+    borderRadius: 32,
     alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: 'rgba(74,103,65,0.12)',
+    justifyContent:
+      'center',
+    backgroundColor:
+      COLORS.cream,
   },
 
   emptyTitle: {
-    marginTop: 17,
-    fontFamily: FONTS.display,
+    marginTop: 16,
+    fontFamily:
+      FONTS.display,
     fontSize: 28,
-    color: COLORS.brown,
+    textAlign: 'center',
+    color:
+      COLORS.white,
   },
 
   emptyMessage: {
     marginTop: 9,
-    fontFamily: FONTS.body,
-    fontSize: 14,
-    lineHeight: 21,
+    maxWidth: 290,
+    fontFamily:
+      FONTS.body,
+    fontSize: 13,
+    lineHeight: 20,
     textAlign: 'center',
-    color: COLORS.subText,
+    color:
+      'rgba(255,255,255,0.84)',
   },
 
   shopButton: {
-    height: 54,
-    marginTop: 21,
-    paddingHorizontal: 29,
-    borderRadius: 27,
+    minWidth: 180,
+    minHeight: 50,
+    marginTop: 22,
+    paddingHorizontal: 22,
+    borderRadius: 17,
     alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: COLORS.gold,
+    justifyContent:
+      'center',
+    backgroundColor:
+      COLORS.gold,
   },
 
   shopButtonText: {
-    fontFamily: FONTS.bodyBold,
-    fontSize: 15,
-    color: COLORS.brown,
+    fontFamily:
+      FONTS.bodyBold,
+    fontSize: 13,
+    color:
+      COLORS.brown,
   },
 });

@@ -18,7 +18,7 @@ export default function LeaveReviewScreen({ API, token, route, navigation }) {
 
     setLoading(true);
     try {
-      const res = await fetch(`${API}/api/reviews`, {
+      const res = await fetch(`${API}/api/reviews/`, {
         method: 'POST',
         headers: { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' },
         body: JSON.stringify({
