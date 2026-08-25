@@ -276,6 +276,9 @@ def get_producer_orders(
                 o.total,
                 o.created_at,
                 o.respond_by_at,
+                o.delivery_address,
+                o.cancel_reason,
+                o.cancelled_at,
                 u.full_name
                     AS shopper_name,
                 EXTRACT(
