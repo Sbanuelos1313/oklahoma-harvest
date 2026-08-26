@@ -438,13 +438,17 @@ def get_order(
         cur.execute(
             """
             SELECT
-                product_name,
-                product_unit,
-                quantity,
-                unit_price,
-                subtotal
-            FROM order_items
-            WHERE order_id = %s
+                oi.product_name,
+                oi.product_unit,
+                oi.quantity,
+                oi.unit_price,
+                oi.subtotal,
+                p.image_url
+            FROM order_items oi
+            LEFT JOIN products p
+            ON oi.product_id = p.id
+            WHERE oi.order_id = %s
+            ORDER BY oi.id ASC
             """,
             (
                 order_id,
