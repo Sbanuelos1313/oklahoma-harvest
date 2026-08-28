@@ -56,6 +56,8 @@ class RegisterRequest(BaseModel):
 
     role: str = "shopper"
 
+    terms_accepted: bool = False
+
     phone: str | None = None
 
     city: str | None = None
@@ -128,6 +130,12 @@ class ResetPasswordRequest(BaseModel):
         max_length=128,
     )
 
+# ============================================================
+# LEGAL POLICY VERSIONS
+# ============================================================
+
+CURRENT_TERMS_VERSION = "1.0"
+CURRENT_PRIVACY_VERSION = "1.0"
 
 # ============================================================
 # REGISTER
@@ -150,6 +158,15 @@ def register(
             detail=(
                 "Role must be "
                 "shopper or producer"
+            ),
+        )
+
+    if not req.terms_accepted:
+        raise HTTPException(
+            status_code=400,
+            detail=(
+                "You must agree to the Terms of Use "
+                "and Privacy Policy to create an account."
             ),
         )
 
@@ -195,7 +212,10 @@ def register(
                 phone,
                 city,
                 state,
-                zip_code
+                zip_code,
+                terms_accepted_at,
+                terms_version,
+                privacy_version
             )
             VALUES (
                 %s,
@@ -204,6 +224,9 @@ def register(
                 %s,
                 %s,
                 %s,
+                %s,
+                %s,
+                NOW(),
                 %s,
                 %s
             )
@@ -222,9 +245,11 @@ def register(
                 req.city,
                 req.state,
                 req.zip_code,
+                CURRENT_TERMS_VERSION,
+                CURRENT_PRIVACY_VERSION,
             ),
         )
-
+        
         row = cur.fetchone()
 
         conn.commit()

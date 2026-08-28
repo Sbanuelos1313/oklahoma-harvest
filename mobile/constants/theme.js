@@ -8,7 +8,7 @@ export const COLORS = {
   forest: '#4A6741',
   forestDark: '#395033',
   sage: '#708D62',
-  gold: '#C9A84C',
+  gold: '#D8B94E',
 
   // Backgrounds
   cream: '#F7F2E8',

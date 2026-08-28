@@ -1,4 +1,8 @@
-import React, { useMemo, useState } from 'react';
+import React, {
+  useMemo,
+  useState,
+} from 'react';
+
 import {
   SafeAreaView,
   ScrollView,
@@ -10,7 +14,6 @@ import {
 } from 'react-native';
 
 import HeroBanner from '../components/home/HeroBanner';
-import SearchBar from '../components/home/SearchBar';
 import FeaturedProducers from '../components/home/FeaturedProducers';
 import SeasonalProducts from '../components/home/SeasonalProducts';
 import CommunitySpotlight from '../components/home/CommunitySpotlight';
@@ -22,6 +25,7 @@ import {
   COMMON_STYLES,
 } from '../constants/theme';
 
+
 export default function HomeScreen({
   API,
   token,
@@ -30,22 +34,28 @@ export default function HomeScreen({
   setCart,
   navigation,
 }) {
-  const [search, setSearch] = useState('');
-  const [refreshing, setRefreshing] = useState(false);
+  const [
+    refreshing,
+    setRefreshing,
+  ] = useState(false);
 
-  const firstName = useMemo(() => {
-    if (!user?.full_name) return 'Samantha';
-    return user.full_name.split(' ')[0];
-  }, [user]);
+  const firstName =
+    useMemo(() => {
+      if (!user?.full_name) {
+        return 'Friend';
+      }
 
-  const locationLabel = 'Near you';
+      return user.full_name
+        .split(' ')[0];
+    }, [user]);
 
-  function handleSearchSubmit() {
-    navigation.navigate('Search', {
-      initialQuery: search,
-    });
-  }
+  const locationLabel =
+    'Near you';
 
+
+  // =========================================================
+  // REFRESH
+  // =========================================================
 
   function handleRefresh() {
     setRefreshing(true);
@@ -55,58 +65,110 @@ export default function HomeScreen({
     }, 600);
   }
 
+
+  // =========================================================
+  // SCREEN
+  // =========================================================
+
   return (
     <ImageBackground
-      source={require('../assets/backgrounds/bg_home.jpg')}
+      source={require(
+        '../assets/backgrounds/bg_home.jpg'
+      )}
       resizeMode="cover"
       style={styles.background}
-      imageStyle={styles.backgroundImage}
+      imageStyle={
+        styles.backgroundImage
+      }
     >
-      <View style={styles.overlay}>
-        <SafeAreaView style={styles.safeArea}>
-          <StatusBar barStyle="dark-content" />
+      <View
+        style={styles.overlay}
+      >
+        <SafeAreaView
+          style={styles.safeArea}
+        >
+          <StatusBar
+            barStyle="dark-content"
+          />
 
           <ScrollView
-            showsVerticalScrollIndicator={false}
-            contentContainerStyle={styles.content}
+            showsVerticalScrollIndicator={
+              false
+            }
+            contentContainerStyle={
+              styles.content
+            }
             refreshControl={
               <RefreshControl
-                refreshing={refreshing}
-                onRefresh={handleRefresh}
-                tintColor={COLORS.forest}
+                refreshing={
+                  refreshing
+                }
+                onRefresh={
+                  handleRefresh
+                }
+                tintColor={
+                  COLORS.forest
+                }
               />
             }
           >
             <HeroBanner
-              firstName={firstName}
-              deliveryAddress={locationLabel}
-              onNotificationPress={() => navigation.navigate('Profile')}
-              onPromoPress={() => navigation.navigate('Search')}
+              firstName={
+                firstName
+              }
+              deliveryAddress={
+                locationLabel
+              }
+              onNotificationPress={() =>
+                navigation.navigate(
+                  'Profile'
+                )
+              }
+              onPromoPress={() =>
+                navigation.navigate(
+                  'Search'
+                )
+              }
             />
 
-            <SearchBar
-              value={search}
-              onChangeText={setSearch}
-              onSubmitEditing={handleSearchSubmit}
-              location={locationLabel}
-              onPress={() => navigation.navigate('Search')}
-              onFilterPress={() => navigation.navigate('Search')}
+            <FeaturedProducers
+              navigation={
+                navigation
+              }
+              onViewAllPress={() =>
+                navigation.navigate(
+                  'Search'
+                )
+              }
             />
 
-
-            <FeaturedProducers navigation={navigation} />
-
-            <SeasonalProducts navigation={navigation} />
+            <SeasonalProducts
+              navigation={
+                navigation
+              }
+            />
 
             <CommunitySpotlight
-              onPress={() => navigation.navigate('Search')}
+              onPress={() =>
+                navigation.navigate(
+                  'Search'
+                )
+              }
             />
 
             <BecomeProducerCard
-              onPress={() => navigation.navigate('Auth')}
+              onPress={() =>
+                navigation.navigate(
+                  'Auth'
+                )
+              }
             />
 
-            <View style={styles.bottomSpacer} />
+            <View
+              style={
+                styles.bottomSpacer
+              }
+            />
           </ScrollView>
         </SafeAreaView>
       </View>
@@ -114,30 +176,40 @@ export default function HomeScreen({
   );
 }
 
-const styles = StyleSheet.create({
-  background: {
-    flex: 1,
-  },
 
-  backgroundImage: {
-    opacity: 0.24,
-  },
+const styles =
+  StyleSheet.create({
+    background: {
+      flex: 1,
+      backgroundColor:
+        COLORS.cream,
+    },
 
-  overlay: {
-    flex: 1,
-    backgroundColor: 'rgba(247,242,232,0.92)',
-  },
+    backgroundImage: {
+      opacity: 0.4,
+    },
 
-  safeArea: {
-    ...COMMON_STYLES.safeArea,
-    backgroundColor: 'transparent',
-  },
+    overlay: {
+      flex: 1,
 
-  content: {
-    paddingBottom: 150,
-  },
+      // Brighter than the old 0.92 overlay while
+      // still keeping text/cards easy to read.
+      backgroundColor:
+        'rgba(250,247,240,0.82)',
+    },
 
-  bottomSpacer: {
-    height: SPACING.xxxl,
-  },
-});
+    safeArea: {
+      ...COMMON_STYLES.safeArea,
+      backgroundColor:
+        'transparent',
+    },
+
+    content: {
+      paddingBottom: 150,
+    },
+
+    bottomSpacer: {
+      height:
+        SPACING.xxxl,
+    },
+  });

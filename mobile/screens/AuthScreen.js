@@ -49,6 +49,10 @@ export default function AuthScreen({
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] =
     useState(false);
+  const [
+    termsAccepted, 
+    setTermsAccepted, 
+  ] = useState(false);
 
   useEffect(() => {
     navigation.setOptions?.({
@@ -247,6 +251,14 @@ requestAnimationFrame(() => {
       return;
     }
 
+    if (!termsAccepted) {
+      Alert.alert(
+        'Agreement required',
+        'Please agree to the Terms of Use and Privacy Policy before creating your account.'
+      );
+      return;
+    }
+
     if (requestedRole === 'admin') {
       Alert.alert(
         'Administrator accounts',
@@ -270,6 +282,7 @@ requestAnimationFrame(() => {
             email: normalizedEmail,
             password,
             role: requestedRole,
+            terms_accepted: termsAccepted,
           }),
         }
       );
@@ -445,7 +458,10 @@ requestAnimationFrame(() => {
                       mode === 'login' &&
                         styles.segmentActive,
                     ]}
-                    onPress={() => setMode('login')}
+                    onPress={() => {
+                      setMode('login');
+                      setTermsAccepted(false);
+                    }}
                   >
                     <Text
                       style={[
@@ -615,10 +631,22 @@ requestAnimationFrame(() => {
                   activeOpacity={0.88}
                   style={[
                     styles.primaryButton,
-                    loading &&
+                    (
+                      loading ||
+                      (
+                        mode === 'register' &&
+                        !termsAccepted
+                      )
+                    ) &&
                       styles.primaryButtonDisabled,
                   ]}
-                  disabled={loading}
+                  disabled={
+                    loading ||
+                    (
+                      mode === 'register' &&
+                      !termsAccepted
+                    )
+                  }
                   onPress={submit}
                 >
                   <Text style={styles.primaryButtonText}>
@@ -639,27 +667,58 @@ requestAnimationFrame(() => {
                 </TouchableOpacity>
 
                 {mode === 'register' ? (
-                  <View style={styles.legalRow}>
-                    <Text style={styles.legalText}>
-                      By creating an account, you agree
-                      to our{' '}
-                    </Text>
+                  <View style={styles.legalAgreement}>
+                    <TouchableOpacity
+                      activeOpacity={0.8}
+                      style={styles.checkboxRow}
+                      onPress={() =>
+                        setTermsAccepted(
+                          current => !current
+                        )
+                      }
+                    >
+                      <View
+                        style={[
+                          styles.checkbox,
+                          termsAccepted &&
+                            styles.checkboxChecked,
+                        ]}
+                      >
+                        {termsAccepted && (
+                          <Ionicons
+                            name="checkmark"
+                            size={16}
+                            color={COLORS.white}
+                          />
+                        )}
+                      </View>
 
-                    <TouchableOpacity onPress={openPrivacy}>
-                      <Text style={styles.legalLink}>
-                        Privacy Policy
+                      <Text style={styles.agreementText}>
+                        I agree to the{' '}
+                        <Text
+                          style={styles.legalLink}
+                          onPress={openTerms}
+                        >
+                          Terms of Use
+                        </Text>
+                        {' '}and{' '}
+                        <Text
+                          style={styles.legalLink}
+                          onPress={openPrivacy}
+                        >
+                          Privacy Policy
+                        </Text>
+                        .
                       </Text>
                     </TouchableOpacity>
 
-                    <Text style={styles.legalText}>
-                      {' '}and{' '}
-                    </Text>
-
-                    <TouchableOpacity onPress={openTerms}>
-                      <Text style={styles.legalLink}>
-                        Terms of Use
+                    {requestedRole === 'producer' && (
+                      <Text style={styles.vendorAgreementNote}>
+                        Vendor accounts are also subject to marketplace,
+                        listing, fulfillment, cancellation, and seller
+                        responsibilities described in the Terms of Use.
                       </Text>
-                    </TouchableOpacity>
+                    )}
                   </View>
                 ) : (
                   <>
@@ -787,7 +846,7 @@ const styles = StyleSheet.create({
   brandLogo: {
     width: '84%',
     height: 128,
-    tintColor: '#FFFFFF',
+    tintColor: COLORS.forest,
   },
 
   card: {
@@ -915,26 +974,55 @@ const styles = StyleSheet.create({
     color: COLORS.white,
   },
 
-  legalRow: {
+  legalAgreement: {
     marginTop: 16,
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'center',
   },
 
-  legalText: {
+  checkboxRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+  },
+
+  checkbox: {
+    width: 24,
+    height: 24,
+    marginTop: 1,
+    marginRight: 10,
+    borderRadius: 7,
+    borderWidth: 1.5,
+    borderColor: COLORS.forest,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: COLORS.white,
+  },
+
+  checkboxChecked: {
+    backgroundColor: COLORS.forest,
+  },
+
+  agreementText: {
+    flex: 1,
     fontFamily: FONTS.body,
     fontSize: 11,
-    lineHeight: 17,
-    textAlign: 'center',
+    lineHeight: 18,
     color: COLORS.subText,
   },
 
   legalLink: {
     fontFamily: FONTS.bodyBold,
     fontSize: 11,
-    lineHeight: 17,
+    lineHeight: 18,
     color: COLORS.forest,
+    textDecorationLine: 'underline',
+  },
+
+  vendorAgreementNote: {
+    marginTop: 9,
+    marginLeft: 34,
+    fontFamily: FONTS.body,
+    fontSize: 10,
+    lineHeight: 15,
+    color: COLORS.subText,
   },
 
   dividerRow: {

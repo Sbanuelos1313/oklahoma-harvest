@@ -9,6 +9,8 @@ import {
   ActivityIndicator,
   Alert,
   FlatList,
+  Image,
+  ImageBackground,
   RefreshControl,
   StatusBar,
   StyleSheet,
@@ -259,17 +261,61 @@ export default function VendorOrdersScreen({
   // EXPAND / COLLAPSE DETAILS
   // =========================================================
 
-  function toggleOrderDetails(
+  async function toggleOrderDetails(
     orderId
   ) {
-    setExpandedOrderId(
-      (currentOrderId) =>
-        currentOrderId === orderId
-          ? null
-          : orderId
-    );
-  }
+    if (expandedOrderId === orderId) {
+      setExpandedOrderId(null);
+      return;
+    }
 
+    try {
+      const response = await fetch(
+        `${API}/api/orders/${orderId}`,
+        {
+          headers: {
+            Authorization:
+              `Bearer ${token}`,
+          },
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(
+          data?.detail ||
+            'Unable to load order details.'
+        );
+      }
+
+      setOrders(
+        (currentOrders) =>
+          currentOrders.map(
+            (order) =>
+              order.id === orderId
+                ? {
+                    ...order,
+                    ...data,
+                  }
+                : order
+          )
+      );
+
+      setExpandedOrderId(orderId);
+    } catch (error) {
+      console.error(
+        'Unable to load order details:',
+        error
+      );
+
+      Alert.alert(
+        'Unable to load order details',
+        error?.message ||
+          'Please try again.'
+      );
+    }
+  }
 
   // =========================================================
   // UPDATE ORDER STATUS
@@ -610,18 +656,19 @@ export default function VendorOrdersScreen({
   // =========================================================
   // MAIN SCREEN
   // =========================================================
-
-  return (
-    <View
-      style={
-        styles.root
-      }
-    >
+return (
+  <ImageBackground
+    source={
+      IMAGE_ASSETS.backgrounds.vendorOrders
+    }
+    resizeMode="cover"
+    style={styles.background}
+    imageStyle={styles.backgroundImage}
+  >
+    <View style={styles.backgroundOverlay}>
       <StatusBar
         barStyle="dark-content"
-        backgroundColor={
-          COLORS.cream
-        }
+        backgroundColor={COLORS.cream}
       />
 
       <SafeAreaView
@@ -630,108 +677,64 @@ export default function VendorOrdersScreen({
           'left',
           'right',
         ]}
-        style={
-          styles.root
-        }
+        style={styles.safeArea}
       >
         <FlatList
-          data={
-            filteredOrders
+          data={filteredOrders}
+          keyExtractor={(item) =>
+            String(item.id)
           }
-          keyExtractor={
-            (item) =>
-              String(
-                item.id
-              )
-          }
-          showsVerticalScrollIndicator={
-            false
-          }
-          contentContainerStyle={
-            styles.list
-          }
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={styles.list}
           refreshControl={
             <RefreshControl
-              refreshing={
-                refreshing
-              }
-              onRefresh={
-                handleRefresh
-              }
-              tintColor={
-                COLORS.forest
-              }
-              colors={[
-                COLORS.forest,
-              ]}
+              refreshing={refreshing}
+              onRefresh={handleRefresh}
+              tintColor={COLORS.forest}
+              colors={[COLORS.forest]}
             />
           }
           ListHeaderComponent={
             <OrdersHeader
-              summary={
-                orderSummary
-              }
-              selectedFilter={
-                selectedFilter
-              }
-              setSelectedFilter={
-                setSelectedFilter
-              }
+              summary={orderSummary}
+              selectedFilter={selectedFilter}
+              setSelectedFilter={setSelectedFilter}
             />
           }
           ListEmptyComponent={
-            orders.length ===
-            0 ? (
-              <View
-                style={
-                  styles.emptyWrapper
-                }
-              >
+            orders.length === 0 ? (
+              <View style={styles.emptyWrapper}>
                 <EmptyState
                   image={
-                    IMAGE_ASSETS
-                      .hero
-                      .checkout
+                    IMAGE_ASSETS.hero.checkout
                   }
                   title="No orders yet"
                   message="Customer orders will appear here once purchases are made."
                   buttonTitle="Refresh"
-                  onPress={() =>
-                    loadOrders()
-                  }
+                  onPress={() => loadOrders()}
                 />
               </View>
             ) : (
               <FilteredEmptyState
                 onClear={() =>
-                  setSelectedFilter(
-                    'all'
-                  )
+                  setSelectedFilter('all')
                 }
               />
             )
           }
-          renderItem={({
-            item,
-          }) => (
+          renderItem={({ item }) => (
             <OrderCard
               order={item}
               updating={
-                updatingOrderId ===
-                item.id
+                updatingOrderId === item.id
               }
               expanded={
-                expandedOrderId ===
-                item.id
+                expandedOrderId === item.id
               }
               onToggleDetails={() =>
-                toggleOrderDetails(
-                  item.id
-                )
+                toggleOrderDetails(item.id)
               }
-              onAction={(
-                action
-              ) =>
+              onAction={(action) =>
                 confirmStatusUpdate(
                   item,
                   action
@@ -742,11 +745,13 @@ export default function VendorOrdersScreen({
         />
       </SafeAreaView>
     </View>
-  );
+  </ImageBackground>
+);
 }
-// ===========================================================
-// ORDERS HEADER
-// ===========================================================
+
+  // ===========================================================
+  // ORDERS HEADER
+  // ===========================================================
 
 function OrdersHeader({
   summary,
@@ -830,61 +835,67 @@ function OrdersHeader({
       {/* =============================================
           FILTERS
       ============================================= */}
+      <View style={styles.filterSection}>
+        <View style={styles.filterHeader}>
+          <View style={styles.filterHeaderLeft}>
+            <Ionicons
+              name="options-outline"
+              size={16}
+              color={COLORS.forest}
+            />
 
-      <FlatList
-        horizontal
-        data={
-          ORDER_FILTERS
-        }
-        keyExtractor={
-          (item) =>
-            item.key
-        }
-        showsHorizontalScrollIndicator={
-          false
-        }
-        contentContainerStyle={
-          styles.filterRow
-        }
-        renderItem={({
-          item,
-        }) => {
-          const selected =
-            selectedFilter ===
-            item.key;
+            <Text style={styles.filterLabel}>
+              Filter orders
+            </Text>
+          </View>
 
-          return (
+          {selectedFilter !== 'all' && (
             <TouchableOpacity
-              activeOpacity={0.8}
-              style={[
-                styles.filterButton,
-
-                selected &&
-                  styles
-                    .filterButtonSelected,
-              ]}
+              activeOpacity={0.75}
               onPress={() =>
-                setSelectedFilter(
-                  item.key
-                )
+                setSelectedFilter('all')
               }
             >
-              <Text
-                style={[
-                  styles.filterText,
-
-                  selected &&
-                    styles
-                      .filterTextSelected,
-                ]}
-              >
-                {item.label}
+              <Text style={styles.clearFilterText}>
+                Clear
               </Text>
             </TouchableOpacity>
-          );
-        }}
-      />
+          )}
+        </View>
 
+        <View style={styles.filterGrid}>
+          {ORDER_FILTERS.map((item) => {
+            const selected =
+              selectedFilter === item.key;
+
+            return (
+              <TouchableOpacity
+                key={item.key}
+                activeOpacity={0.8}
+                style={[
+                  styles.filterButton,
+                  selected &&
+                    styles.filterButtonSelected,
+                ]}
+                onPress={() =>
+                  setSelectedFilter(item.key)
+                }
+              >
+                <Text
+                  numberOfLines={1}
+                  style={[
+                    styles.filterText,
+                    selected &&
+                      styles.filterTextSelected,
+                  ]}
+                >
+                  {item.label}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
+        </View>
+      </View>
 
       {/* =============================================
           RESULTS HEADER
@@ -1712,6 +1723,11 @@ function OrderDetailsPanel({
                   item.price ??
                   null;
 
+                const itemImage =
+                  item.image_url
+                    ? { uri: item.image_url }
+                    : IMAGE_ASSETS.products.default;
+
                 return (
                   <View
                     key={
@@ -1729,6 +1745,11 @@ function OrderDetailsPanel({
                           .itemRowLast,
                     ]}
                   >
+                    <Image
+                      source={itemImage}
+                      style={styles.itemImage}
+                      resizeMode="cover"
+                    />
                     <View
                       style={
                         styles.itemCopy
@@ -2466,7 +2487,7 @@ function formatCancellationReason(
 
 const styles =
   StyleSheet.create({
-      // =========================================================
+  // =========================================================
   // ROOT / LIST
   // =========================================================
 
@@ -2476,10 +2497,32 @@ const styles =
       COLORS.cream,
   },
 
+  background: {
+    flex: 1,
+    backgroundColor:
+      COLORS.cream,
+  },
+
+  backgroundImage: {
+    opacity: 0.16,
+  },
+
+  backgroundOverlay: {
+    flex: 1,
+    backgroundColor:
+      'rgba(250,247,240,0.76)',
+  },
+
+  safeArea: {
+    flex: 1,
+    backgroundColor:
+      'transparent',
+  },
+
   list: {
     paddingHorizontal:
       LAYOUT.screenPadding,
-    paddingBottom: 125,
+    paddingBottom: 155,
   },
 
 
@@ -2563,7 +2606,7 @@ const styles =
     fontSize: 14,
     lineHeight: 21,
     color:
-      COLORS.brownSoft,
+      COLORS.textMuted,
   },
 
 
@@ -2638,26 +2681,59 @@ const styles =
   // FILTERS
   // =========================================================
 
-  filterRow: {
-    paddingTop: 17,
-    paddingBottom: 2,
-    gap: 8,
-  },
+filterSection: {
+  marginTop: 18,
+  padding: 12,
+  borderRadius: RADIUS.lg,
+  borderWidth: 1,
+  borderColor: COLORS.border,
+  backgroundColor:
+    'rgba(255,253,248,0.94)',
+},
+
+filterHeader: {
+  marginBottom: 10,
+  flexDirection: 'row',
+  alignItems: 'center',
+  justifyContent: 'space-between',
+},
+
+filterHeaderLeft: {
+  flexDirection: 'row',
+  alignItems: 'center',
+},
+
+filterLabel: {
+  marginLeft: 6,
+  fontFamily: FONTS.bodyBold,
+  fontSize: 11,
+  color: COLORS.forestDark,
+},
+
+clearFilterText: {
+  fontFamily: FONTS.bodyBold,
+  fontSize: 10,
+  color: COLORS.sage,
+},
+
+filterGrid: {
+  flexDirection: 'row',
+  flexWrap: 'wrap',
+  gap: 7,
+},
 
   filterButton: {
+    width: '31.5%',
     minHeight: 38,
-    paddingHorizontal: 15,
-    borderRadius:
-      RADIUS.pill,
+    paddingHorizontal: 6,
+    borderRadius: RADIUS.pill,
     borderWidth: 1,
-    borderColor:
-      COLORS.border,
+    borderColor: COLORS.border,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor:
-      COLORS.warmWhite,
+    backgroundColor: COLORS.warmWhite,
   },
-
+  
   filterButtonSelected: {
     borderColor:
       COLORS.forest,
@@ -2705,9 +2781,8 @@ const styles =
       FONTS.bodyBold,
     fontSize: 11,
     color:
-      COLORS.brownSoft,
+      COLORS.textMuted,
   },
-
 
   // =========================================================
   // ORDER CARD
@@ -2720,10 +2795,17 @@ const styles =
       RADIUS.xl,
     borderWidth: 1,
     borderColor:
-      COLORS.border,
+        'rgba(74,103,65,0.16)',
     backgroundColor:
-      COLORS.warmWhite,
-    ...SHADOWS.soft,
+      'rgba(255,253,248,0.97)',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 6,
+    },
+    shadowOpacity: 0.12,
+    shadowRadius: 14,
+    elevation: 5,
   },
 
   cardTop: {
@@ -3178,7 +3260,7 @@ const styles =
   },
 
   itemRow: {
-    minHeight: 55,
+    minHeight: 74,
     paddingHorizontal: 12,
     paddingVertical: 10,
     borderBottomWidth: 1,
@@ -3194,9 +3276,18 @@ const styles =
     borderBottomWidth: 0,
   },
 
+  itemImage: {
+    width: 54,
+    height: 54,
+    marginRight: 11,
+    borderRadius: 12,
+    backgroundColor: COLORS.cream,
+  },
+
   itemCopy: {
     flex: 1,
     paddingRight: 10,
+    justifyContent: 'center',
   },
 
   itemName: {

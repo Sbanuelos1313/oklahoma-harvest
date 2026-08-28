@@ -244,6 +244,15 @@ export default function SearchScreen({
     () => CATEGORIES,
     []
   );
+  const featuredCategories =
+  useMemo(
+    () =>
+      categories.slice(
+        0,
+        8
+      ),
+    [categories]
+  );
 
   const cartCount =
     cart?.items?.reduce(
@@ -931,13 +940,13 @@ export default function SearchScreen({
   }
 
   const activeFilterCount =
+    Number(Boolean(selectedCategory)) +
     Number(pickupOnly) +
     Number(deliveryOnly) +
     Number(shippingOnly) +
     Number(minPrice.trim() !== '') +
     Number(maxPrice.trim() !== '') +
     Number(sortBy !== 'rating');
-
   return (
     <View style={styles.root}>
       <StatusBar
@@ -1158,7 +1167,7 @@ export default function SearchScreen({
           />
         ) : (
           <FlatList
-            data={categories}
+            data={featuredCategories}
             keyExtractor={(
               item,
               index
@@ -1186,14 +1195,12 @@ export default function SearchScreen({
                 </Text>
 
                 <Text style={styles.categoryListTitle}>
-                  Browse Categories
+                  Popular Categories
                 </Text>
-
                 <Text style={styles.categoryListSubtitle}>
-                  Discover products
-                  made, grown, and
-                  sold by local
-                  makers.
+                  Start with a popular category
+                  or use Filters to browse the
+                  full local marketplace.
                 </Text>
               </View>
             }
@@ -1253,8 +1260,90 @@ export default function SearchScreen({
                   styles.filterScroll
                 }
               >
+                <View style={styles.filterSection}>
+                  <Text style={styles.filterSectionTitle}>
+                    Category
+                  </Text>
 
-                                <View style={styles.filterSection}>
+                  <Text style={styles.filterSectionText}>
+                    Choose a category or leave this
+                    open to search the entire marketplace.
+                  </Text>
+
+                  <View style={styles.optionWrap}>
+                    <TouchableOpacity
+                      activeOpacity={0.8}
+                      style={[
+                        styles.optionChip,
+                        !selectedCategory &&
+                          styles.optionChipSelected,
+                      ]}
+                      onPress={() => {
+                        setSelectedCategory(
+                          null
+                        );
+                      }}
+                    >
+                      <Text
+                        style={[
+                          styles.optionChipText,
+                          !selectedCategory &&
+                            styles.optionChipTextSelected,
+                        ]}
+                      >
+                        All
+                      </Text>
+                    </TouchableOpacity>
+
+                    {categories.map(
+                      (category) => {
+                        const categoryValue =
+                          category?.key ||
+                          category?.title;
+
+                        const categoryLabel =
+                          category?.title ||
+                          category?.label;
+
+                        const selected =
+                          selectedCategory ===
+                          categoryValue;
+
+                        return (
+                          <TouchableOpacity
+                            key={
+                              String(
+                                categoryValue
+                              )
+                            }
+                            activeOpacity={0.8}
+                            style={[
+                              styles.optionChip,
+                              selected &&
+                                styles.optionChipSelected,
+                            ]}
+                            onPress={() => {
+                              setSelectedCategory(
+                                categoryValue
+                              );
+                            }}
+                          >
+                            <Text
+                              style={[
+                                styles.optionChipText,
+                                selected &&
+                                  styles.optionChipTextSelected,
+                              ]}
+                            >
+                              {categoryLabel}
+                            </Text>
+                          </TouchableOpacity>
+                        );
+                      }
+                    )}
+                  </View>
+                </View>
+                <View style={styles.filterSection}>
                   <Text style={styles.filterSectionTitle}>
                     Location
                   </Text>

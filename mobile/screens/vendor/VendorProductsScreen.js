@@ -33,7 +33,10 @@ import {
   SHADOWS,
 } from '../../constants/theme';
 
-import { IMAGE_ASSETS } from '../../constants/assets';
+import {
+  IMAGE_ASSETS,
+  CATEGORY_ASSETS,
+} from '../../constants/assets';
 
 const FILTERS = [
   {
@@ -431,7 +434,6 @@ export default function VendorProductsScreen({
     </View>
   );
 }
-
 function ProductsHeader({
   inventorySummary,
   searchText,
@@ -458,18 +460,6 @@ function ProductsHeader({
               purchase, and pick up.
             </Text>
           </View>
-
-          <TouchableOpacity
-            activeOpacity={0.82}
-            style={styles.addIconButton}
-            onPress={onAddProduct}
-          >
-            <Ionicons
-              name="add"
-              size={27}
-              color={COLORS.warmWhite}
-            />
-          </TouchableOpacity>
         </View>
 
         <AppButton
@@ -539,8 +529,12 @@ function ProductsHeader({
         <FlatList
           horizontal
           data={FILTERS}
-          keyExtractor={(item) => item.key}
-          showsHorizontalScrollIndicator={false}
+          keyExtractor={(item) =>
+            item.key
+          }
+          showsHorizontalScrollIndicator={
+            false
+          }
           contentContainerStyle={
             styles.filterRow
           }
@@ -557,7 +551,9 @@ function ProductsHeader({
                     styles.filterButtonSelected,
                 ]}
                 onPress={() =>
-                  setSelectedFilter(item.key)
+                  setSelectedFilter(
+                    item.key
+                  )
                 }
               >
                 <Text
@@ -614,17 +610,110 @@ function SummaryCard({
   );
 }
 
+function getProductImage(product) {
+  // Always use the vendor's actual uploaded photo first.
+  if (product?.image_url) {
+    return {
+      uri: product.image_url,
+    };
+  }
+
+  const rawCategory = String(
+    product?.category || ''
+  )
+    .trim()
+    .toLowerCase();
+
+  if (!rawCategory) {
+    return IMAGE_ASSETS.products.default;
+  }
+
+  // First try an exact category key match.
+  const exactMatch = CATEGORY_ASSETS.find(
+    (category) =>
+      category.key &&
+      String(category.key)
+        .toLowerCase() === rawCategory
+  );
+
+  if (exactMatch?.image) {
+    return exactMatch.image;
+  }
+
+  // Then try the human-readable category label.
+  const labelMatch = CATEGORY_ASSETS.find(
+    (category) =>
+      category.label &&
+      String(category.label)
+        .trim()
+        .toLowerCase() === rawCategory
+  );
+
+  if (labelMatch?.image) {
+    return labelMatch.image;
+  }
+
+  // Handle a few common naming variations.
+  const aliases = {
+    bakery: 'baked',
+    baked_goods: 'baked',
+    'baked goods': 'baked',
+
+    honey_jams: 'honey',
+    'honey & jams': 'honey',
+
+    soap: 'soaps',
+
+    candle: 'candles',
+
+    gift: 'gifts',
+    'gift sets': 'gifts',
+
+    tinctures: 'tinctures_remedies',
+    remedies: 'tinctures_remedies',
+    'tinctures & remedies':
+      'tinctures_remedies',
+
+    'essential oils': 'essential_oils',
+
+    'farm & garden': 'farm_garden',
+
+    'plants & flowers': 'plants_flowers',
+
+    'local makers': 'local_makers',
+
+    'pet products': 'pet_products',
+
+    'home living': 'home_living',
+
+    'coffee & tea': 'coffee_tea',
+  };
+
+  const aliasKey = aliases[rawCategory];
+
+  if (aliasKey) {
+    const aliasMatch = CATEGORY_ASSETS.find(
+      (category) =>
+        category.key === aliasKey
+    );
+
+    if (aliasMatch?.image) {
+      return aliasMatch.image;
+    }
+  }
+
+  // Final safety fallback.
+  return IMAGE_ASSETS.products.default;
+}
+
 function ProductCard({
   product,
   updating,
   onToggle,
   onEdit,
 }) {
-  const productImage = product.image_url
-    ? {
-        uri: product.image_url,
-      }
-    : IMAGE_ASSETS.products.default;
+  const productImage =
+    getProductImage(product);
 
   const quantity = Number(
     product.quantity_available || 0

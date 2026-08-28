@@ -77,6 +77,7 @@ class UpdateShopRequest(BaseModel):
     shop_name: Optional[str] = None
     description: Optional[str] = None
     bio: Optional[str] = None
+    profile_image_url: Optional[str] = None
     address: Optional[str] = None
     city: Optional[str] = None
     state: Optional[str] = None
