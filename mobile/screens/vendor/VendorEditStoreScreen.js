@@ -156,7 +156,9 @@ export default function VendorEditStoreScreen({
           .launchImageLibraryAsync({
             mediaTypes: ['images'],
             quality: 0.85,
-            allowsEditing: false,
+            allowsEditing: true,
+            aspect: [16, 9],
+            quality: 0.85,
           });
 
       if (
