@@ -813,6 +813,7 @@ export default function CartScreen({
       </TouchableOpacity>
     );
   }
+
   // ===================================================
   // EMPTY CART
   // ===================================================
@@ -820,7 +821,7 @@ export default function CartScreen({
   if (!cart?.items?.length) {
     return (
       <ImageBackground
-        source={require('../assets/backgrounds/bg_settings.jpg')}
+        source={IMAGE_ASSETS.backgrounds.checkout}
         resizeMode="cover"
         style={styles.background}
       >
@@ -858,7 +859,7 @@ export default function CartScreen({
               <Image
                 source={
                   IMAGE_ASSETS
-                    .hero
+                    .backgrounds
                     .checkout
                 }
                 style={
@@ -940,14 +941,13 @@ export default function CartScreen({
     );
   }
 
-
   // ===================================================
   // MAIN CART
   // ===================================================
 
   return (
     <ImageBackground
-      source={require('../assets/backgrounds/bg_settings.jpg')}
+      source={IMAGE_ASSETS.backgrounds.checkout}
       resizeMode="cover"
       style={styles.background}
     >
@@ -1056,15 +1056,6 @@ export default function CartScreen({
                 {fulfillmentType
                   ? 'Your selection will apply to this order.'
                   : 'Please choose an available option before continuing to payment.'}
-              </Text>
-
-              <Text
-                style={
-                  styles.sectionSubtitle
-                }
-              >
-                Select the fulfillment
-                option for this order.
               </Text>
 
               <View
@@ -1750,7 +1741,7 @@ const styles = StyleSheet.create({
   backgroundOverlay: {
     flex: 1,
     backgroundColor:
-      'rgba(255,255,255,0.82)',
+      'rgba(250,247,240,0.68)',
   },
 
   safeArea: {
@@ -1760,7 +1751,7 @@ const styles = StyleSheet.create({
   scrollContent: {
     paddingHorizontal: 18,
     paddingTop: 12,
-    paddingBottom: 120,
+    paddingBottom: 200,
   },
 
 
@@ -2288,19 +2279,22 @@ const styles = StyleSheet.create({
   // EMPTY CART
   // =========================================================
 
+  emptyScrollContent: {
+    flexGrow: 1,
+    paddingBottom: 180,
+  },
+
   emptyHeader: {
     paddingHorizontal: 20,
     paddingTop: 14,
   },
 
   emptyState: {
-    flex: 1,
     margin: 20,
-    minHeight: 500,
+    minHeight: 620,
     borderRadius: 26,
     overflow: 'hidden',
-    justifyContent:
-      'flex-end',
+    justifyContent: 'flex-end',
     backgroundColor:
       COLORS.forest,
     ...SHADOWS.soft,
@@ -2315,7 +2309,7 @@ const styles = StyleSheet.create({
   emptyImageOverlay: {
     ...StyleSheet.absoluteFillObject,
     backgroundColor:
-      'rgba(27,49,31,0.52)',
+      'rgba(27,49,31,0.34)',
   },
 
   emptyContent: {
@@ -2329,8 +2323,7 @@ const styles = StyleSheet.create({
     height: 64,
     borderRadius: 32,
     alignItems: 'center',
-    justifyContent:
-      'center',
+    justifyContent: 'center',
     backgroundColor:
       COLORS.cream,
   },
@@ -2364,12 +2357,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: 22,
     borderRadius: 17,
     alignItems: 'center',
-    justifyContent:
-      'center',
+    justifyContent: 'center',
     backgroundColor:
       COLORS.gold,
   },
-
   shopButtonText: {
     fontFamily:
       FONTS.bodyBold,
@@ -2377,4 +2368,5 @@ const styles = StyleSheet.create({
     color:
       COLORS.brown,
   },
-});
+
+  });

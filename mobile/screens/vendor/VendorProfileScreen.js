@@ -9,6 +9,7 @@ import {
   ActivityIndicator,
   Alert,
   Image,
+  ImageBackground,
   ScrollView,
   StatusBar,
   StyleSheet,
@@ -394,31 +395,38 @@ export default function VendorProfileScreen({
   // SCREEN
   // =========================================================
 
-  return (
-    <View style={styles.root}>
-      <StatusBar
-        barStyle="light-content"
-        backgroundColor={
-          COLORS.forestDark
+    return (
+      <ImageBackground
+        source={
+          IMAGE_ASSETS.backgrounds.vendorProfile
         }
-      />
-
-      <SafeAreaView
-        edges={[
-          'top',
-          'left',
-          'right',
-        ]}
-        style={styles.root}
+        resizeMode="cover"
+        imageStyle={styles.backgroundImage}
+        style={styles.background}
       >
-        <ScrollView
-          showsVerticalScrollIndicator={
-            false
-          }
-          contentContainerStyle={
-            styles.scroll
-          }
-        >
+        <View style={styles.backgroundOverlay}>
+          <StatusBar
+            barStyle="dark-content"
+            backgroundColor="transparent"
+            translucent
+          />
+
+          <SafeAreaView
+            edges={[
+              'top',
+              'left',
+              'right',
+            ]}
+            style={styles.root}
+          >
+            <ScrollView
+              showsVerticalScrollIndicator={
+                false
+              }
+              contentContainerStyle={
+                styles.scroll
+              }
+            >
 
           {/* =================================================
               STORE HERO
@@ -792,7 +800,8 @@ export default function VendorProfileScreen({
         </ScrollView>
       </SafeAreaView>
     </View>
-  );
+  </ImageBackground>
+);
 }
 
 
@@ -998,12 +1007,23 @@ function formatReviewDate(
 // ===========================================================
 
 const styles = StyleSheet.create({
-  root: {
+  background: {
     flex: 1,
-    backgroundColor:
-      COLORS.cream,
   },
 
+  backgroundImage: {
+    opacity: 0.42,
+  },
+
+  backgroundOverlay: {
+    flex: 1,
+    backgroundColor:
+      'rgba(250,247,240,0.58)',
+  },
+  root: {
+    flex: 1,
+    backgroundColor: 'transparent',
+  },
 
   center: {
     flex: 1,

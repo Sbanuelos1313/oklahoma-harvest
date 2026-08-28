@@ -441,7 +441,7 @@ if (!shop) {
                 </Text>
 
                 <Text style={styles.sectionTitle}>
-                  Quick Actions
+                  Quick actions
                 </Text>
               </View>
             </View>
@@ -874,7 +874,7 @@ function CardEmptyState({
 const styles = StyleSheet.create({
   root: {
     flex: 1,
-    backgroundColor: COLORS.cream,
+    backgroundColor: '#F8F3E8',
   },
 
   scrollContent: {

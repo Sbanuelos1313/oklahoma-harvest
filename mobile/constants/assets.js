@@ -18,6 +18,10 @@ export const IMAGE_ASSETS = {
   backgrounds: {
     login: require('../assets/backgrounds/bg_app_login.jpg'),
 
+    checkout: require(
+      '../assets/backgrounds/bg_checkout.jpg'
+    ),
+
     vendorDashboard: require(
       '../assets/backgrounds/bg_vendor_dashboard.jpg'
     ),
