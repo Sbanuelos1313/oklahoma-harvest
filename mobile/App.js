@@ -929,48 +929,49 @@ if (
         <NavigationContainer>
           <Stack.Navigator
             screenOptions={{
-              headerShown:
-                false,
+              headerShown: false,
             }}
           >
-            {/* =========================================
-                WELCOME
-            ========================================= */}
-
-            <Stack.Screen
-              name="Welcome"
-            >
-              {props => (
-                <WelcomeScreen
-                  {...props}
-                />
-              )}
-            </Stack.Screen>
-
 
             {/* =========================================
-                AUTH
+                WELCOME + AUTH
+                Only shown when logged out
             ========================================= */}
 
-            <Stack.Screen
-              name="Auth"
-            >
-              {props => (
-                <AuthScreen
-                  {...props}
+            {!token && (
+              <>
+                <Stack.Screen
+                  name="Welcome"
+                >
+                  {props => (
+                    <WelcomeScreen
+                      {...props}
+                    />
+                  )}
+                </Stack.Screen>
 
-                  API={API}
 
-                  setToken={
-                    setToken
-                  }
+                <Stack.Screen
+                  name="Auth"
+                >
+                  {props => (
+                    <AuthScreen
+                      {...props}
 
-                  setUser={
-                    setUser
-                  }
-                />
-              )}
-            </Stack.Screen>
+                      API={API}
+
+                      setToken={
+                        setToken
+                      }
+
+                      setUser={
+                        setUser
+                      }
+                    />
+                  )}
+                </Stack.Screen>
+              </>
+            )}
 
 
             {/* =========================================
@@ -1112,12 +1113,13 @@ if (
                 </Stack.Screen>
               )}
 
+
             {/* =========================================
                 CUSTOMER ROUTES
             ========================================= */}
 
             {token &&
-              !isCustomer && (
+              isCustomer && (
                 <>
                   {/* MAIN BOTTOM TABS */}
 
@@ -1307,6 +1309,7 @@ if (
                   </Stack.Screen>
                 </>
               )}
+
           </Stack.Navigator>
         </NavigationContainer>
       </StripeProvider>

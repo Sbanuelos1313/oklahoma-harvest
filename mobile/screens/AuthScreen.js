@@ -198,22 +198,6 @@ const authenticatedUser = {
 
 setUser(authenticatedUser);
 setToken(authToken);
-
-requestAnimationFrame(() => {
-  navigation.reset({
-    index: 0,
-    routes: [
-      {
-        name:
-          returnedRole === 'producer'
-            ? 'VendorMain'
-            : returnedRole === 'admin'
-              ? 'AdminMain'
-              : 'Main',
-      },
-    ],
-  });
-});      
     } catch (error) {
       console.error('Login error:', error);
 
@@ -343,20 +327,6 @@ setUser({
 });
 
 setToken(authToken);
-
-requestAnimationFrame(() => {
-  navigation.reset({
-    index: 0,
-    routes: [
-      {
-        name:
-          returnedRole === 'producer'
-            ? 'VendorMain'
-            : 'Main',
-      },
-    ],
-  });
-});      
     } catch (error) {
       console.error('Registration error:', error);
 

@@ -512,7 +512,7 @@ def create_payment_intent(
             "customer":
                 stripe_customer_id,
 
-            "automatic_payment_methods": {
+            "payment_method_types": ["card"],
                 "enabled": True,
             },
 
