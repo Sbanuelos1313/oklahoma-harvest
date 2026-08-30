@@ -18,6 +18,10 @@ import {
   StatusBar,
 } from 'react-native';
 
+import { 
+  IMAGE_ASSETS,
+} from '../constants/assets';
+
 import {
   SafeAreaView,
 } from 'react-native-safe-area-context';
@@ -1063,7 +1067,7 @@ export default function OrdersScreen({
   ) {
     return (
       <ImageBackground
-        source={require('../assets/backgrounds/bg_settings.jpg')}
+        source={IMAGE_ASSETS.backgrounds.orders}
         resizeMode="cover"
         style={
           styles.background
@@ -1170,7 +1174,7 @@ export default function OrdersScreen({
   ) {
     return (
       <ImageBackground
-        source={require('../assets/backgrounds/bg_settings.jpg')}
+        source={IMAGE_ASSETS.backgrounds.orders}
         resizeMode="cover"
         style={
           styles.background
@@ -1217,7 +1221,7 @@ export default function OrdersScreen({
 
   return (
     <ImageBackground
-      source={require('../assets/backgrounds/bg_settings.jpg')}
+      source={IMAGE_ASSETS.backgrounds.orders}
       resizeMode="cover"
       style={
         styles.background
@@ -1508,7 +1512,7 @@ const styles = StyleSheet.create({
   backgroundOverlay: {
     flex: 1,
     backgroundColor:
-      'rgba(255,255,255,0.82)',
+      'rgba(250,247,247,0.68)',
   },
 
   safeArea: {

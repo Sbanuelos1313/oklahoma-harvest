@@ -22,6 +22,10 @@ export const IMAGE_ASSETS = {
       '../assets/backgrounds/bg_checkout.jpg'
     ),
 
+    orders: require(
+      '../assets/backgrounds/bg_orders.png'
+    ),
+
     vendorDashboard: require(
       '../assets/backgrounds/bg_vendor_dashboard.jpg'
     ),

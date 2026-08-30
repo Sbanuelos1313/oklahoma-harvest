@@ -13,7 +13,6 @@ import {
   StyleSheet,
   ActivityIndicator,
   StatusBar,
-  SafeAreaView,
   Image,
   ImageBackground,
   Keyboard,
@@ -21,6 +20,8 @@ import {
   Switch,
   ScrollView,
 } from 'react-native';
+
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 import {
   Ionicons,
@@ -948,36 +949,42 @@ export default function SearchScreen({
     Number(maxPrice.trim() !== '') +
     Number(sortBy !== 'rating');
   return (
-    <View style={styles.root}>
-      <StatusBar
-        barStyle="dark-content"
-      />
+    <ImageBackground
+      source={require('../assets/backgrounds/bg_settings.jpg')}
+      resizeMode="cover"
+      style={styles.root}
+    >
+      <View style={styles.backgroundOverlay}>
+        <StatusBar
+          barStyle="dark-content"
+        />
 
-    <SafeAreaView style={styles.safe}>
-      <View style={styles.screenHeader}>
-        <TouchableOpacity
-          activeOpacity={0.85}
-          style={styles.headerButton}
-          onPress={handleBackPress}
-        >
-          <Ionicons
-            name="chevron-back"
-            size={26}
-            color={COLORS.brown}
-          />
-        </TouchableOpacity>
-          <View style={styles.headerCenter}>
-            <Text style={styles.headerEyebrow}>
-              Marketplace
-            </Text>
-
-            <Text
-              numberOfLines={1}
-              style={styles.headerTitle}
+        <SafeAreaView style={styles.safe}>
+          <View style={styles.screenHeader}>
+            <TouchableOpacity
+              activeOpacity={0.85}
+              style={styles.headerButton}
+              onPress={handleBackPress}
             >
-              Discover Local
-            </Text>
-          </View>
+              <Ionicons
+                name="chevron-back"
+                size={26}
+                color={COLORS.brown}
+              />
+            </TouchableOpacity>
+
+            <View style={styles.headerCenter}>
+              <Text style={styles.headerEyebrow}>
+                Marketplace
+              </Text>
+
+              <Text
+                numberOfLines={1}
+                style={styles.headerTitle}
+              >
+                Discover Local
+              </Text>
+            </View>
 
             <TouchableOpacity
               activeOpacity={0.85}
@@ -1616,8 +1623,9 @@ export default function SearchScreen({
         </Modal>
       </SafeAreaView>
     </View>
-  );
-}
+  </ImageBackground>
+ );
+ }
 
 function FilterSwitchRow({
   icon,
@@ -1696,14 +1704,17 @@ function FilterSwitchRow({
 const styles = StyleSheet.create({
   root: {
     flex: 1,
-    backgroundColor: COLORS.cream,
+  },
+
+  backgroundOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(247,242,232,0.60)',
   },
 
   safe: {
     flex: 1,
-    backgroundColor: COLORS.cream,
+    backgroundColor: 'transparent',
   },
-
   screenHeader: {
     minHeight: 84,
     paddingHorizontal: 20,

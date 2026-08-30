@@ -103,7 +103,7 @@ export default function WelcomeScreen({ navigation }) {
 
   return (
     <ImageBackground
-      source={require('../assets/backgrounds/bg_app_login.jpg')}
+      source={require('../assets/backgrounds/bg_welcome.jpg')}
       resizeMode="cover"
       style={styles.background}
       imageStyle={styles.backgroundImage}
@@ -204,84 +204,99 @@ const styles = StyleSheet.create({
   content: {
     flexGrow: 1,
     paddingHorizontal: 20,
-    paddingTop: 24,
-    paddingBottom: 34,
+    paddingTop: 10,
+    paddingBottom: 18,
   },
 
   brandBlock: {
+    alignSelf: 'center',
+    width: '100%',
+    height: 190,
     alignItems: 'center',
     justifyContent: 'center',
-    height: 140,
-    marginBottom: 12,
-    paddingTop: 4,
+    marginBottom: 4,
+
+    shadowColor: '#F4C96B',
+    shadowOffset: {
+      width: 0,
+      height: 0,
+    },
+    shadowOpacity: 0.9,
+    shadowRadius: 30,
+    elevation: 12,
   },
 
   brandLogo: {
-    width: '84%',
-    height: 138,
-    tintColor: '#FFFFFF',
+    width: '110%',
+    height: 190,
   },
-
+  
   card: {
-    paddingHorizontal: 20,
-    paddingTop: 22,
-    paddingBottom: 21,
-    borderRadius: 30,
-    backgroundColor: 'rgba(252,250,247,0.95)',
+    paddingHorizontal: 18,
+    paddingTop: 14,
+    paddingBottom: 12,
+    borderRadius: 28,
+
+    backgroundColor: 'rgba(47,39,22,0.78)',
+
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.72)',
+    borderColor: 'rgba(201,168,76,0.48)',
+
     ...SHADOWS.medium,
   },
-
+  
   eyebrow: {
     fontFamily: FONTS.bodyBold,
     fontSize: 11,
     letterSpacing: 1.4,
     textTransform: 'uppercase',
-    color: COLORS.forest,
+    color: '#D8C56A',
   },
 
   title: {
-    marginTop: 6,
+    marginTop: 4,
     fontFamily: FONTS.display,
-    fontSize: 29,
-    lineHeight: 35,
-    color: COLORS.brown,
+    fontSize: 27,
+    lineHeight: 31,
+    color: '#FFF8EA',
   },
 
   subtitle: {
-    marginTop: 7,
-    marginBottom: 18,
+    marginTop: 4,
+    marginBottom: 10,
     fontFamily: FONTS.body,
-    fontSize: 14,
-    lineHeight: 20,
-    color: COLORS.subText,
+    fontSize: 13,
+    lineHeight: 18,
+    color: 'rgba(255,248,234,0.86)',
   },
 
   optionList: {
-    gap: 10,
+    gap: 6,
   },
 
   option: {
-    minHeight: 74,
-    paddingHorizontal: 14,
-    borderRadius: 22,
+    minHeight: 66,
+    paddingHorizontal: 13,
+    borderRadius: 20,
     borderWidth: 1,
-    borderColor: COLORS.border,
+    borderColor: 'rgba(218,194,145,0.92)',
+
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: COLORS.white,
+
+    backgroundColor: 'rgba(250,238,208,0.98)',
+
     ...SHADOWS.soft,
   },
-
+  
   optionIcon: {
-    width: 46,
-    height: 46,
-    borderRadius: 17,
+    width: 44,
+    height: 44,
+    borderRadius: 16,
     alignItems: 'center',
     justifyContent: 'center',
   },
-
+ 
   optionCopy: {
     flex: 1,
     marginHorizontal: 13,
@@ -290,7 +305,7 @@ const styles = StyleSheet.create({
   optionTitle: {
     fontFamily: FONTS.bodyBold,
     fontSize: 15,
-    color: COLORS.brown,
+    color: COLORS.forest,
   },
 
   optionSubtitle: {
@@ -298,14 +313,14 @@ const styles = StyleSheet.create({
     fontFamily: FONTS.body,
     fontSize: 11,
     lineHeight: 16,
-    color: COLORS.subText,
+    color: COLORS.brownSoft,
   },
 
   helperRow: {
-    marginTop: 16,
-    paddingTop: 15,
+    marginTop: 9,
+    paddingTop: 9,
     borderTopWidth: 1,
-    borderTopColor: COLORS.divider,
+    borderTopColor: 'rgba(216,197,106,0.25)',
     flexDirection: 'row',
     alignItems: 'flex-start',
   },
@@ -315,16 +330,16 @@ const styles = StyleSheet.create({
     marginLeft: 8,
     fontFamily: FONTS.body,
     fontSize: 10,
-    lineHeight: 15,
-    color: COLORS.subText,
+    lineHeight: 14,
+    color: 'rgba(255,248,234,0.78)',
   },
 
   feedbackButton: {
     alignSelf: 'flex-end',
-    minHeight: 48,
-    marginTop: 15,
+    minHeight: 46,
+    marginTop: 10,
     paddingHorizontal: 18,
-    borderRadius: 24,
+    borderRadius: 23,
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
@@ -339,7 +354,7 @@ const styles = StyleSheet.create({
   },
 
   footer: {
-    marginTop: 15,
+    marginTop: 10,
     fontFamily: FONTS.body,
     fontSize: 10,
     textAlign: 'center',

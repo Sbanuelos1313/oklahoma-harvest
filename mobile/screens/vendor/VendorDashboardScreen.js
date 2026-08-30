@@ -9,6 +9,7 @@ import {
   ActivityIndicator,
   Alert,
   Image,
+  ImageBackground,
   Linking,
   RefreshControl,
   ScrollView,
@@ -308,15 +309,21 @@ if (!shop) {
     </View>
   );
 }
-  const heroImage =
-    IMAGE_ASSETS.backgrounds.vendorDashboard;
-    return (
+    const heroImage =
+      IMAGE_ASSETS.backgrounds.vendorDashboard;
 
-    <View style={styles.root}>
-      <StatusBar
-        barStyle="light-content"
-        backgroundColor={COLORS.forestDark}
-      />
+    return (
+      <ImageBackground
+        source={IMAGE_ASSETS.backgrounds.vendorProfile}
+        resizeMode="cover"
+        imageStyle={styles.backgroundImage}
+        style={styles.background}
+      >
+        <View style={styles.backgroundOverlay}>
+          <StatusBar
+            barStyle="light-content"
+            backgroundColor={COLORS.forestDark}
+          />
 
       <SafeAreaView
         edges={['left', 'right']}
@@ -584,7 +591,8 @@ if (!shop) {
         </ScrollView>
       </SafeAreaView>
     </View>
-  );
+  </ImageBackground>
+);
 }
 
 function StatCard({
@@ -872,11 +880,23 @@ function CardEmptyState({
 }
 
 const styles = StyleSheet.create({
-  root: {
+  background: {
     flex: 1,
-    backgroundColor: '#F8F3E8',
   },
 
+  backgroundImage: {
+    opacity: 0.42,
+  },
+
+  backgroundOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(250,247,240,0.58)',
+  },
+
+  root: {
+    flex: 1,
+    backgroundColor: 'transparent',
+  },
   scrollContent: {
     paddingBottom: 130,
   },

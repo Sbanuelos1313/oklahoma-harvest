@@ -10,6 +10,7 @@ import {
   Alert,
   FlatList,
   Image,
+  ImageBackground,
   RefreshControl,
   StatusBar,
   StyleSheet,
@@ -356,84 +357,93 @@ export default function VendorProductsScreen({
   }
 
   return (
-    <View style={styles.root}>
-      <StatusBar
-        barStyle="dark-content"
-        backgroundColor={COLORS.cream}
-      />
-
-      <SafeAreaView
-        edges={['top', 'left', 'right']}
-        style={styles.root}
-      >
-        <FlatList
-          data={filteredProducts}
-          keyExtractor={(item) =>
-            String(item.id)
-          }
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={styles.list}
-          refreshControl={
-            <RefreshControl
-              refreshing={refreshing}
-              onRefresh={handleRefresh}
-              tintColor={COLORS.forest}
-              colors={[COLORS.forest]}
-            />
-          }
-          ListHeaderComponent={
-            <ProductsHeader
-              inventorySummary={inventorySummary}
-              searchText={searchText}
-              setSearchText={setSearchText}
-              selectedFilter={selectedFilter}
-              setSelectedFilter={
-                setSelectedFilter
-              }
-              onAddProduct={openAddProduct}
-            />
-          }
-          ListEmptyComponent={
-            products.length === 0 ? (
-              <View style={styles.emptyWrapper}>
-                <EmptyState
-                  image={
-                    IMAGE_ASSETS.products.default
-                  }
-                  title="No products yet"
-                  message="Add your first product so customers can begin shopping your goods."
-                  buttonTitle="Add Product"
-                  onPress={openAddProduct}
-                />
-              </View>
-            ) : (
-              <FilteredEmptyState
-                onClear={() => {
-                  setSearchText('');
-                  setSelectedFilter('all');
-                }}
-              />
-            )
-          }
-          renderItem={({ item }) => (
-            <ProductCard
-              product={item}
-              updating={
-                updatingId === item.id
-              }
-              onToggle={() =>
-                confirmToggle(item)
-              }
-              onEdit={() =>
-                openEditProduct(item)
-              }
-            />
-          )}
+    <ImageBackground
+      source={IMAGE_ASSETS.backgrounds.vendorProfile}
+      resizeMode="cover"
+      imageStyle={styles.backgroundImage}
+      style={styles.background}
+    >
+      <View style={styles.backgroundOverlay}>
+        <StatusBar
+          barStyle="dark-content"
+          backgroundColor="transparent"
+          translucent
         />
-      </SafeAreaView>
-    </View>
+
+        <SafeAreaView
+          edges={['top', 'left', 'right']}
+          style={styles.root}
+        >
+          <FlatList
+            data={filteredProducts}
+            keyExtractor={(item) =>
+              String(item.id)
+            }
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={styles.list}
+            refreshControl={
+              <RefreshControl
+                refreshing={refreshing}
+                onRefresh={handleRefresh}
+                tintColor={COLORS.forest}
+                colors={[COLORS.forest]}
+              />
+            }
+            ListHeaderComponent={
+              <ProductsHeader
+                inventorySummary={inventorySummary}
+                searchText={searchText}
+                setSearchText={setSearchText}
+                selectedFilter={selectedFilter}
+                setSelectedFilter={
+                  setSelectedFilter
+                }
+                onAddProduct={openAddProduct}
+              />
+            }
+            ListEmptyComponent={
+              products.length === 0 ? (
+                <View style={styles.emptyWrapper}>
+                  <EmptyState
+                    image={
+                      IMAGE_ASSETS.products.default
+                    }
+                    title="No products yet"
+                    message="Add your first product so customers can begin shopping your goods."
+                    buttonTitle="Add Product"
+                    onPress={openAddProduct}
+                  />
+                </View>
+              ) : (
+                <FilteredEmptyState
+                  onClear={() => {
+                    setSearchText('');
+                    setSelectedFilter('all');
+                  }}
+                />
+              )
+            }
+            renderItem={({ item }) => (
+              <ProductCard
+                product={item}
+                updating={
+                  updatingId === item.id
+                }
+                onToggle={() =>
+                  confirmToggle(item)
+                }
+                onEdit={() =>
+                  openEditProduct(item)
+                }
+              />
+            )}
+          />
+        </SafeAreaView>
+      </View>
+    </ImageBackground>
   );
-}
+  }
+
 function ProductsHeader({
   inventorySummary,
   searchText,
@@ -918,11 +928,23 @@ function FilteredEmptyState({ onClear }) {
 }
 
 const styles = StyleSheet.create({
-  root: {
+  background: {
     flex: 1,
-    backgroundColor: COLORS.cream,
   },
 
+  backgroundImage: {
+    opacity: 0.42,
+  },
+
+  backgroundOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(250,247,240,0.58)',
+  },
+
+  root: {
+    flex: 1,
+    backgroundColor: 'transparent',
+  },
   list: {
     paddingHorizontal: LAYOUT.screenPadding,
     paddingBottom: 125,

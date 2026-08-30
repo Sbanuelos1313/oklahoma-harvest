@@ -207,7 +207,9 @@ requestAnimationFrame(() => {
         name:
           returnedRole === 'producer'
             ? 'VendorMain'
-            : 'Main',
+            : returnedRole === 'admin'
+              ? 'AdminMain'
+              : 'Main',
       },
     ],
   });
@@ -394,7 +396,7 @@ requestAnimationFrame(() => {
 
   return (
     <ImageBackground
-      source={require('../assets/backgrounds/bg_app_login.jpg')}
+      source={require('../assets/backgrounds/bg_welcome.jpg')}
       resizeMode="cover"
       style={styles.background}
     >
@@ -797,75 +799,97 @@ const styles = StyleSheet.create({
   },
 
   scrollContent: {
+    flexGrow: 1,
     paddingHorizontal: 20,
-    paddingTop: 20,
-    paddingBottom: 40,
+    paddingTop: 6,
+    paddingBottom: 10,
   },
 
   topRow: {
-    minHeight: 46,
+    minHeight: 38,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+
+    zIndex: 10,
+    elevation: 10,
   },
 
   backButton: {
-    width: 46,
-    height: 46,
-    borderRadius: 23,
+    width: 38,
+    height: 38,
+    borderRadius: 19,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: 'rgba(255,255,255,0.95)',
+    backgroundColor: 'rgba(47,39,22,0.78)',
+    borderWidth: 1,
+    borderColor: 'rgba(201,168,76,0.45)',
     ...SHADOWS.soft,
   },
 
   accessBadge: {
-    minHeight: 34,
-    paddingHorizontal: 13,
-    borderRadius: 17,
+    minHeight: 32,
+    paddingHorizontal: 12,
+    borderRadius: 16,
     flexDirection: 'row',
     alignItems: 'center',
     gap: 7,
-    backgroundColor: 'rgba(255,255,255,0.94)',
+    backgroundColor: 'rgba(47,39,22,0.78)',
+    borderWidth: 1,
+    borderColor: 'rgba(201,168,76,0.45)',
     ...SHADOWS.soft,
   },
 
   accessBadgeText: {
     fontFamily: FONTS.bodyBold,
     fontSize: 11,
-    color: COLORS.forest,
+    color: '#FFF8EA',
   },
 
   brandBlock: {
-    height: 138,
+    alignSelf: 'center',
+    width: '100%',
+    height: 150,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 8,
+
+    marginTop: 10,
+    marginBottom: 10,
+
+    shadowColor: '#F4C96B',
+    shadowOffset: {
+      width: 0,
+      height: 0,
+    },
+    shadowOpacity: 0.9,
+    shadowRadius: 30,
+    elevation: 1,
   },
 
   brandLogo: {
-    width: '84%',
-    height: 128,
-    tintColor: COLORS.forest,
+    width: '110%',
+    height: 190,
   },
 
   card: {
-    paddingHorizontal: 20,
-    paddingTop: 18,
-    paddingBottom: 22,
-    borderRadius: 30,
-    backgroundColor: 'rgba(252,250,247,0.95)',
+    paddingHorizontal: 18,
+    paddingTop: 12,
+    paddingBottom: 12,
+    borderRadius: 26,
+    backgroundColor: 'rgba(47,39,22,0.78)',
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.72)',
+    borderColor: 'rgba(201,168,76,0.48)',
     ...SHADOWS.medium,
   },
 
   segmentedControl: {
-    height: 50,
-    padding: 5,
-    borderRadius: 25,
+    height: 42,
+    padding: 4,
+    borderRadius: 21,
     flexDirection: 'row',
-    backgroundColor: 'rgba(74,103,65,0.08)',
+    backgroundColor: 'rgba(255,248,234,0.10)',
+    borderWidth: 1,
+    borderColor: 'rgba(216,197,106,0.22)',
   },
 
   segment: {
@@ -876,14 +900,14 @@ const styles = StyleSheet.create({
   },
 
   segmentActive: {
-    backgroundColor: COLORS.white,
+    backgroundColor: 'rgba(250,238,208,0.98)',
     ...SHADOWS.soft,
   },
 
   segmentText: {
     fontFamily: FONTS.bodyBold,
     fontSize: 13,
-    color: COLORS.subText,
+    color: 'rgba(255,248,234,0.68)',
   },
 
   segmentTextActive: {
@@ -891,59 +915,59 @@ const styles = StyleSheet.create({
   },
 
   cardTitle: {
-    marginTop: 20,
+    marginTop: 11,
     fontFamily: FONTS.display,
-    fontSize: 28,
-    lineHeight: 34,
-    color: COLORS.brown,
+    fontSize: 25,
+    lineHeight: 29,
+    color: '#FFF8EA',
   },
 
   cardSubtitle: {
-    marginTop: 4,
-    marginBottom: 18,
+    marginTop: 2,
+    marginBottom: 10,
     fontFamily: FONTS.body,
-    fontSize: 14,
-    lineHeight: 20,
-    color: COLORS.subText,
+    fontSize: 12,
+    lineHeight: 17,
+     color: 'rgba(255,248,234,0.80)',
   },
 
   field: {
-    marginBottom: 15,
+    marginBottom: 9,
   },
 
   label: {
-    marginBottom: 7,
+    marginBottom: 4,
     fontFamily: FONTS.bodyBold,
-    fontSize: 11,
-    letterSpacing: 1.2,
+    fontSize: 10,
+    letterSpacing: 1.1,
     textTransform: 'uppercase',
-    color: COLORS.brown,
+    color: '#D8C56A',
   },
 
   inputShell: {
-    minHeight: 56,
-    paddingHorizontal: 15,
-    borderRadius: 20,
+    minHeight: 48,
+    paddingHorizontal: 14,
+    borderRadius: 18,
     borderWidth: 1,
-    borderColor: COLORS.border,
+    borderColor: 'rgba(218,194,145,0.92)',
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: COLORS.white,
+    backgroundColor: 'rgba(250,238,208,0.98)',
   },
 
   input: {
     flex: 1,
-    marginLeft: 11,
-    paddingVertical: 14,
+    marginLeft: 10,
+    paddingVertical: 10,
     fontFamily: FONTS.body,
-    fontSize: 15,
+    fontSize: 14,
     color: COLORS.brown,
   },
 
   forgotButton: {
     alignSelf: 'flex-end',
-    paddingVertical: 2,
-    marginBottom: 16,
+    paddingVertical: 1,
+    marginBottom: 9,
   },
 
   forgotText: {
@@ -953,9 +977,9 @@ const styles = StyleSheet.create({
   },
 
   primaryButton: {
-    minHeight: 56,
-    paddingHorizontal: 22,
-    borderRadius: 28,
+    minHeight: 50,
+    paddingHorizontal: 20,
+    borderRadius: 21,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
@@ -1005,7 +1029,7 @@ const styles = StyleSheet.create({
     fontFamily: FONTS.body,
     fontSize: 11,
     lineHeight: 18,
-    color: COLORS.subText,
+    color: COLORS.brownSoft,
   },
 
   legalLink: {
@@ -1022,11 +1046,11 @@ const styles = StyleSheet.create({
     fontFamily: FONTS.body,
     fontSize: 10,
     lineHeight: 15,
-    color: COLORS.subText,
+    color: COLORS.brownSoft,
   },
 
   dividerRow: {
-    marginVertical: 18,
+    marginVertical: 10,
     flexDirection: 'row',
     alignItems: 'center',
   },
@@ -1034,34 +1058,35 @@ const styles = StyleSheet.create({
   divider: {
     flex: 1,
     height: 1,
-    backgroundColor: COLORS.divider,
+    backgroundColor: 'rgba(216,197,106,0.22)',
   },
 
   dividerText: {
     marginHorizontal: 12,
     fontFamily: FONTS.body,
     fontSize: 12,
-    color: COLORS.subText,
+    color: 'rgba(255,248,234,0.65)',
   },
 
   accessSwitchButton: {
-    minHeight: 68,
-    paddingHorizontal: 14,
-    borderRadius: 22,
+    minHeight: 58,
+    paddingHorizontal: 13,
+    borderRadius: 19,
     borderWidth: 1,
-    borderColor: COLORS.border,
+    borderColor: 'rgba(218,194,145,0.92)',
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: COLORS.white,
+    backgroundColor: 'rgba(250,238,208,0.98)',
+    ...SHADOWS.soft,
   },
 
   switchIcon: {
-    width: 43,
-    height: 43,
-    borderRadius: 16,
+    width: 40,
+    height: 40,
+    borderRadius: 15,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: 'rgba(74,103,65,0.10)',
+    backgroundColor: 'rgba(74,103,65,0.12)',
   },
 
   switchCopy: {
@@ -1072,18 +1097,19 @@ const styles = StyleSheet.create({
   switchTitle: {
     fontFamily: FONTS.bodyBold,
     fontSize: 14,
-    color: COLORS.brown,
+    color: COLORS.forest,
   },
 
   switchSubtitle: {
     marginTop: 2,
     fontFamily: FONTS.body,
     fontSize: 11,
-    color: COLORS.subText,
+    lineHeight: 15,
+    color: COLORS.brownSoft,
   },
 
   footer: {
-    marginTop: 16,
+    marginTop: 8,
     fontFamily: FONTS.body,
     fontSize: 10,
     textAlign: 'center',

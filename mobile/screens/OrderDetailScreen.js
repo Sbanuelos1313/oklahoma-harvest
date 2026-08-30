@@ -244,7 +244,7 @@ export default function OrderDetailScreen({
 
   return (
     <ImageBackground
-      source={require('../assets/backgrounds/bg_settings.jpg')}
+      source={IMAGE_ASSETS.backgrounds.orders}
       resizeMode="cover"
       style={styles.background}
     >

@@ -50,7 +50,7 @@ export default function OrderConfirmationScreen({
 
   return (
     <ImageBackground
-      source={require('../assets/backgrounds/bg_settings.jpg')}
+      source={IMAGE_ASSETS.backgrounds.orders}
       resizeMode="cover"
       style={styles.background}
     >
@@ -64,7 +64,7 @@ export default function OrderConfirmationScreen({
           >
             <View style={styles.hero}>
               <Image
-                source={IMAGE_ASSETS.hero.checkout}
+                source={IMAGE_ASSETS.backgrounds.orders}
                 resizeMode="cover"
                 style={styles.heroImage}
               />

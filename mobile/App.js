@@ -88,6 +88,11 @@ import VendorAddProductScreen from './screens/vendor/VendorAddProductScreen';
 import VendorEditProductScreen from './screens/vendor/VendorEditProductScreen';
 import VendorEditStoreScreen from './screens/vendor/VendorEditStoreScreen';
 
+// =====================================================
+// ADMIN SCREENS
+// =====================================================
+
+import AdminDashboardScreen from './screens/admin/AdminDashboardScreen';
 
 // =====================================================
 // THEME / ASSETS
@@ -895,6 +900,13 @@ if (
     user?.role ===
     'producer';
 
+  const isAdmin =
+    user?.role ===
+    'admin';
+
+  const isCustomer =
+    user?.role ===
+    'shopper';
 
   // ===================================================
   // ROOT NAVIGATION
@@ -1066,11 +1078,46 @@ if (
 
 
             {/* =========================================
+                ADMIN ROUTES
+            ========================================= */}
+
+            {token &&
+              isAdmin && (
+                <Stack.Screen
+                  name="AdminMain"
+                >
+                  {props => (
+                    <AdminDashboardScreen
+                      {...props}
+
+                      API={API}
+
+                      token={
+                        token
+                      }
+
+                      user={
+                        user
+                      }
+
+                      setToken={
+                        setToken
+                      }
+
+                      setUser={
+                        setUser
+                      }
+                    />
+                  )}
+                </Stack.Screen>
+              )}
+
+            {/* =========================================
                 CUSTOMER ROUTES
             ========================================= */}
 
             {token &&
-              !isVendor && (
+              !isCustomer && (
                 <>
                   {/* MAIN BOTTOM TABS */}
 
