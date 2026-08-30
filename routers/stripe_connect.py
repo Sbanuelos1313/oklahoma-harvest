@@ -517,9 +517,9 @@ def create_payment_intent(
             "customer":
                 stripe_customer_id,
 
-            "payment_method_types": ["card"],
-                "enabled": True,
-            },
+            "payment_method_types": [
+                "card",
+            ],
 
             "metadata": {
                 "platform":
@@ -539,7 +539,6 @@ def create_payment_intent(
                     req.fulfillment_type,
             },
         }
-
 
         # ====================================================
         # STRIPE CONNECT DESTINATION
