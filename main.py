@@ -72,25 +72,6 @@ def serve_landing():
 def health():
     return {"status": "ok", "app": "from-our-place"}
 
-@app.get("/debug-auth")
-def debug_auth():
-    import bcrypt
-    test = bcrypt.checkpw(b"ChronosAI2026!", bcrypt.hashpw(b"ChronosAI2026!", bcrypt.gensalt()))
-    return {"backend": "bcrypt", "test": test}
-
-@app.get("/debug-login")
-def debug_login():
-    import bcrypt
-    from database import get_conn
-    conn = get_conn(); cur = conn.cursor()
-    cur.execute("SELECT password_hash FROM users WHERE email = 'samantha@hypercruit.net'")
-    row = cur.fetchone(); cur.close(); conn.close()
-    if not row: return {"error": "user not found"}
-    stored = row[0]
-    password = "ChronosAI2026!"
-    match = bcrypt.checkpw(password.encode("utf-8"), stored.encode("utf-8"))
-    return {"hash_prefix": stored[:10], "match": match, "hash_type": type(stored).__name__}
-
 @app.get("/api")
 def api_summary():
     return {
