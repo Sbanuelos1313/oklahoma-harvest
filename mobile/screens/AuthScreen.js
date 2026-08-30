@@ -339,6 +339,66 @@ setToken(authToken);
     }
   }
 
+  async function handleForgotPassword() {
+  const normalizedEmail = email
+    .trim()
+    .toLowerCase();
+
+  if (!normalizedEmail) {
+    Alert.alert(
+      'Email required',
+      'Enter your email address first.'
+    );
+    return;
+  }
+
+  setLoading(true);
+
+  try {
+    const response = await fetch(
+      `${API}/api/users/forgot-password`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: normalizedEmail,
+        }),
+      }
+    );
+
+    const data = await parseResponse(response);
+
+    if (!response.ok) {
+      Alert.alert(
+        'Unable to send reset link',
+        data?.detail ||
+          data?.message ||
+          'Please try again.'
+      );
+      return;
+    }
+
+    Alert.alert(
+      'Check your email',
+      'If an account exists for that email, a password reset link has been sent.'
+    );
+  } catch (error) {
+    console.error(
+      'Forgot password error:',
+      error
+    );
+
+    Alert.alert(
+      'Connection error',
+      'We could not reach the server. Please try again.'
+    );
+  } finally {
+    setLoading(false);
+  }
+}
+
   function submit() {
     if (mode === 'login') {
       handleLogin();
@@ -586,19 +646,13 @@ setToken(authToken);
                   <TouchableOpacity
                     activeOpacity={0.8}
                     style={styles.forgotButton}
-                    onPress={() =>
-                      Alert.alert(
-                        'Password reset',
-                        'Password reset support will be connected next.'
-                      )
-                    }
+                    onPress={handleForgotPassword}
                   >
                     <Text style={styles.forgotText}>
                       Forgot password?
                     </Text>
                   </TouchableOpacity>
                 )}
-
                 <TouchableOpacity
                   activeOpacity={0.88}
                   style={[

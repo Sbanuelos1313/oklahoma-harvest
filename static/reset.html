@@ -83,7 +83,11 @@ body{font-family:"DM Sans",sans-serif;background:#F5EFE6;min-height:100vh;}
     <label class="form-label">EMAIL</label>
     <input class="form-input" type="email" id="resetEmail" placeholder="your@email.com">
     <button class="submit-btn" onclick="sendReset()">Send Reset Link</button>
-    <div class="back-link"><a href="/static/index.html">&larr; Back to Home</a></div>
+    <div class="back-link">
+  <a href="fromourplace://">
+    Open From Our Place
+  </a>
+</div>
   </div>
   <div class="card" id="newPassCard" style="display:none;">
     <div class="card-title">Create new password</div>
@@ -146,9 +150,11 @@ async function doReset() {
     });
     const d = await res.json();
     if (!res.ok) { msg.textContent = d.detail || 'Invalid or expired link'; msg.className = 'msg error'; btn.disabled = false; btn.textContent = 'Reset Password'; return; }
-    msg.textContent = 'Password reset! Redirecting to login...';
+    msg.textContent = 'Password reset! You can now sign in with your new password.';
     msg.className = 'msg success';
-    setTimeout(() => window.location.href = '/static/index.html', 2000);
+    setTimeout(() => {
+  window.location.href = 'fromourplace://';
+  }, 2000); 
   } catch(e) {
     msg.textContent = 'Something went wrong. Try again.';
     msg.className = 'msg error';
