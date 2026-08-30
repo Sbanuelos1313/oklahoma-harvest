@@ -39,6 +39,11 @@ STRIPE_WEBHOOK_SECRET = os.getenv(
     "",
 )
 
+STRIPE_CONNECT_WEBHOOK_SECRET = os.getenv(
+    "STRIPE_CONNECT_WEBHOOK_SECRET",
+    "",
+)
+
 APP_URL = os.getenv(
     "APP_URL",
     "https://from-our-place.chronos-ai.net",
@@ -1055,11 +1060,14 @@ async def stripe_webhook(
     # WEBHOOK CONFIG CHECK
     # ========================================================
 
-    if not STRIPE_WEBHOOK_SECRET:
+    if (
+        not STRIPE_WEBHOOK_SECRET
+        or not STRIPE_CONNECT_WEBHOOK_SECRET
+    ):
         raise HTTPException(
             status_code=500,
             detail=(
-                "Stripe webhook secret "
+                "Stripe webhook secrets "
                 "not configured"
             ),
         )
@@ -1081,20 +1089,33 @@ async def stripe_webhook(
     # VERIFY STRIPE SIGNATURE
     # ========================================================
 
-    try:
-        event = (
-            stripe.Webhook.construct_event(
-                payload,
-                signature,
-                STRIPE_WEBHOOK_SECRET,
-            )
-        )
+    event = None
+    verification_error = None
 
-    except Exception as e:
+    for webhook_secret in (
+        STRIPE_WEBHOOK_SECRET,
+        STRIPE_CONNECT_WEBHOOK_SECRET,
+    ):
+        try:
+            event = (
+                stripe.Webhook.construct_event(
+                    payload,
+                    signature,
+                    webhook_secret,
+                )
+            )
+
+            break
+
+        except Exception as e:
+            verification_error = e
+
+
+    if event is None:
         print(
             "STRIPE WEBHOOK "
             "SIGNATURE ERROR:",
-            e,
+            verification_error,
         )
 
         raise HTTPException(
@@ -1102,8 +1123,7 @@ async def stripe_webhook(
             detail=(
                 "Invalid webhook signature"
             ),
-        ) from e
-
+        ) from verification_error
 
     event_type = (
         event["type"]
