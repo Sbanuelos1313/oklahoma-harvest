@@ -15,11 +15,12 @@
     "ios": {
       "bundleIdentifier": "com.chronosai.fromourplace",
       "buildNumber": "1",
-      "supportsTablet": false,
+      "supportsTablet": true,
       "infoPlist": {
         "NSLocationWhenInUseUsageDescription": "From Our Place uses your location to find local producers near you.",
         "NSCameraUsageDescription": "From Our Place uses your camera to upload profile photos.",
-        "NSPhotoLibraryUsageDescription": "From Our Place accesses your photo library to upload profile photos."
+        "NSPhotoLibraryUsageDescription": "From Our Place accesses your photo library to upload profile photos.",
+        "ITSAppUsesNonExemptEncryption": false
       }
     },
     "android": {
@@ -38,7 +39,8 @@
           "merchantIdentifier": "merchant.com.chronosai.fromourplace",
           "enableGooglePay": false
         }
-      ]
+      ],
+      "expo-font"
     ],
     "extra": {
       "eas": {
