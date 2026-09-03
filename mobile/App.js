@@ -496,6 +496,105 @@ function CustomerTabs({
   );
 }
 
+// =====================================================
+// GUEST CUSTOMER TABS
+// =====================================================
+
+function GuestCustomerTabs({
+  navigation: rootNavigation,
+}) {
+  return (
+    <Tab.Navigator
+      screenOptions={
+        tabScreenOptions
+      }
+    >
+      <Tab.Screen
+        name="Home"
+        options={{
+          tabBarLabel:
+            'Shop',
+
+          tabBarIcon:
+            ({
+              focused,
+            }) => (
+              <TabIcon
+                focused={
+                  focused
+                }
+                source={
+                  IMAGE_ASSETS
+                    .icons
+                    .home
+                }
+              />
+            ),
+        }}
+      >
+        {props => (
+          <HomeScreen
+            {...props}
+
+            API={API}
+
+            token={null}
+            user={null}
+
+            cart={null}
+            setCart={() => {}}
+
+            guestMode={true}
+
+            rootNavigation={
+              rootNavigation
+            }
+          />
+        )}
+      </Tab.Screen>
+
+      <Tab.Screen
+        name="Search"
+        options={{
+          tabBarLabel:
+            'Discover',
+
+          tabBarIcon:
+            ({
+              focused,
+            }) => (
+              <TabIcon
+                focused={
+                  focused
+                }
+                source={
+                  IMAGE_ASSETS
+                    .icons
+                    .search
+                }
+              />
+            ),
+        }}
+      >
+        {props => (
+          <SearchScreen
+            {...props}
+
+            API={API}
+
+            cart={null}
+
+            guestMode={true}
+
+            rootNavigation={
+              rootNavigation
+            }
+          />
+        )}
+      </Tab.Screen>
+    </Tab.Navigator>
+  );
+}
 
 // =====================================================
 // VENDOR TABS
@@ -967,6 +1066,51 @@ if (
                       setUser={
                         setUser
                       }
+                    />
+                  )}
+                </Stack.Screen>
+                <Stack.Screen
+                  name="GuestMain"
+                >
+                  {props => (
+                    <GuestCustomerTabs
+                      {...props}
+                    />
+                  )}
+                </Stack.Screen>
+
+
+                <Stack.Screen
+                  name="GuestProducer"
+                >
+                  {props => (
+                    <ProducerScreen
+                      {...props}
+
+                      API={API}
+
+                      token={null}
+
+                      cart={null}
+                      setCart={() => {}}
+
+                      guestMode={true}
+                    />
+                  )}
+                </Stack.Screen>
+
+
+                <Stack.Screen
+                  name="GuestProductDetail"
+                >
+                  {props => (
+                    <ProductDetailScreen
+                      {...props}
+
+                      cart={null}
+                      setCart={() => {}}
+
+                      guestMode={true}
                     />
                   )}
                 </Stack.Screen>

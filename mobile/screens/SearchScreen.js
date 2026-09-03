@@ -208,6 +208,8 @@ export default function SearchScreen({
   cart,
   navigation,
   route,
+  guestMode = false,
+  rootNavigation,
 }) {
   const initialValue =
     route?.params?.initialQuery ||
@@ -486,6 +488,20 @@ export default function SearchScreen({
   }
 
   function handleResultPress(item) {
+    if (
+      guestMode &&
+      rootNavigation
+    ) {
+      rootNavigation.navigate(
+        'GuestProductDetail',
+        {
+          product: item,
+        }
+      );
+
+      return;
+    }
+
     navigation.navigate(
       'ProductDetail',
       {
@@ -515,7 +531,23 @@ export default function SearchScreen({
 
   function handleCartPress() {
     if (
-      typeof navigation?.jumpTo === 'function'
+      guestMode &&
+      rootNavigation
+    ) {
+      rootNavigation.navigate(
+        'Auth',
+        {
+          mode: 'login',
+          role: 'shopper',
+        }
+      );
+
+      return;
+    }
+
+    if (
+      typeof navigation?.jumpTo ===
+        'function'
     ) {
       navigation.jumpTo('Cart');
       return;
@@ -525,17 +557,18 @@ export default function SearchScreen({
       navigation?.getParent?.();
 
     if (
-      typeof parent?.jumpTo === 'function'
+      typeof parent?.jumpTo ===
+        'function'
     ) {
       parent.jumpTo('Cart');
       return;
     }
 
     if (
-      typeof parent?.navigate === 'function'
+      typeof parent?.navigate ===
+        'function'
     ) {
       parent.navigate('Cart');
-      return;
     }
   }
 
@@ -544,25 +577,47 @@ export default function SearchScreen({
       return;
     }
 
+    const producerPayload = {
+      id: item.producer_id,
+      shop_name: item.shop_name,
+      city: item.city,
+      state: item.state,
+      avg_rating: item.avg_rating,
+
+      fulfillment_pickup:
+        item.fulfillment_pickup,
+
+      fulfillment_delivery:
+        item.fulfillment_delivery,
+
+      fulfillment_shipping:
+        item.fulfillment_shipping,
+    };
+
+    if (
+      guestMode &&
+      rootNavigation
+    ) {
+      rootNavigation.navigate(
+        'GuestProducer',
+        {
+          producer:
+            producerPayload,
+        }
+      );
+
+      return;
+    }
+
     navigation.navigate(
       'Producer',
       {
-        producer: {
-          id: item.producer_id,
-          shop_name: item.shop_name,
-          city: item.city,
-          state: item.state,
-          avg_rating: item.avg_rating,
-          fulfillment_pickup:
-            item.fulfillment_pickup,
-          fulfillment_delivery:
-            item.fulfillment_delivery,
-          fulfillment_shipping:
-            item.fulfillment_shipping,
-        },
+        producer:
+          producerPayload,
       }
     );
   }
+
   function renderCategoryIcon(category) {
     const details =
       CATEGORY_DETAILS[category?.title] || {};

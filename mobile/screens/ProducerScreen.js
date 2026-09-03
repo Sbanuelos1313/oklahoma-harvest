@@ -39,6 +39,7 @@ export default function ProducerScreen({
   token,
   cart,
   setCart,
+  guestMode = false,
 }) {
   const { producer } = route?.params || {};
 
@@ -111,6 +112,22 @@ export default function ProducerScreen({
   const storefrontImage = producer?.cover_image_urle_url
     ? { uri: producer.cover_image_url }
     : IMAGE_ASSETS.backgrounds.vendorOrders;
+
+  function requireCustomerAuth() {
+    if (!guestMode) {
+      return false;
+    }
+
+    navigation.navigate(
+      'Auth',
+      {
+        mode: 'login',
+        role: 'shopper',
+      }
+    );
+
+    return true;
+  }
 
   function createOrUpdateCart(product) {
   const producerId =
@@ -246,6 +263,9 @@ export default function ProducerScreen({
 }
 
   function addToCart(product) {
+      if (requireCustomerAuth()) {
+        return;
+      }
     const producerId =
       producer?.id ||
       product?.producer_id;
@@ -284,11 +304,29 @@ export default function ProducerScreen({
   }
 
   function openProduct(product) {
-    navigation.navigate('ProductDetail', {
-      product,
-      producer,
-      relatedProducts: products,
-    });
+    if (guestMode) {
+      navigation.navigate(
+        'GuestProductDetail',
+        {
+          product,
+          producer,
+          relatedProducts:
+            products,
+        }
+      );
+
+      return;
+    }
+
+    navigation.navigate(
+      'ProductDetail',
+      {
+        product,
+        producer,
+        relatedProducts:
+          products,
+      }
+    );
   }
 
   function renderProduct({ item }) {
@@ -379,15 +417,19 @@ export default function ProducerScreen({
               <TouchableOpacity
                 activeOpacity={0.85}
                 style={styles.headerIconButton}
-                onPress={() =>
+                onPress={() => {
+                  if (requireCustomerAuth()) {
+                    return;
+                  }
+
                   navigation.navigate(
                     'Main',
                     {
                       screen:
                         'Cart',
                     }
-                  )
-                }
+                  );
+                }}
               >
                 <Ionicons
                   name="bag-outline"
@@ -481,7 +523,15 @@ export default function ProducerScreen({
                 styles.followButton,
                 following && styles.followButtonActive,
               ]}
-              onPress={() => setFollowing((current) => !current)}
+              onPress={() => {
+                if (requireCustomerAuth()) {
+                  return;
+                }
+
+                setFollowing(
+                  (current) => !current
+                );
+              }}
             >
               <Ionicons
                 name={

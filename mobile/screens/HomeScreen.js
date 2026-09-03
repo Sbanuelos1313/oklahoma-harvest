@@ -33,6 +33,8 @@ export default function HomeScreen({
   cart,
   setCart,
   navigation,
+  guestMode = false,
+  rootNavigation,
 }) {
   const [
     refreshing,
@@ -52,6 +54,48 @@ export default function HomeScreen({
   const locationLabel =
     'Near you';
 
+  function requireCustomerAuth() {
+  if (
+    guestMode &&
+    rootNavigation
+  ) {
+    rootNavigation.navigate(
+      'Auth',
+      {
+        mode: 'login',
+        role: 'shopper',
+      }
+    );
+
+    return;
+  }
+
+  navigation.navigate(
+    'Profile'
+  );
+}
+
+
+function handleBecomeProducer() {
+  if (
+    guestMode &&
+    rootNavigation
+  ) {
+    rootNavigation.navigate(
+      'Auth',
+      {
+        mode: 'register',
+        role: 'producer',
+      }
+    );
+
+    return;
+  }
+
+  navigation.navigate(
+    'Auth'
+  );
+}
 
   // =========================================================
   // REFRESH
@@ -119,10 +163,8 @@ export default function HomeScreen({
               deliveryAddress={
                 locationLabel
               }
-              onNotificationPress={() =>
-                navigation.navigate(
-                  'Profile'
-                )
+              onNotificationPress={
+                requireCustomerAuth
               }
               onPromoPress={() =>
                 navigation.navigate(
@@ -132,20 +174,20 @@ export default function HomeScreen({
             />
 
             <FeaturedProducers
-              navigation={
-                navigation
-              }
+              navigation={navigation}
               onViewAllPress={() =>
                 navigation.navigate(
                   'Search'
                 )
               }
+              guestMode={guestMode}
+              rootNavigation={rootNavigation}
             />
 
             <SeasonalProducts
-              navigation={
-                navigation
-              }
+              navigation={navigation}
+              guestMode={guestMode}
+              rootNavigation={rootNavigation}
             />
 
             <CommunitySpotlight
@@ -157,10 +199,8 @@ export default function HomeScreen({
             />
 
             <BecomeProducerCard
-              onPress={() =>
-                navigation.navigate(
-                  'Auth'
-                )
+              onPress={
+                handleBecomeProducer
               }
             />
 

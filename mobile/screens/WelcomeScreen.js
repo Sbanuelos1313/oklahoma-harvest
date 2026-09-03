@@ -87,12 +87,16 @@ function AccessOption({ option, onPress }) {
 
 export default function WelcomeScreen({ navigation }) {
   function handleSelect(role) {
+    if (role === 'shopper') {
+      navigation.navigate('GuestMain');
+      return;
+    }
+
     navigation.navigate('Auth', {
       mode: 'login',
       role,
     });
-  }
-
+  }  
   function openFeedback() {
     Linking.openURL(
       'https://forms.gle/bUWcVYSsHYb8RQuE6'

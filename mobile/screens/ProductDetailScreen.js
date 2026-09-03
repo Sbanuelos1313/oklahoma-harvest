@@ -39,6 +39,7 @@ export default function ProductDetailScreen({
   navigation,
   cart,
   setCart,
+  guestMode = false,
 }) {
   const {
     product,
@@ -234,6 +235,22 @@ export default function ProductDetailScreen({
   ]);
 
 
+  function requireCustomerAuth() {
+  if (!guestMode) {
+    return false;
+  }
+
+  navigation.navigate(
+    'Auth',
+    {
+      mode: 'login',
+      role: 'shopper',
+    }
+  );
+
+  return true;
+}
+
   // ===================================================
   // BACK BUTTON
   // ===================================================
@@ -248,6 +265,17 @@ export default function ProductDetailScreen({
       return;
     }
 
+    if (guestMode) {
+      navigation.navigate(
+        'GuestMain',
+        {
+          screen: 'Search',
+        }
+      );
+
+      return;
+    }
+
     navigation.navigate(
       'Main',
       {
@@ -256,19 +284,14 @@ export default function ProductDetailScreen({
     );
   }
 
-
   // ===================================================
   // CART BUTTON
   // ===================================================
 
   function handleCartPress() {
-    /*
-     * ProductDetail is a root Stack screen.
-     *
-     * Cart is nested inside the Main bottom-tab
-     * navigator, so we navigate through Main rather
-     * than trying navigation.navigate('Cart').
-     */
+    if (requireCustomerAuth()) {
+      return;
+    }
 
     navigation.navigate(
       'Main',
@@ -277,7 +300,6 @@ export default function ProductDetailScreen({
       }
     );
   }
-
 
   // ===================================================
   // FULFILLMENT SELECTION
@@ -476,6 +498,9 @@ export default function ProductDetailScreen({
   // ===================================================
 
   function addToCart() {
+      if (requireCustomerAuth()) {
+        return;
+      }
     if (
       fulfillmentOptions.length >
         0 &&
@@ -637,6 +662,16 @@ export default function ProductDetailScreen({
     return 'Fulfillment';
   }
 
+  function handleFavoritePress() {
+    if (requireCustomerAuth()) {
+      return;
+    }
+
+    setIsFavorite(
+      (current) => !current
+    );
+  }
+
 
   // ===================================================
   // SHARE PRODUCT
@@ -691,6 +726,18 @@ export default function ProductDetailScreen({
       };
 
 
+    if (guestMode) {
+      navigation.navigate(
+        'GuestProducer',
+        {
+          producer:
+            producerPayload,
+        }
+      );
+
+      return;
+    }
+
     navigation.navigate(
       'Producer',
       {
@@ -698,8 +745,7 @@ export default function ProductDetailScreen({
           producerPayload,
       }
     );
-  }
-
+    }
 
   // ===================================================
   // PRODUCT UNAVAILABLE
@@ -864,12 +910,7 @@ export default function ProductDetailScreen({
                 <TouchableOpacity
                   activeOpacity={0.85}
                   style={styles.heroIconButton}
-                  onPress={() =>
-                    setIsFavorite(
-                      (current) =>
-                        !current
-                    )
-                  }
+                  onPress={handleFavoritePress}
                 >
                   <Ionicons
                     name={
@@ -885,7 +926,6 @@ export default function ProductDetailScreen({
                     }
                   />
                 </TouchableOpacity>
-
                 {/* SHARE */}
 
                 <TouchableOpacity
@@ -1289,7 +1329,23 @@ export default function ProductDetailScreen({
                               style={
                                 styles.relatedCard
                               }
-                              onPress={() =>
+                              onPress={() => {
+                                if (guestMode) {
+                                  navigation.push(
+                                    'GuestProductDetail',
+                                    {
+                                      product:
+                                        relatedItem,
+
+                                      producer,
+
+                                      relatedProducts,
+                                    }
+                                  );
+
+                                  return;
+                                }
+
                                 navigation.push(
                                   'ProductDetail',
                                   {
@@ -1300,8 +1356,8 @@ export default function ProductDetailScreen({
 
                                     relatedProducts,
                                   }
-                                )
-                              }
+                                );
+                              }}
                             >
                               <Image
                                 source={

@@ -45,6 +45,8 @@ const PRODUCERS = [
 export default function FeaturedProducers({
   navigation,
   onViewAllPress,
+  guestMode = false,
+  rootNavigation,
 }) {
   return (
     <View style={styles.container}>
@@ -69,14 +71,21 @@ export default function FeaturedProducers({
             key={String(item.id)}
             activeOpacity={0.9}
             style={styles.card}
-            onPress={() =>
-              navigation?.navigate?.(
-                'Producer',
+            onPress={() => {
+              const targetNavigation =
+                guestMode && rootNavigation
+                  ? rootNavigation
+                  : navigation;
+
+              targetNavigation?.navigate?.(
+                guestMode
+                  ? 'GuestProducer'
+                  : 'Producer',
                 {
                   producer: item,
                 }
-              )
-            }
+              );
+            }}
           >
             <ImageBackground
               source={item.image}

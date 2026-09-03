@@ -30,7 +30,11 @@ const PRODUCTS = [
   },
 ];
 
-export default function SeasonalProducts({ navigation }) {
+export default function SeasonalProducts({
+    navigation,
+    guestMode = false,
+    rootNavigation,
+  }) {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
@@ -47,7 +51,21 @@ export default function SeasonalProducts({ navigation }) {
             key={String(item.id)}
             activeOpacity={0.9}
             style={styles.card}
-            onPress={() => navigation?.navigate?.('ProductDetail', { product: item })}
+            onPress={() => {
+              const targetNavigation =
+                guestMode && rootNavigation
+                  ? rootNavigation
+                  : navigation;
+
+              targetNavigation?.navigate?.(
+                guestMode
+                  ? 'GuestProductDetail'
+                  : 'ProductDetail',
+                {
+                  product: item,
+                }
+              );
+            }}
           >
             <Image source={item.image} style={styles.image} />
 
