@@ -473,16 +473,11 @@ export default function SearchScreen({
       category?.title ||
       '';
 
-    const categoryLabel =
-      category?.title ||
-      category?.label ||
-      '';
-
     setSelectedCategory(categoryValue);
-    setQuery(categoryLabel);
+    setQuery('');
 
     doSearch(
-      categoryLabel,
+      '',
       categoryValue
     );
   }

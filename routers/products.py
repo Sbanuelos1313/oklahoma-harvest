@@ -690,10 +690,13 @@ def search_products(
                 ]
             )
 
-        if category:
+        if category == "honey_jams":
+            query += " AND pr.category IN (%s, %s)"
+            params.extend(["honey", "jams"])
+
+        elif category:
             query += " AND pr.category = %s"
             params.append(category)
-
         if min_price is not None:
             query += " AND pr.price >= %s"
             params.append(min_price)
