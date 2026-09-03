@@ -9,6 +9,8 @@ import {
   StatusBar,
   StyleSheet,
   View,
+  Text,
+  TouchableOpacity,
   RefreshControl,
   ImageBackground,
 } from 'react-native';
@@ -75,6 +77,19 @@ export default function HomeScreen({
   );
 }
 
+function handleGuestSignIn() {
+  if (!rootNavigation) {
+    return;
+  }
+
+  rootNavigation.navigate(
+    'Auth',
+    {
+      mode: 'login',
+      role: 'shopper',
+    }
+  );
+}
 
 function handleBecomeProducer() {
   if (
@@ -156,6 +171,30 @@ function handleBecomeProducer() {
               />
             }
           >
+            {guestMode && (
+              <View
+                style={
+                  styles.guestSignInRow
+                }
+              >
+                <TouchableOpacity
+                  activeOpacity={0.75}
+                  onPress={
+                    handleGuestSignIn
+                  }
+                  accessibilityRole="button"
+                  accessibilityLabel="Sign in"
+                >
+                  <Text
+                    style={
+                      styles.guestSignInText
+                    }
+                  >
+                    Sign In
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            )}
             <HeroBanner
               firstName={
                 firstName
@@ -248,6 +287,21 @@ const styles =
       paddingBottom: 150,
     },
 
+    guestSignInRow: {
+      alignItems: 'flex-end',
+      paddingHorizontal:
+        SPACING.lg,
+      paddingTop:
+        SPACING.sm,
+    },
+
+    guestSignInText: {
+      color:
+        COLORS.forest,
+      fontSize: 15,
+      fontWeight: '600',
+    },
+    
     bottomSpacer: {
       height:
         SPACING.xxxl,
