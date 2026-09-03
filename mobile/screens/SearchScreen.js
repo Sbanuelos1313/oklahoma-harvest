@@ -242,6 +242,22 @@ export default function SearchScreen({
 
   const [offset, setOffset] = useState(0);
   const [hasMore, setHasMore] = useState(false);
+  useEffect(() => {
+    const unsubscribe =
+      navigation.addListener(
+        'tabPress',
+        () => {
+          setQuery('');
+          setSelectedCategory(null);
+          setResults([]);
+          setOffset(0);
+          setHasMore(false);
+          setSearched(false);
+        }
+      );
+
+  return unsubscribe;
+}, [navigation]);
 
   const categories = useMemo(
     () => CATEGORIES,
@@ -506,6 +522,11 @@ export default function SearchScreen({
   }
 
   function handleBackPress() {
+    if (searched) {
+      clearSearch();
+      return;
+    }
+
     if (
       typeof navigation?.canGoBack === 'function' &&
       navigation.canGoBack()
