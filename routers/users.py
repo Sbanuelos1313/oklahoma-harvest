@@ -552,6 +552,198 @@ def update_profile(
 
 
 # ============================================================
+# DELETE ACCOUNT
+# ============================================================
+
+@router.delete("/me")
+def delete_account(
+    user=Depends(
+        get_current_user
+    ),
+):
+    user_id = user["id"]
+
+    conn = get_conn()
+    cur = conn.cursor()
+
+    try:
+        # ----------------------------------------------------
+        # FIND PRODUCER RECORD, IF THIS USER IS A PRODUCER
+        # ----------------------------------------------------
+
+        cur.execute(
+            """
+            SELECT id
+            FROM producers
+            WHERE user_id = %s
+            """,
+            (
+                user_id,
+            ),
+        )
+
+        producer = cur.fetchone()
+        producer_id = (
+            producer[0]
+            if producer
+            else None
+        )
+
+        # ----------------------------------------------------
+        # PRESERVE HISTORICAL SHOPPER TRANSACTIONS
+        # ----------------------------------------------------
+
+        cur.execute(
+            """
+            UPDATE orders
+            SET shopper_id = NULL
+            WHERE shopper_id = %s
+            """,
+            (
+                user_id,
+            ),
+        )
+
+        cur.execute(
+            """
+            UPDATE reviews
+            SET shopper_id = NULL
+            WHERE shopper_id = %s
+            """,
+            (
+                user_id,
+            ),
+        )
+
+        # ----------------------------------------------------
+        # PRESERVE HISTORICAL PRODUCER TRANSACTIONS
+        # ----------------------------------------------------
+
+        if producer_id is not None:
+            cur.execute(
+                """
+                UPDATE order_items
+                SET product_id = NULL
+                WHERE product_id IN (
+                    SELECT id
+                    FROM products
+                    WHERE producer_id = %s
+                )
+                """,
+                (
+                    producer_id,
+                ),
+            )
+            cur.execute(
+                """
+                UPDATE orders
+                SET producer_id = NULL
+                WHERE producer_id = %s
+                """,
+                (
+                    producer_id,
+                ),
+            )
+
+            cur.execute(
+                """
+                UPDATE reviews
+                SET producer_id = NULL
+                WHERE producer_id = %s
+                """,
+                (
+                    producer_id,
+                ),
+            )
+
+        # ----------------------------------------------------
+        # REMOVE USER REFERENCES FROM ADMIN HISTORY
+        # ----------------------------------------------------
+
+        cur.execute(
+            """
+            UPDATE admin_flags
+            SET reported_by = NULL
+            WHERE reported_by = %s
+            """,
+            (
+                user_id,
+            ),
+        )
+
+        cur.execute(
+            """
+            UPDATE admin_flags
+            SET reviewed_by = NULL
+            WHERE reviewed_by = %s
+            """,
+            (
+                user_id,
+            ),
+        )
+
+        # ----------------------------------------------------
+        # DELETE ACCOUNT
+        #
+        # Cascades:
+        #   producers
+        #   products (through producers)
+        #   notifications
+        #   saved_producers
+        # ----------------------------------------------------
+
+        cur.execute(
+            """
+            DELETE FROM users
+            WHERE id = %s
+            RETURNING id
+            """,
+            (
+                user_id,
+            ),
+        )
+
+        deleted = cur.fetchone()
+
+        if not deleted:
+            conn.rollback()
+
+            raise HTTPException(
+                status_code=404,
+                detail="User not found",
+            )
+
+        conn.commit()
+
+        return {
+            "message":
+                "Account deleted successfully"
+        }
+
+    except HTTPException:
+        conn.rollback()
+        raise
+
+    except Exception as e:
+        conn.rollback()
+
+        print(
+            "ACCOUNT DELETION ERROR:",
+            e,
+        )
+
+        raise HTTPException(
+            status_code=500,
+            detail=(
+                "Unable to delete account"
+            ),
+        )
+
+    finally:
+        cur.close()
+        conn.close()
+
+# ============================================================
 # FORGOT PASSWORD
 # ============================================================
 
