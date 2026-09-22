@@ -1,4 +1,4 @@
-﻿from fastapi import FastAPI
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
@@ -61,6 +61,12 @@ app.include_router(stripe_connect.router)
 
 if os.path.exists("static"):
     app.mount("/static", StaticFiles(directory="static"), name="static")
+
+
+@app.get("/terms", include_in_schema=False)
+def serve_terms():
+    return FileResponse("static/terms.html")
+
 
 @app.get("/")
 def serve_landing():
