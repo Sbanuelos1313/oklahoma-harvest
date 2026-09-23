@@ -15,5 +15,11 @@
         sync: false
       - key: STRIPE_WEBHOOK_SECRET
         sync: false
+      - key: STRIPE_CONNECT_WEBHOOK_SECRET
+        sync: false
+      - key: STRIPE_SELLER_PRODUCT_ID
+        value: prod_VJZzmYkIMNjTcX
+      - key: STRIPE_SELLER_PRICE_ID
+        value: price_1UIwppGlkS5O9YQddcMGLnkS
       - key: APP_URL
         sync: false

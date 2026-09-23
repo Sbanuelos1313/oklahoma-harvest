@@ -44,6 +44,16 @@ STRIPE_CONNECT_WEBHOOK_SECRET = os.getenv(
     "",
 )
 
+STRIPE_SELLER_PRODUCT_ID = os.getenv(
+    "STRIPE_SELLER_PRODUCT_ID",
+    "",
+)
+
+STRIPE_SELLER_PRICE_ID = os.getenv(
+    "STRIPE_SELLER_PRICE_ID",
+    "",
+)
+
 APP_URL = os.getenv(
     "APP_URL",
     "https://from-our-place.chronos-ai.net",
@@ -652,6 +662,422 @@ def create_payment_intent(
 
 
 # ============================================================
+# SELLER MEMBERSHIP STATUS
+# ============================================================
+
+@router.get("/seller-membership/status")
+def get_seller_membership_status(
+    user=Depends(
+        get_current_producer
+    ),
+):
+    conn = get_conn()
+    cur = conn.cursor()
+
+    try:
+        cur.execute(
+            """
+            SELECT
+                billing_status,
+                stripe_customer_id,
+                stripe_subscription_id,
+                billing_comped_at
+            FROM producers
+            WHERE user_id = %s
+            """,
+            (
+                user["id"],
+            ),
+        )
+
+        producer = cur.fetchone()
+
+        if not producer:
+            raise HTTPException(
+                status_code=404,
+                detail="No shop found",
+            )
+
+        (
+            billing_status,
+            stripe_customer_id,
+            stripe_subscription_id,
+            billing_comped_at,
+        ) = producer
+
+        return {
+            "billing_status":
+                billing_status,
+            "is_entitled":
+                billing_status in (
+                    "comped",
+                    "active",
+                ),
+            "is_comped":
+                billing_status == "comped",
+            "has_stripe_customer":
+                bool(stripe_customer_id),
+            "has_subscription":
+                bool(stripe_subscription_id),
+            "billing_comped_at":
+                (
+                    billing_comped_at.isoformat()
+                    if billing_comped_at
+                    else None
+                ),
+        }
+
+    finally:
+        cur.close()
+        conn.close()
+
+
+# ============================================================
+# SELLER MEMBERSHIP PORTAL
+# ============================================================
+
+@router.post("/seller-membership/portal")
+def create_seller_membership_portal(
+    user=Depends(
+        get_current_producer
+    ),
+):
+    conn = get_conn()
+    cur = conn.cursor()
+
+    try:
+        cur.execute(
+            """
+            SELECT
+                billing_status,
+                stripe_customer_id
+            FROM producers
+            WHERE user_id = %s
+            """,
+            (
+                user["id"],
+            ),
+        )
+
+        producer = cur.fetchone()
+
+        if not producer:
+            raise HTTPException(
+                status_code=404,
+                detail="No shop found",
+            )
+
+        (
+            billing_status,
+            stripe_customer_id,
+        ) = producer
+
+
+        if billing_status == "comped":
+            return {
+                "status": "comped",
+                "portal_required": False,
+            }
+
+
+        if not stripe_customer_id:
+            raise HTTPException(
+                status_code=409,
+                detail=(
+                    "Seller does not have "
+                    "a billing account"
+                ),
+            )
+
+
+        session = (
+            stripe.billing_portal.Session.create(
+                customer=stripe_customer_id,
+                return_url=(
+                    f"{APP_URL}"
+                    "/static/producer.html"
+                ),
+            )
+        )
+
+        return {
+            "portal_required": True,
+            "portal_url": session.url,
+        }
+
+
+    except HTTPException:
+        raise
+
+
+    except stripe.error.StripeError as e:
+        print(
+            "SELLER BILLING PORTAL ERROR:",
+            e,
+        )
+
+        raise HTTPException(
+            status_code=502,
+            detail=(
+                "Unable to open seller "
+                "billing portal"
+            ),
+        ) from e
+
+
+    finally:
+        cur.close()
+        conn.close()
+
+
+# ============================================================
+# SELLER MEMBERSHIP CHECKOUT
+# ============================================================
+
+@router.post("/seller-membership/checkout")
+def create_seller_membership_checkout(
+    user=Depends(
+        get_current_producer
+    ),
+):
+    if not STRIPE_SELLER_PRICE_ID:
+        raise HTTPException(
+            status_code=500,
+            detail=(
+                "Seller membership price "
+                "not configured"
+            ),
+        )
+
+    conn = get_conn()
+    cur = conn.cursor()
+
+    try:
+        cur.execute(
+            """
+            SELECT
+                p.id,
+                p.billing_status,
+                p.stripe_customer_id,
+                p.stripe_subscription_id,
+                u.email
+            FROM producers p
+            JOIN users u
+              ON u.id = p.user_id
+            WHERE p.user_id = %s
+            """,
+            (
+                user["id"],
+            ),
+        )
+
+        producer = cur.fetchone()
+
+        if not producer:
+            raise HTTPException(
+                status_code=404,
+                detail="No shop found",
+            )
+
+        (
+            producer_id,
+            billing_status,
+            stripe_customer_id,
+            stripe_subscription_id,
+            email,
+        ) = producer
+
+
+        # Permanent founding-seller entitlement.
+        if billing_status == "comped":
+            return {
+                "status": "comped",
+                "checkout_required": False,
+            }
+
+
+        # Never create a second subscription.
+        if stripe_subscription_id:
+            try:
+                existing_subscription = (
+                    stripe.Subscription.retrieve(
+                        stripe_subscription_id
+                    )
+                )
+
+                existing_status = (
+                    existing_subscription.get(
+                        "status",
+                        "",
+                    )
+                )
+
+                if existing_status in (
+                    "active",
+                    "trialing",
+                    "past_due",
+                    "unpaid",
+                    "incomplete",
+                    "paused",
+                ):
+                    return {
+                        "status":
+                            existing_status,
+                        "checkout_required":
+                            False,
+                        "stripe_subscription_id":
+                            stripe_subscription_id,
+                    }
+
+            except stripe.error.InvalidRequestError:
+                # Stored subscription no longer exists in Stripe.
+                # Clear it and allow a fresh checkout.
+                cur.execute(
+                    """
+                    UPDATE producers
+                    SET stripe_subscription_id = NULL
+                    WHERE id = %s
+                    """,
+                    (
+                        producer_id,
+                    ),
+                )
+
+                conn.commit()
+
+                stripe_subscription_id = None
+
+
+        # Reuse the seller's Stripe Customer when possible.
+        if not stripe_customer_id:
+            customer = stripe.Customer.create(
+                email=email or None,
+                metadata={
+                    "platform":
+                        "from_our_place",
+                    "producer_id":
+                        str(producer_id),
+                    "purpose":
+                        "seller_membership",
+                },
+            )
+
+            stripe_customer_id = customer.id
+
+            cur.execute(
+                """
+                UPDATE producers
+                SET stripe_customer_id = %s
+                WHERE id = %s
+                  AND billing_status <> 'comped'
+                """,
+                (
+                    stripe_customer_id,
+                    producer_id,
+                ),
+            )
+
+            conn.commit()
+
+
+        session = (
+            stripe.checkout.Session.create(
+                mode="subscription",
+                customer=stripe_customer_id,
+                line_items=[
+                    {
+                        "price":
+                            STRIPE_SELLER_PRICE_ID,
+                        "quantity":
+                            1,
+                    }
+                ],
+                success_url=(
+                    f"{APP_URL}"
+                    "/static/producer.html"
+                    "?membership=success"
+                ),
+                cancel_url=(
+                    f"{APP_URL}"
+                    "/static/producer.html"
+                    "?membership=canceled"
+                ),
+                client_reference_id=(
+                    str(producer_id)
+                ),
+                metadata={
+                    "platform":
+                        "from_our_place",
+                    "producer_id":
+                        str(producer_id),
+                    "purpose":
+                        "seller_membership",
+                },
+                subscription_data={
+                    "metadata": {
+                        "platform":
+                            "from_our_place",
+                        "producer_id":
+                            str(producer_id),
+                        "purpose":
+                            "seller_membership",
+                    }
+                },
+            )
+        )
+
+        return {
+            "status": billing_status,
+            "checkout_required": True,
+            "checkout_url": session.url,
+        }
+
+
+    except HTTPException:
+        conn.rollback()
+        raise
+
+
+    except stripe.error.StripeError as e:
+        conn.rollback()
+
+        print(
+            "SELLER MEMBERSHIP STRIPE ERROR:",
+            e,
+        )
+
+        raise HTTPException(
+            status_code=502,
+            detail=(
+                "Unable to prepare seller "
+                "membership"
+            ),
+        ) from e
+
+
+    except Exception as e:
+        conn.rollback()
+
+        print(
+            "SELLER MEMBERSHIP ERROR:",
+            e,
+        )
+
+        raise HTTPException(
+            status_code=500,
+            detail=(
+                "Unable to prepare seller "
+                "membership"
+            ),
+        ) from e
+
+
+    finally:
+        cur.close()
+        conn.close()
+
+
+# ============================================================
 # STRIPE CONNECT ONBOARDING
 # ============================================================
 
@@ -1175,6 +1601,113 @@ async def stripe_webhook(
                 (
                     complete,
                     acct["id"],
+                ),
+            )
+
+            conn.commit()
+
+        except Exception:
+            conn.rollback()
+            raise
+
+        finally:
+            cur.close()
+            conn.close()
+
+
+    # ========================================================
+    # SELLER SUBSCRIPTION SYNC
+    # ========================================================
+
+    elif event_type in (
+        "customer.subscription.created",
+        "customer.subscription.updated",
+        "customer.subscription.deleted",
+    ):
+        subscription = (
+            event["data"]["object"]
+        )
+
+        subscription_id = (
+            subscription["id"]
+        )
+
+        customer_id = (
+            subscription.get("customer")
+        )
+
+        metadata = (
+            subscription.get("metadata")
+            or {}
+        )
+
+        producer_id = (
+            metadata.get("producer_id")
+        )
+
+        stripe_status = (
+            subscription.get("status", "")
+        )
+
+        # Stripe states mapped to the deliberately small
+        # From Our Place seller-billing state machine.
+        if (
+            event_type
+            == "customer.subscription.deleted"
+        ):
+            billing_status = "canceled"
+
+        elif stripe_status in (
+            "active",
+            "trialing",
+        ):
+            billing_status = "active"
+
+        elif stripe_status in (
+            "past_due",
+            "unpaid",
+            "incomplete",
+            "incomplete_expired",
+            "paused",
+        ):
+            billing_status = "past_due"
+
+        else:
+            billing_status = "canceled"
+
+
+        conn = get_conn()
+        cur = conn.cursor()
+
+        try:
+            # Permanent comped sellers must never lose their
+            # entitlement because of a Stripe webhook.
+            cur.execute(
+                """
+                UPDATE producers
+                SET
+                    stripe_customer_id = %s,
+                    stripe_subscription_id = %s,
+                    billing_status = %s
+                WHERE (
+                    id = CASE
+                        WHEN %s ~ '^[0-9]+$'
+                        THEN %s::INTEGER
+                        ELSE NULL
+                    END
+                    OR stripe_customer_id = %s
+                    OR stripe_subscription_id = %s
+                )
+                  AND billing_status <> 'comped'
+                """,
+                (
+                    customer_id,
+                    subscription_id,
+                    billing_status,
+                    producer_id,
+                    producer_id,
+                    customer_id,
+                    subscription_id,
                 ),
             )
 
