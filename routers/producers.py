@@ -1,4 +1,4 @@
-﻿from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, HTTPException, Depends
 from pydantic import (
     BaseModel,
     Field,
@@ -123,19 +123,30 @@ def setup_shop(req: CreateShopRequest, user=Depends(get_current_producer)):
     if cur.fetchone():
         cur.close(); conn.close()
         raise HTTPException(400, "Shop already exists")
+    cur.execute(
+        "SELECT seller_billing_status FROM users WHERE id = %s",
+        (user["id"],),
+    )
+    billing_row = cur.fetchone()
+    seller_billing_status = billing_row[0] if billing_row else None
+
+    is_comped = seller_billing_status == "comped"
+    billing_status = "comped" if is_comped else "canceled"
+
     cur.execute("""
         INSERT INTO producers (
             user_id, shop_name, description, bio, address, city, state, zip_code,
             latitude, longitude, service_radius_miles,
             fulfillment_pickup, fulfillment_delivery, fulfillment_shipping,
-            delivery_fee, tax_rate
-        ) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
+            delivery_fee, tax_rate, billing_status, billing_comped_at
+        ) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,
+                  CASE WHEN %s THEN NOW() ELSE NULL END)
         RETURNING id
     """, (user["id"], req.shop_name, req.description, req.bio,
           req.address, req.city, req.state, req.zip_code,
           req.latitude, req.longitude, req.service_radius_miles,
           req.fulfillment_pickup, req.fulfillment_delivery, req.fulfillment_shipping,
-          req.delivery_fee, req.tax_rate))
+          req.delivery_fee, req.tax_rate, billing_status, is_comped))
     producer_id = cur.fetchone()[0]
     conn.commit(); cur.close(); conn.close()
     return {"producer_id": producer_id, "message": "Shop created - pending admin approval"}

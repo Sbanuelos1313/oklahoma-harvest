@@ -38,6 +38,12 @@ def init_db():
                 role TEXT NOT NULL
                     DEFAULT 'shopper',
 
+                seller_billing_status TEXT
+                    CHECK (
+                        seller_billing_status IS NULL
+                        OR seller_billing_status = 'comped'
+                    ),
+
                 full_name TEXT,
 
                 phone TEXT,
@@ -142,6 +148,23 @@ def init_db():
 
                 stripe_onboarding_complete BOOLEAN
                     DEFAULT FALSE,
+
+                billing_status TEXT NOT NULL
+                    DEFAULT 'comped'
+                    CHECK (
+                        billing_status IN (
+                            'comped',
+                            'active',
+                            'past_due',
+                            'canceled'
+                        )
+                    ),
+
+                stripe_customer_id TEXT,
+
+                stripe_subscription_id TEXT,
+
+                billing_comped_at TIMESTAMPTZ,
 
                 admin_approved BOOLEAN
                     DEFAULT FALSE,
@@ -453,6 +476,78 @@ def init_db():
                 UNIQUE (
                     shopper_id,
                     producer_id
+                )
+            )
+        """)
+
+
+        # ==================================================
+        # SELLER BILLING MIGRATIONS
+        # ==================================================
+
+        cur.execute("""
+            ALTER TABLE users
+            ADD COLUMN IF NOT EXISTS
+            seller_billing_status TEXT
+        """)
+
+        cur.execute("""
+            ALTER TABLE users
+            DROP CONSTRAINT IF EXISTS
+            users_seller_billing_status_check
+        """)
+
+        cur.execute("""
+            ALTER TABLE users
+            ADD CONSTRAINT
+            users_seller_billing_status_check
+            CHECK (
+                seller_billing_status IS NULL
+                OR seller_billing_status = 'comped'
+            )
+        """)
+
+        cur.execute("""
+            ALTER TABLE producers
+            ADD COLUMN IF NOT EXISTS
+            billing_status TEXT NOT NULL
+            DEFAULT 'comped'
+        """)
+
+        cur.execute("""
+            ALTER TABLE producers
+            ADD COLUMN IF NOT EXISTS
+            stripe_customer_id TEXT
+        """)
+
+        cur.execute("""
+            ALTER TABLE producers
+            ADD COLUMN IF NOT EXISTS
+            stripe_subscription_id TEXT
+        """)
+
+        cur.execute("""
+            ALTER TABLE producers
+            ADD COLUMN IF NOT EXISTS
+            billing_comped_at TIMESTAMPTZ
+        """)
+
+        cur.execute("""
+            ALTER TABLE producers
+            DROP CONSTRAINT IF EXISTS
+            producers_billing_status_check
+        """)
+
+        cur.execute("""
+            ALTER TABLE producers
+            ADD CONSTRAINT
+            producers_billing_status_check
+            CHECK (
+                billing_status IN (
+                    'comped',
+                    'active',
+                    'past_due',
+                    'canceled'
                 )
             )
         """)

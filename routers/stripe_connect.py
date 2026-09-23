@@ -1,4 +1,4 @@
-﻿from fastapi import (
+from fastapi import (
     APIRouter,
     HTTPException,
     Depends,
@@ -421,6 +421,13 @@ def create_payment_intent(
             total * 100
         )
 
+        # From Our Place marketplace fee:
+        # 3% of merchandise subtotal only.
+        # Tax and delivery are excluded.
+        platform_fee_cents = round(
+            subtotal * 100 * 0.03
+        )
+
         if amount_cents <= 0:
             raise HTTPException(
                 status_code=400,
@@ -551,6 +558,10 @@ def create_payment_intent(
                 "destination":
                     stripe_account_id,
             }
+
+            intent_kwargs[
+                "application_fee_amount"
+            ] = platform_fee_cents
 
 
         # ====================================================
